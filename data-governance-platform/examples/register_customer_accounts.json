@@ -1,0 +1,117 @@
+{
+  "name": "customer_accounts",
+  "description": "Customer account information including personal and financial details. Contains PII and requires confidential classification.",
+  "owner_name": "John Doe",
+  "owner_email": "john.doe@company.com",
+  "source_type": "postgres",
+  "source_connection": "postgresql://governance_user:governance_pass@localhost:5432/financial_demo",
+  "physical_location": "public.customer_accounts",
+  "schema_definition": [
+    {
+      "name": "account_id",
+      "type": "integer",
+      "required": true,
+      "nullable": false,
+      "pii": false,
+      "description": "Unique account identifier"
+    },
+    {
+      "name": "customer_email",
+      "type": "string",
+      "required": true,
+      "nullable": false,
+      "pii": true,
+      "description": "Customer email address - SENSITIVE DATA",
+      "max_length": 255
+    },
+    {
+      "name": "customer_ssn",
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "pii": true,
+      "description": "Social Security Number - SENSITIVE DATA",
+      "max_length": 11
+    },
+    {
+      "name": "customer_phone",
+      "type": "string",
+      "required": false,
+      "nullable": true,
+      "pii": true,
+      "description": "Customer phone number - SENSITIVE DATA",
+      "max_length": 20
+    },
+    {
+      "name": "first_name",
+      "type": "string",
+      "required": true,
+      "nullable": false,
+      "pii": false,
+      "description": "Customer first name",
+      "max_length": 100
+    },
+    {
+      "name": "last_name",
+      "type": "string",
+      "required": true,
+      "nullable": false,
+      "pii": false,
+      "description": "Customer last name",
+      "max_length": 100
+    },
+    {
+      "name": "date_of_birth",
+      "type": "date",
+      "required": false,
+      "nullable": true,
+      "pii": true,
+      "description": "Customer date of birth - SENSITIVE DATA"
+    },
+    {
+      "name": "account_type",
+      "type": "string",
+      "required": true,
+      "nullable": false,
+      "pii": false,
+      "description": "Type of account",
+      "max_length": 20,
+      "enum_values": ["checking", "savings", "credit"]
+    },
+    {
+      "name": "account_status",
+      "type": "string",
+      "required": true,
+      "nullable": false,
+      "pii": false,
+      "description": "Current status of the account",
+      "max_length": 20,
+      "enum_values": ["active", "suspended", "closed"]
+    },
+    {
+      "name": "credit_limit",
+      "type": "float",
+      "required": false,
+      "nullable": true,
+      "pii": false,
+      "description": "Credit limit for credit accounts",
+      "min_value": 0
+    },
+    {
+      "name": "current_balance",
+      "type": "float",
+      "required": true,
+      "nullable": false,
+      "pii": false,
+      "description": "Current account balance"
+    }
+  ],
+  "governance": {
+    "classification": "confidential",
+    "encryption_required": false,
+    "compliance_tags": []
+  },
+  "quality_rules": {
+    "completeness_threshold": 90
+  }
+}

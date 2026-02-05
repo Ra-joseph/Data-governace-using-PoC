@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: governance_postgres
+    environment:
+      POSTGRES_DB: financial_demo
+      POSTGRES_USER: governance_user
+      POSTGRES_PASSWORD: governance_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./demo/setup_postgres.sql:/docker-entrypoint-initdb.d/01_setup.sql
+      - ./demo/sample_data.sql:/docker-entrypoint-initdb.d/02_data.sql
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U governance_user -d financial_demo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

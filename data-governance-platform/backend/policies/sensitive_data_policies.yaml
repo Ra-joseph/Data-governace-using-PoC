@@ -1,0 +1,98 @@
+name: sensitive_data_policies
+version: 1.0.0
+description: Policies for handling sensitive data, PII, and confidential information
+
+policies:
+  - id: SD001
+    name: pii_encryption_required
+    severity: critical
+    description: All fields marked as PII must have encryption enabled
+    rule: |
+      IF schema contains field with pii=true
+      THEN governance.encryption_required must be true
+    remediation: |
+      Set encryption_required: true in the governance section
+      Example:
+        governance:
+          encryption_required: true
+
+  - id: SD002
+    name: retention_policy_required
+    severity: critical
+    description: Confidential and restricted data must specify retention period
+    rule: |
+      IF governance.classification IN ['confidential', 'restricted']
+      THEN governance.retention_days must be specified
+    remediation: |
+      Add retention_days to governance section
+      Example:
+        governance:
+          retention_days: 2555  # 7 years
+
+  - id: SD003
+    name: pii_compliance_tags
+    severity: warning
+    description: Datasets with PII should specify applicable compliance frameworks
+    rule: |
+      IF schema contains field with pii=true
+      THEN governance.compliance_tags should not be empty
+    remediation: |
+      Add compliance tags like GDPR, CCPA, HIPAA
+      Example:
+        governance:
+          compliance_tags:
+            - GDPR
+            - CCPA
+
+  - id: SD004
+    name: restricted_use_cases
+    severity: critical
+    description: Restricted data must specify approved use cases
+    rule: |
+      IF governance.classification = 'restricted'
+      THEN governance.approved_use_cases must be specified
+    remediation: |
+      Add approved use cases
+      Example:
+        governance:
+          approved_use_cases:
+            - fraud_detection
+            - compliance_reporting
+
+  - id: SD005
+    name: cross_border_pii
+    severity: critical
+    description: Cross-border PII transfers require data residency specification
+    rule: |
+      IF schema contains PII fields AND deployment is multi-region
+      THEN governance.data_residency must be specified
+    remediation: |
+      Specify data residency requirements
+      Example:
+        governance:
+          data_residency: "EU"
+
+classification_requirements:
+  public:
+    encryption_required: false
+    retention_required: false
+    compliance_tags_required: false
+    min_quality_threshold: 90
+  
+  internal:
+    encryption_required: false
+    retention_required: false
+    compliance_tags_required: false
+    min_quality_threshold: 90
+  
+  confidential:
+    encryption_required: true
+    retention_required: true
+    compliance_tags_required: true
+    min_quality_threshold: 95
+  
+  restricted:
+    encryption_required: true
+    retention_required: true
+    approved_use_cases_required: true
+    min_quality_threshold: 99

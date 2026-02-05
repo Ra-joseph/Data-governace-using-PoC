@@ -1,0 +1,153 @@
+name: schema_governance_policies
+version: 1.0.0
+description: Policies for schema definition, documentation, and version control
+
+policies:
+  - id: SG001
+    name: field_documentation_required
+    severity: warning
+    description: All schema fields should have descriptions
+    rule: |
+      FOR EACH field IN schema
+      field.description should not be empty
+    remediation: |
+      Add descriptions to all fields
+      Example:
+        schema:
+          - name: customer_email
+            type: string
+            description: "Customer email address for communication"
+
+  - id: SG002
+    name: required_field_consistency
+    severity: critical
+    description: Required fields cannot be nullable
+    rule: |
+      IF field.required = true
+      THEN field.nullable must be false
+    remediation: |
+      Set nullable: false for required fields
+      Example:
+        schema:
+          - name: account_id
+            type: integer
+            required: true
+            nullable: false
+
+  - id: SG003
+    name: dataset_ownership_required
+    severity: critical
+    description: All datasets must have assigned ownership
+    rule: |
+      dataset.owner_name must not be empty AND
+      dataset.owner_email must not be empty
+    remediation: |
+      Specify dataset owner information
+      Example:
+        dataset:
+          owner_name: "John Doe"
+          owner_email: "john.doe@company.com"
+
+  - id: SG004
+    name: string_field_constraints
+    severity: warning
+    description: String fields should have max_length specified
+    rule: |
+      IF field.type = 'string'
+      THEN field.max_length should be specified
+    remediation: |
+      Add max_length constraint
+      Example:
+        schema:
+          - name: customer_name
+            type: string
+            max_length: 255
+
+  - id: SG005
+    name: enum_value_specification
+    severity: warning
+    description: Enum fields should list valid values
+    rule: |
+      IF field is constrained to specific values
+      THEN field.enum_values should be specified
+    remediation: |
+      List all valid enum values
+      Example:
+        schema:
+          - name: account_status
+            type: string
+            enum_values:
+              - active
+              - suspended
+              - closed
+
+  - id: SG006
+    name: breaking_schema_changes
+    severity: critical
+    description: Breaking schema changes require major version bump
+    rule: |
+      IF schema change is breaking (field removed, type changed, required added)
+      THEN contract version must increment major number
+    remediation: |
+      Increment major version (e.g., 1.0.0 -> 2.0.0)
+      Breaking changes include:
+        - Removing a field
+        - Changing field type
+        - Making optional field required
+        - Changing field name
+
+  - id: SG007
+    name: numeric_field_constraints
+    severity: warning
+    description: Numeric fields should specify min/max values where applicable
+    rule: |
+      IF field.type IN ['integer', 'float'] AND has business constraints
+      THEN field.min_value and/or field.max_value should be specified
+    remediation: |
+      Add numeric constraints
+      Example:
+        schema:
+          - name: age
+            type: integer
+            min_value: 0
+            max_value: 150
+
+versioning_strategy:
+  major_version_changes:
+    description: Incompatible changes that break existing consumers
+    examples:
+      - "Removing a field"
+      - "Changing field type"
+      - "Making optional field required"
+      - "Renaming a field"
+      - "Changing field semantics"
+  
+  minor_version_changes:
+    description: Backward-compatible additions
+    examples:
+      - "Adding a new optional field"
+      - "Adding new enum values"
+      - "Relaxing constraints (making required field optional)"
+      - "Adding SLA requirements"
+  
+  patch_version_changes:
+    description: Bug fixes and clarifications
+    examples:
+      - "Fixing field descriptions"
+      - "Correcting documentation"
+      - "Updating metadata"
+
+field_naming_conventions:
+  - "Use snake_case for field names"
+  - "Use descriptive names (avoid abbreviations)"
+  - "Prefix boolean fields with 'is_' or 'has_'"
+  - "Suffix date/time fields with '_at' or '_date'"
+  - "Use singular nouns for field names"
+
+required_metadata:
+  - "Dataset name"
+  - "Dataset description"
+  - "Owner name"
+  - "Owner email"
+  - "Classification level"
+  - "Schema definition"

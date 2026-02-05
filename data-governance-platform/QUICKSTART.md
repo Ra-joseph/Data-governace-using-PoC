@@ -1,0 +1,309 @@
+# Quick Start Guide (5 Minutes)
+
+Get the Data Governance Platform running in 5 easy steps.
+
+## Prerequisites Check
+
+Before starting, make sure you have:
+- [ ] Python 3.10 or higher (`python --version`)
+- [ ] Docker installed and running (`docker --version`)
+- [ ] Git installed (`git --version`)
+
+## Step 1: Setup (2 minutes)
+
+```bash
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+cd backend
+pip install -r requirements.txt
+cd ..
+```
+
+## Step 2: Start PostgreSQL (1 minute)
+
+```bash
+# Start the demo database
+docker-compose up -d
+
+# Verify it's running
+docker ps | grep governance_postgres
+```
+
+You should see the container running on port 5432.
+
+## Step 3: Start Backend (1 minute)
+
+```bash
+# Make start script executable
+chmod +x start.sh
+
+# Start the API
+./start.sh
+```
+
+The API will start at http://localhost:8000
+
+Keep this terminal open - you'll see API logs here.
+
+## Step 4: Test (1 minute)
+
+Open a **new terminal** and run:
+
+```bash
+# Activate virtual environment again
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Run automated tests
+python test_setup.py
+```
+
+You should see 5 green checkmarks:
+- ✓ Health Check
+- ✓ PostgreSQL Connection
+- ✓ Schema Import
+- ✓ Dataset Registration
+- ✓ List Datasets
+
+## Step 5: Explore
+
+### View API Documentation
+
+Open in your browser:
+- Swagger UI: http://localhost:8000/api/docs
+- ReDoc: http://localhost:8000/api/redoc
+
+### Try Some Commands
+
+```bash
+# List all tables in PostgreSQL
+curl http://localhost:8000/api/v1/datasets/postgres/tables
+
+# Import a schema
+curl -X POST http://localhost:8000/api/v1/datasets/import-schema \
+  -H "Content-Type: application/json" \
+  -d '{"source_type": "postgres", "table_name": "transactions"}'
+
+# List registered datasets
+curl http://localhost:8000/api/v1/datasets/
+```
+
+### View Generated Contracts
+
+```bash
+# Contracts are stored in Git
+ls -la backend/contracts/
+
+# View a contract
+cat backend/contracts/customer_accounts_v1.0.0.yaml
+```
+
+### Check Git History
+
+```bash
+cd backend/contracts
+git log --oneline
+git show HEAD
+cd ../..
+```
+
+## What's Next?
+
+1. **Read the README**: Full documentation in `README.md`
+2. **Explore the Demo**: Check out the 3 demo tables with intentional violations
+3. **Review Policies**: See YAML policy files in `backend/policies/`
+4. **Try the API**: Use Swagger UI to test all endpoints
+5. **Check Validation**: See how policy violations are caught and reported
+
+## Troubleshooting
+
+### PostgreSQL won't start?
+
+```bash
+# Check if port 5432 is in use
+lsof -i :5432
+
+# Stop and restart
+docker-compose down
+docker-compose up -d
+```
+
+### Backend won't start?
+
+```bash
+# Check Python version
+python --version  # Must be 3.10+
+
+# Reinstall dependencies
+pip install -r backend/requirements.txt
+```
+
+### Tests fail?
+
+```bash
+# Make sure both services are running
+docker ps  # PostgreSQL
+curl http://localhost:8000/health  # Backend
+```
+
+## Understanding the Demo
+
+### The Financial Scenario
+
+The demo includes 3 tables with realistic financial data:
+
+1. **customer_accounts** - Contains PII (email, SSN, phone)
+   - **Intentional Violations**: Missing encryption, no compliance tags
+   
+2. **transactions** - Time-sensitive financial transactions
+   - **Intentional Violations**: Missing freshness SLA, NULL status values
+   
+3. **fraud_alerts** - Critical fraud detection data
+   - **Intentional Violations**: Missing quality thresholds, NULL risk scores
+
+### What Gets Validated?
+
+When you register `customer_accounts`, the platform checks:
+
+✓ **Sensitive Data Policies**
+- Are PII fields encrypted?
+- Is retention period specified?
+- Are compliance tags present?
+
+✓ **Data Quality Policies**
+- Is completeness threshold adequate?
+- Is freshness SLA specified?
+- Are uniqueness fields identified?
+
+✓ **Schema Governance Policies**
+- Are all fields documented?
+- Are required fields consistent?
+- Is ownership specified?
+
+### The Validation Report
+
+You'll see output like:
+
+```json
+{
+  "status": "failed",
+  "passed": 8,
+  "warnings": 3,
+  "failures": 2,
+  "violations": [
+    {
+      "type": "critical",
+      "policy": "SD001: pii_encryption_required",
+      "message": "PII fields require encryption...",
+      "remediation": "Set encryption_required: true..."
+    }
+  ]
+}
+```
+
+Each violation includes:
+- **Type**: Critical, Warning, or Info
+- **Policy**: Which policy was violated
+- **Message**: What's wrong
+- **Remediation**: How to fix it
+
+## Key Concepts
+
+### Federated Governance (UN Peacekeeping Model)
+
+- **Shared Policies**: Central governance team defines policies
+- **Distributed Enforcement**: Policies enforced at data source
+- **Local Autonomy**: Teams own their data but follow standards
+- **Prevention at Borders**: Catch violations early, not in production
+
+### Policy-as-Code
+
+All policies are defined in YAML files:
+- Version controlled
+- Testable
+- Auditable
+- Easy to update
+
+### Dual Contracts
+
+Each dataset gets two formats:
+- **YAML**: Human-readable for documentation
+- **JSON**: Machine-readable for automation
+
+Both are version-controlled in Git!
+
+## Common Use Cases
+
+### As a Data Owner
+
+```bash
+# 1. Import your table schema
+curl -X POST http://localhost:8000/api/v1/datasets/import-schema \
+  -H "Content-Type: application/json" \
+  -d '{"source_type": "postgres", "table_name": "your_table"}'
+
+# 2. Review the suggested classification and PII detection
+
+# 3. Register your dataset (fix any violations first!)
+curl -X POST http://localhost:8000/api/v1/datasets/ \
+  -H "Content-Type: application/json" \
+  -d @your_dataset.json
+```
+
+### As a Data Consumer
+
+```bash
+# 1. Browse available datasets
+curl http://localhost:8000/api/v1/datasets/
+
+# 2. View a specific dataset
+curl http://localhost:8000/api/v1/datasets/1
+
+# 3. Request subscription (Phase 2)
+# Coming soon: subscription workflow with SLA negotiation
+```
+
+### As a Data Steward
+
+```bash
+# 1. Review all datasets
+curl http://localhost:8000/api/v1/datasets/
+
+# 2. Check validation status
+# Look for datasets in "draft" status
+
+# 3. Review contracts in Git
+cd backend/contracts
+git log --all --graph --oneline
+```
+
+## Architecture Overview
+
+```
+User Request
+    ↓
+FastAPI Endpoint
+    ↓
+Service Layer ← Policy Engine (validates)
+    ↓           ↓
+Database    Git Repo (contracts)
+    ↓
+PostgreSQL Connector → Source Database
+```
+
+## Ready for More?
+
+- **Full Documentation**: See `README.md` for complete details
+- **API Docs**: http://localhost:8000/api/docs
+- **Policy Files**: Explore `backend/policies/*.yaml`
+- **Demo Data**: Check `demo/*.sql` files
+
+---
+
+**Questions or Issues?**
+
+Check the Troubleshooting section in README.md or review the test output for specific error messages.
+
+Happy Data Governing! 🎉

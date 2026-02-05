@@ -1,0 +1,102 @@
+name: data_quality_policies
+version: 1.0.0
+description: Policies for data quality, completeness, accuracy, and freshness
+
+policies:
+  - id: DQ001
+    name: critical_data_completeness
+    severity: critical
+    description: Confidential/restricted data requires high completeness thresholds
+    rule: |
+      IF governance.classification IN ['confidential', 'restricted']
+      THEN quality_rules.completeness_threshold >= 95
+    remediation: |
+      Increase completeness threshold to at least 95%
+      Example:
+        quality_rules:
+          completeness_threshold: 99
+
+  - id: DQ002
+    name: freshness_sla_required
+    severity: warning
+    description: Temporal datasets should specify freshness SLA
+    rule: |
+      IF schema contains timestamp/datetime/date fields
+      THEN quality_rules.freshness_sla should be specified
+    remediation: |
+      Define freshness requirement
+      Example:
+        quality_rules:
+          freshness_sla: "24h"
+
+  - id: DQ003
+    name: uniqueness_specification
+    severity: warning
+    description: Key fields should have uniqueness constraints
+    rule: |
+      IF schema contains primary key or unique identifier fields
+      THEN quality_rules.uniqueness_fields should be specified
+    remediation: |
+      Specify fields that must be unique
+      Example:
+        quality_rules:
+          uniqueness_fields:
+            - account_id
+            - customer_email
+
+  - id: DQ004
+    name: accuracy_threshold_alignment
+    severity: warning
+    description: Accuracy thresholds should align with data classification
+    rule: |
+      IF governance.classification = 'restricted'
+      THEN quality_rules.accuracy_threshold >= 99
+      ELIF governance.classification = 'confidential'
+      THEN quality_rules.accuracy_threshold >= 95
+    remediation: |
+      Set accuracy threshold appropriate for classification
+      Example:
+        quality_rules:
+          accuracy_threshold: 99
+
+  - id: DQ005
+    name: completeness_threshold_defined
+    severity: warning
+    description: All datasets should specify completeness thresholds
+    rule: |
+      quality_rules.completeness_threshold should be defined
+    remediation: |
+      Define completeness threshold
+      Example:
+        quality_rules:
+          completeness_threshold: 95
+
+quality_tiers:
+  gold:
+    description: Mission-critical data with highest quality requirements
+    completeness_threshold: 99
+    accuracy_threshold: 99
+    freshness_sla: "1h"
+    uniqueness_required: true
+  
+  silver:
+    description: Important business data with standard quality requirements
+    completeness_threshold: 95
+    accuracy_threshold: 95
+    freshness_sla: "24h"
+    uniqueness_required: false
+  
+  bronze:
+    description: Raw or exploratory data with basic quality requirements
+    completeness_threshold: 90
+    accuracy_threshold: 90
+    freshness_sla: "weekly"
+    uniqueness_required: false
+
+freshness_sla_options:
+  - "real-time"
+  - "1h"
+  - "6h"
+  - "24h"
+  - "weekly"
+  - "monthly"
