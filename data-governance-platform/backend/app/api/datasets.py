@@ -73,10 +73,11 @@ def create_dataset(dataset: DatasetCreate, db: Session = Depends(get_db)):
     return db_dataset
 
 
-@router.get("/", response_model=List[DatasetResponse])
+@router.get("/")
 def list_datasets(
     status: Optional[DatasetStatus] = None,
     classification: Optional[str] = None,
+    owner_email: Optional[str] = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     db: Session = Depends(get_db)
@@ -85,26 +86,119 @@ def list_datasets(
     List all datasets with optional filtering.
     """
     query = db.query(Dataset).filter(Dataset.is_active == True)
-    
+
     if status:
         query = query.filter(Dataset.status == status.value)
-    
+
     if classification:
         query = query.filter(Dataset.classification == classification)
-    
+
+    if owner_email:
+        query = query.filter(Dataset.owner_email == owner_email)
+
     datasets = query.offset(skip).limit(limit).all()
-    return datasets
+
+    # Enrich with computed fields
+    result = []
+    for dataset in datasets:
+        dataset_dict = {
+            'id': dataset.id,
+            'name': dataset.name,
+            'description': dataset.description,
+            'owner_name': dataset.owner_name,
+            'owner_email': dataset.owner_email,
+            'source_type': dataset.source_type,
+            'source_system': dataset.source_type,
+            'physical_location': dataset.physical_location,
+            'schema_definition': dataset.schema_definition,
+            'schema': dataset.schema_definition,
+            'classification': dataset.classification,
+            'contains_pii': dataset.contains_pii,
+            'compliance_tags': dataset.compliance_tags,
+            'status': dataset.status,
+            'is_active': dataset.is_active,
+            'created_at': dataset.created_at,
+            'updated_at': dataset.updated_at,
+            'published_at': dataset.published_at,
+            'subscriber_count': len([s for s in dataset.subscriptions if s.status == 'approved']),
+        }
+
+        # Add contract info if available
+        if dataset.contracts:
+            latest_contract = sorted(dataset.contracts, key=lambda c: c.created_at, reverse=True)[0]
+            dataset_dict['contract'] = {
+                'id': latest_contract.id,
+                'version': latest_contract.version,
+                'validation_result': latest_contract.validation_results if latest_contract.validation_results else {
+                    'status': latest_contract.validation_status,
+                    'passed': 0,
+                    'failures': 0,
+                    'warnings': 0,
+                    'violations': []
+                }
+            }
+
+        result.append(dataset_dict)
+
+    return result
 
 
-@router.get("/{dataset_id}", response_model=DatasetResponse)
+@router.get("/{dataset_id}")
 def get_dataset(dataset_id: int, db: Session = Depends(get_db)):
     """
-    Get a specific dataset by ID.
+    Get a specific dataset by ID with enriched information.
     """
     dataset = db.query(Dataset).filter(Dataset.id == dataset_id, Dataset.is_active == True).first()
     if not dataset:
         raise HTTPException(status_code=404, detail="Dataset not found")
-    return dataset
+
+    # Build enriched response
+    dataset_dict = {
+        'id': dataset.id,
+        'name': dataset.name,
+        'description': dataset.description,
+        'owner_name': dataset.owner_name,
+        'owner_email': dataset.owner_email,
+        'source_type': dataset.source_type,
+        'source_system': dataset.source_type,
+        'physical_location': dataset.physical_location,
+        'schema_definition': dataset.schema_definition,
+        'schema': dataset.schema_definition,
+        'classification': dataset.classification,
+        'contains_pii': dataset.contains_pii,
+        'compliance_tags': dataset.compliance_tags,
+        'status': dataset.status,
+        'is_active': dataset.is_active,
+        'created_at': dataset.created_at,
+        'updated_at': dataset.updated_at,
+        'published_at': dataset.published_at,
+        'subscriber_count': len([s for s in dataset.subscriptions if s.status == 'approved']),
+        'subscriptions': [
+            {
+                'id': s.id,
+                'consumer_name': s.consumer_name,
+                'status': s.status,
+                'created_at': s.created_at
+            } for s in dataset.subscriptions
+        ]
+    }
+
+    # Add contract info if available
+    if dataset.contracts:
+        latest_contract = sorted(dataset.contracts, key=lambda c: c.created_at, reverse=True)[0]
+        dataset_dict['contract'] = {
+            'id': latest_contract.id,
+            'version': latest_contract.version,
+            'validation_result': latest_contract.validation_results if latest_contract.validation_results else {
+                'status': latest_contract.validation_status,
+                'passed': 0,
+                'failures': 0,
+                'warnings': 0,
+                'violations': []
+            }
+        }
+
+    return dataset_dict
 
 
 @router.put("/{dataset_id}", response_model=DatasetResponse)

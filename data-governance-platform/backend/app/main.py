@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import init_db
-from app.api import datasets, git
+from app.api import datasets, git, subscriptions
 
 # Create FastAPI application
 app = FastAPI(
@@ -34,6 +34,7 @@ def startup_event():
 # Include routers
 app.include_router(datasets.router, prefix=settings.API_V1_PREFIX)
 app.include_router(git.router, prefix=settings.API_V1_PREFIX)
+app.include_router(subscriptions.router)
 
 
 @app.get("/")
