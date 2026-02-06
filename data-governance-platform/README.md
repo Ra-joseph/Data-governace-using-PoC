@@ -1,9 +1,10 @@
 # Data Governance Platform
 
-A comprehensive Policy-as-Code data governance platform implementing federated governance using the UN Peacekeeping model. This platform enables automated schema import, data contract management, policy validation, and subscription workflows.
+A comprehensive Policy-as-Code data governance platform implementing federated governance using the UN Peacekeeping model. This platform features a **multi-role frontend** with dedicated UIs for Data Owners, Data Consumers, Data Stewards, and Platform Admins, enabling complete end-to-end data governance workflows.
 
 ## 🎯 Key Features
 
+### Core Platform
 - **Federated Governance**: UN Peacekeeping model - shared policies with distributed enforcement
 - **Policy-as-Code**: YAML-defined policies with automated validation
 - **Automated Schema Import**: Import from PostgreSQL, files, and Azure (extensible)
@@ -12,12 +13,21 @@ A comprehensive Policy-as-Code data governance platform implementing federated g
 - **Prevention at Borders**: Catch violations before publication, not after cascade
 - **Actionable Remediation**: Every violation includes "how to fix it" guidance
 
+### Multi-Role Frontend (NEW!)
+- **Data Owner UI**: Dataset registration wizard, violation dashboard, subscriber tracking
+- **Data Consumer UI**: Catalog browser, subscription requests with SLA negotiation
+- **Data Steward UI**: Approval queue, contract review, access credential management
+- **Platform Admin UI**: Compliance metrics, violation trends, analytics dashboards
+- **End-to-End Workflows**: Complete subscription lifecycle with automatic contract versioning
+
 ## 📋 Table of Contents
 
 - [Architecture](#architecture)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Multi-Role Frontend](#multi-role-frontend)
+- [End-to-End Workflows](#end-to-end-workflows)
 - [API Documentation](#api-documentation)
 - [Demo Scenario](#demo-scenario)
 - [Policy Definitions](#policy-definitions)
@@ -27,49 +37,71 @@ A comprehensive Policy-as-Code data governance platform implementing federated g
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Data Governance Platform                  │
-├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │   Dataset    │  │   Contract   │  │ Subscription │      │
-│  │   Registry   │◄─┤  Management  │◄─┤   Workflow   │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
-│         │                  │                                 │
-│         │                  │                                 │
-│  ┌──────▼──────────────────▼───────────────────────────┐    │
-│  │            Policy Engine (YAML Policies)            │    │
-│  ├─────────────────────────────────────────────────────┤    │
-│  │ • Sensitive Data Policies                           │    │
-│  │ • Data Quality Policies                             │    │
-│  │ • Schema Governance Policies                        │    │
-│  └─────────────────────────────────────────────────────┘    │
-│                                                               │
-│  ┌───────────────────────────────────────────────────┐      │
-│  │              Git Repository (Contracts)            │      │
-│  │  • Version Control  • Audit Trail  • Diff/Compare │      │
-│  └───────────────────────────────────────────────────┘      │
-│                                                               │
-├─────────────────────────────────────────────────────────────┤
-│                      Data Sources                             │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│  │PostgreSQL│  │  Files   │  │Azure Blob│  │ Azure DL │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                         Frontend Layer                            │
+├──────────────┬──────────────┬──────────────┬────────────────────┤
+│  Data Owner  │ Data Consumer│ Data Steward │  Platform Admin     │
+│      UI      │      UI      │      UI      │       UI            │
+│  • Register  │  • Browse    │  • Approve   │  • Metrics          │
+│  • Manage    │  • Subscribe │  • Review    │  • Trends           │
+│  • Violations│  • Request   │  • Credentials│ • Analytics        │
+└──────────────┴──────────────┴──────────────┴────────────────────┘
+                                 ▲
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     Data Governance Platform API                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │   Dataset    │  │   Contract   │  │ Subscription │          │
+│  │   Registry   │◄─┤  Management  │◄─┤   Workflow   │          │
+│  └──────────────┘  └──────────────┘  └──────────────┘          │
+│         │                  │                  │                  │
+│         │                  │                  │                  │
+│  ┌──────▼──────────────────▼──────────────────▼─────────────┐   │
+│  │            Policy Engine (YAML Policies)                  │   │
+│  ├───────────────────────────────────────────────────────────┤   │
+│  │ • Sensitive Data Policies (SD001-SD005)                   │   │
+│  │ • Data Quality Policies (DQ001-DQ005)                     │   │
+│  │ • Schema Governance Policies (SG001-SG007)                │   │
+│  └───────────────────────────────────────────────────────────┘   │
+│                                                                   │
+│  ┌───────────────────────────────────────────────────┐          │
+│  │              Git Repository (Contracts)            │          │
+│  │  • Version Control  • Audit Trail  • Diff/Compare │          │
+│  └───────────────────────────────────────────────────┘          │
+│                                                                   │
+├─────────────────────────────────────────────────────────────────┤
+│                      Data Sources                                 │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │
+│  │PostgreSQL│  │  Files   │  │Azure Blob│  │ Azure DL │        │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘        │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Core Components
 
+**Backend:**
 1. **Dataset Registry**: Catalog of all data assets with metadata
 2. **Contract Management**: Version-controlled data contracts (YAML + JSON)
-3. **Policy Engine**: Validates contracts against governance policies
+3. **Policy Engine**: Validates contracts against 17 governance policies
 4. **PostgreSQL Connector**: Imports schemas with PII detection
 5. **Git Service**: Version control and audit trail for contracts
-6. **Subscription Workflow**: Consumer access requests with SLA negotiation (Phase 2)
+6. **Subscription API**: Complete workflow with approval and access management
+
+**Frontend (React + Vite):**
+1. **Role-Based UIs**: Dedicated interfaces for each user role
+2. **Dataset Registration Wizard**: Multi-step form with schema import
+3. **Catalog Browser**: Search, filter, and subscribe to datasets
+4. **Approval Queue**: Review and approve subscription requests
+5. **Compliance Dashboard**: Real-time metrics and violation analytics
 
 ## 📦 Prerequisites
 
 - **Python**: 3.10 or higher
+- **Node.js**: 18 or higher (for frontend)
+- **npm**: 9 or higher (comes with Node.js)
 - **Docker**: For PostgreSQL demo database
 - **Git**: For contract version control
 
@@ -114,7 +146,16 @@ docker ps
 # You should see: governance_postgres container running on port 5432
 ```
 
-### Step 4: Start Backend API (1 minute)
+### Step 4: Setup Frontend (2 minutes)
+
+```bash
+# Install frontend dependencies
+cd frontend
+npm install
+cd ..
+```
+
+### Step 5: Start Backend API (1 minute)
 
 ```bash
 # Option 1: Using the start script
@@ -128,7 +169,17 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 The API will be available at: http://localhost:8000
 
-### Step 5: Verify Installation (1 minute)
+### Step 6: Start Frontend (1 minute)
+
+```bash
+# In a new terminal
+cd frontend
+npm run dev
+```
+
+The frontend will be available at: http://localhost:5173
+
+### Step 7: Verify Installation (1 minute)
 
 ```bash
 # In a new terminal, run the test suite
@@ -143,6 +194,40 @@ You should see:
 - ✓ List Datasets
 
 ## 🎬 Quick Start
+
+### Option 1: Using the Frontend (Recommended)
+
+1. **Access the application** at http://localhost:5173/select-role
+
+2. **Select "Data Owner"** to register a dataset
+   - Click on the Data Owner card
+   - Navigate to "Register Dataset"
+   - Click "Import from PostgreSQL" in Step 2
+   - Select `customer_accounts` table
+   - Complete the wizard and submit
+   - View the validation results
+
+3. **Select "Data Consumer"** to browse and subscribe
+   - Return to http://localhost:5173/select-role
+   - Click on the Data Consumer card
+   - Browse the catalog
+   - Click "Request Access" on a dataset
+   - Fill in business justification and SLA requirements
+   - Submit subscription request
+
+4. **Select "Data Steward"** to approve requests
+   - Return to http://localhost:5173/select-role
+   - Click on the Data Steward card
+   - View the pending subscription in the approval queue
+   - Click "Review"
+   - Approve with credentials or reject with notes
+
+5. **Select "Platform Admin"** to view metrics
+   - Return to http://localhost:5173/select-role
+   - Click on the Platform Admin card
+   - View compliance dashboard with charts and metrics
+
+### Option 2: Using the API
 
 ### Import Schema from PostgreSQL
 
@@ -226,6 +311,225 @@ governance:
     - CCPA
 ```
 
+## 🎨 Multi-Role Frontend
+
+The platform features a complete React-based frontend with dedicated UIs for each role in the data governance workflow.
+
+### Accessing the Frontend
+
+1. Start both backend and frontend (see Installation)
+2. Navigate to http://localhost:5173/select-role
+3. Select your role to access the corresponding UI
+
+### Role-Based User Interfaces
+
+#### 🗂️ Data Owner UI
+
+**Dashboard** (`/owner/dashboard`)
+- View all owned datasets with status and violations
+- Track subscriber counts and activity
+- Get actionable remediation for policy violations
+- Quick access to register new datasets
+
+**Dataset Registration Wizard** (`/owner/register`)
+- **Step 1 - Basic Info**: Name, description, owner details
+- **Step 2 - Schema**: Manual entry or PostgreSQL import
+- **Step 3 - Governance**: Classification, retention, compliance tags
+- **Step 4 - Review**: Final review before submission
+- **Auto-validation**: Immediate policy check on submission
+- **PII Detection**: Automatic detection of sensitive fields
+
+**Features:**
+- Real-time violation alerts with remediation guidance
+- PostgreSQL schema import with automatic PII detection
+- Multi-step wizard with validation at each step
+- Dataset status tracking (draft, published, deprecated)
+
+#### 🛒 Data Consumer UI
+
+**Catalog Browser** (`/consumer/catalog`)
+- Browse all published datasets
+- Search by name or description
+- Filter by classification level
+- View dataset details and schema
+- See compliance status and tags
+
+**Subscription Request Form**
+- Business justification field
+- Use case specification
+- SLA requirements:
+  - Max latency (ms)
+  - Min availability (%)
+  - Max staleness (minutes)
+- Field-level access selection
+- Access duration configuration
+
+**Features:**
+- Grid view with dataset cards
+- Real-time search and filtering
+- Detailed schema preview
+- Compliance badge display
+
+#### ⚖️ Data Steward UI
+
+**Approval Queue** (`/steward/approvals`)
+- View pending, approved, and rejected subscriptions
+- Filter by status
+- Detailed request information
+- Use case and justification review
+
+**Review Modal**
+- Approve or reject with notes
+- Select approved fields (subset of requested)
+- Generate access credentials:
+  - Username
+  - API key
+  - Connection string (optional)
+- Add reviewer comments
+
+**Features:**
+- Automatic contract versioning on approval
+- Access credential generation
+- Comprehensive request details
+- Subscription history tracking
+
+#### 📊 Platform Admin UI
+
+**Compliance Dashboard** (`/admin/dashboard`)
+
+**Key Metrics:**
+- Compliance rate with trend
+- Total active violations
+- Active subscriptions
+- Pending approvals
+
+**Analytics Charts:**
+- **Violation Trends**: Line chart showing violations over time
+- **Violations by Severity**: Pie chart (critical, warning, info)
+- **Top Violated Policies**: Bar chart of most common violations
+- **Compliance by Classification**: Stacked bar chart by data class
+
+**Recent Activity:**
+- Latest policy violations
+- New subscription requests
+- Dataset registrations
+
+**Features:**
+- Real-time metrics
+- Interactive Recharts visualizations
+- Drill-down capabilities
+- Export-ready data
+
+## 🔄 End-to-End Workflows
+
+### Workflow 1: Dataset Registration
+
+```
+Data Owner Actions:
+1. Navigate to /owner/register
+2. Enter dataset information (3-step wizard)
+3. Import schema from PostgreSQL or enter manually
+4. Set governance rules and compliance tags
+5. Review and submit
+
+System Actions:
+1. Create dataset in registry
+2. Generate data contract (v1.0.0)
+3. Validate against 17 policies
+4. Commit contract to Git
+5. Return validation report with violations
+
+Data Owner Result:
+- Dataset published (if compliant) or draft (if violations)
+- View violations with remediation on dashboard
+- Track dataset in owner dashboard
+```
+
+### Workflow 2: Data Subscription
+
+```
+Data Consumer Actions:
+1. Browse catalog (/consumer/catalog)
+2. Select dataset
+3. Click "Request Access"
+4. Fill subscription form:
+   - Business justification
+   - Use case
+   - SLA requirements
+   - Select needed fields
+5. Submit request
+
+System Actions:
+1. Create subscription record (status: pending)
+2. Notify data steward (future: email/webhook)
+3. Queue request in approval system
+
+Data Steward Actions:
+1. View request in /steward/approvals
+2. Review business justification and use case
+3. Verify SLA feasibility
+4. Approve or reject with notes
+5. Generate access credentials (if approved)
+
+System Actions (on approval):
+1. Update subscription status to "approved"
+2. Store access credentials
+3. Create new contract version (v1.1.0)
+4. Add subscription SLA to contract
+5. Commit new contract to Git
+6. Grant access to consumer
+
+Data Consumer Result:
+- Receive access credentials
+- Can access approved fields
+- SLA enforced by platform
+```
+
+### Workflow 3: Violation Remediation
+
+```
+Data Owner Actions:
+1. View violation alert on /owner/dashboard
+2. Click violation to see details
+3. Read remediation guidance
+4. Fix issue in source or update metadata
+5. Re-submit or update dataset
+
+System Actions:
+1. Re-validate contract
+2. Update validation status
+3. Commit new contract version if changed
+4. Clear violation if resolved
+
+Data Owner Result:
+- Dataset moves from draft to published
+- Violation removed from dashboard
+- Compliance metrics updated
+```
+
+### Workflow 4: Compliance Monitoring
+
+```
+Platform Admin Actions:
+1. View /admin/dashboard daily
+2. Review compliance rate trend
+3. Identify top violated policies
+4. Drill into specific violations
+5. Report to stakeholders
+
+System Actions:
+1. Aggregate metrics across all datasets
+2. Calculate trends over time
+3. Generate violation analytics
+4. Update charts in real-time
+
+Platform Admin Result:
+- Understand platform health
+- Identify systemic issues
+- Track improvement over time
+- Data-driven governance decisions
+```
+
 ## 📚 API Documentation
 
 ### Interactive Documentation
@@ -246,6 +550,21 @@ Visit http://localhost:8000/api/docs for Swagger UI with interactive API testing
 
 - `POST /api/v1/datasets/import-schema` - Import schema from sources
 - `GET /api/v1/datasets/postgres/tables` - List PostgreSQL tables
+
+#### Subscriptions (NEW!)
+
+- `POST /api/v1/subscriptions/` - Create subscription request
+- `GET /api/v1/subscriptions/` - List subscriptions (with filters: status, dataset_id, consumer_email)
+- `GET /api/v1/subscriptions/{id}` - Get subscription details
+- `POST /api/v1/subscriptions/{id}/approve` - Approve or reject subscription
+- `PUT /api/v1/subscriptions/{id}` - Update subscription
+- `DELETE /api/v1/subscriptions/{id}` - Cancel subscription
+
+#### Git
+
+- `GET /api/v1/git/commits` - List contract commits
+- `GET /api/v1/git/commits/{hash}` - Get commit details
+- `GET /api/v1/git/diff/{old}..{new}` - Compare contract versions
 
 #### System
 
@@ -333,6 +652,43 @@ When registering `customer_accounts`, you'll see:
 | SG005 | enum_value_specification | Warning | Enum fields should list valid values |
 | SG006 | breaking_schema_changes | Critical | Breaking changes require major version bump |
 
+## ✨ Feature Highlights
+
+### Dataset Registration Wizard
+- **Multi-step form** with progress indicator
+- **PostgreSQL import** - automatically detect schema and PII
+- **Manual entry** - define schema field by field
+- **Real-time validation** - see policy violations before submission
+- **Governance setup** - classification, retention, compliance tags
+
+### Subscription Workflow
+- **Self-service catalog** - browse and discover datasets
+- **SLA negotiation** - define latency, availability, staleness requirements
+- **Field-level access** - request only the fields you need
+- **Business justification** - explain why you need the data
+- **Approval tracking** - see status of your requests
+
+### Compliance Dashboard
+- **Real-time metrics** - compliance rate, violations, subscriptions
+- **Trend analysis** - track improvements over time
+- **Policy insights** - identify most violated policies
+- **Classification breakdown** - compliance by data sensitivity
+- **Interactive charts** - powered by Recharts
+
+### Violation Management
+- **Actionable alerts** - see what's wrong and how to fix it
+- **Remediation guidance** - step-by-step instructions with examples
+- **Policy references** - link to full policy documentation
+- **Severity levels** - critical, warning, info
+- **Field-specific** - know exactly which fields are problematic
+
+### Contract Versioning
+- **Semantic versioning** - MAJOR.MINOR.PATCH
+- **Git integration** - full history with commit messages
+- **Automatic updates** - new version on subscription approval
+- **Diff comparison** - see what changed between versions
+- **Audit trail** - who made changes and when
+
 ## 🔧 Troubleshooting
 
 ### PostgreSQL Won't Start
@@ -382,30 +738,119 @@ curl http://localhost:8000/health  # Should return {"status": "healthy"}
 python test_setup.py
 ```
 
+### Frontend Won't Start
+
+```bash
+# Check Node.js version (must be 18+)
+node --version
+
+# Check npm version
+npm --version
+
+# Clear node_modules and reinstall
+cd frontend
+rm -rf node_modules package-lock.json
+npm install
+
+# Check for port conflicts
+lsof -i :5173
+```
+
+### Frontend Can't Connect to Backend
+
+```bash
+# Verify backend is running
+curl http://localhost:8000/health
+
+# Check CORS configuration in backend/app/main.py
+# Should include http://localhost:5173
+
+# Check browser console for errors
+# Open DevTools (F12) → Console tab
+```
+
+### Subscription Approval Fails
+
+```bash
+# Check backend logs for errors
+# Look for contract versioning errors
+
+# Verify Git is initialized
+ls -la backend/contracts/.git
+
+# Check database for subscription record
+# Should have status "pending" before approval
+```
+
+### Charts Not Displaying
+
+```bash
+# Verify Recharts is installed
+cd frontend
+npm list recharts
+
+# If missing, install it
+npm install recharts
+
+# Clear browser cache
+# Hard reload: Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac)
+```
+
 ## 🚀 Next Steps
 
-### Phase 2: Frontend (React)
+### ✅ Completed Features
 
-- Data Owner UI: Dataset registration wizard
-- Data Consumer UI: Catalog browser with subscription form
-- Data Steward UI: Approval queue and contract review
-- Platform Dashboard: Compliance metrics and violation trends
+- ✅ Data Owner UI with dataset registration wizard
+- ✅ Data Consumer UI with catalog browser and subscription form
+- ✅ Data Steward UI with approval queue and contract review
+- ✅ Platform Admin Dashboard with compliance metrics and trends
+- ✅ Complete subscription workflow with SLA negotiation
+- ✅ Automatic contract versioning on subscription approval
+- ✅ Real-time violation tracking and remediation guidance
+- ✅ PostgreSQL schema import with PII detection
+- ✅ 17 governance policies with actionable validation
 
-### Phase 3: Enhancements
+### 🔜 Recommended Enhancements
 
-- **Additional Connectors**: Azure Data Lake, Azure Blob Storage, CSV/Parquet files
-- **Advanced Features**: Pre-commit hooks, CI/CD integration, real-time monitoring
-- **Compliance**: Automated data lineage, advanced reporting
-- **Subscriptions**: Full workflow with SLA negotiation and access provisioning
+#### Security & Authentication
+1. **OAuth2/JWT Authentication**: Replace demo auth with proper authentication
+2. **Role-Based Access Control (RBAC)**: Enforce permissions at API level
+3. **Audit Logging**: Track all user actions for compliance
+4. **Secret Management**: Integrate Azure Key Vault or HashiCorp Vault
+5. **Data Encryption**: Encrypt PII fields at rest and in transit
 
-### Immediate Enhancements
+#### Additional Data Sources
+1. **Azure Data Lake Gen2**: Import schemas from ADLS
+2. **Azure Blob Storage**: Support for CSV/Parquet files
+3. **Snowflake Connector**: Schema import from Snowflake
+4. **AWS S3**: Support for S3-based data lakes
+5. **API Schemas**: Import from OpenAPI/Swagger definitions
 
-1. Add authentication and authorization
-2. Implement contract approval workflow
-3. Add subscription management endpoints
-4. Create React frontend
-5. Add data lineage tracking
-6. Implement notification system
+#### Advanced Features
+1. **Data Lineage Tracking**: Visualize data flow and transformations
+2. **Real-Time Monitoring**: Alert on policy violations and SLA breaches
+3. **Pre-Commit Hooks**: Prevent non-compliant contracts from being committed
+4. **CI/CD Integration**: Validate contracts in deployment pipelines
+5. **Notification System**: Email/Slack alerts for approvals and violations
+6. **Advanced Analytics**: ML-powered PII detection, anomaly detection
+7. **Contract Testing**: Automated tests for contract compatibility
+8. **Data Quality Scoring**: Automated quality metrics calculation
+
+#### User Experience
+1. **Dataset Preview**: Show sample data in catalog
+2. **Contract Diff Viewer**: Visual contract comparison
+3. **Policy Editor**: UI for creating/editing policies
+4. **Custom Dashboards**: User-configurable analytics views
+5. **Export Reports**: PDF/Excel export for compliance reports
+6. **Mobile App**: Mobile interface for approvals and monitoring
+
+#### Enterprise Features
+1. **Multi-Tenancy**: Support for multiple organizations
+2. **SSO Integration**: Azure AD, Okta, etc.
+3. **Advanced RBAC**: Fine-grained permissions
+4. **Compliance Reports**: Automated SOC2, GDPR, HIPAA reports
+5. **SLA Monitoring**: Real-time SLA compliance tracking
+6. **Cost Tracking**: Monitor data access costs by consumer
 
 ## 📝 File Structure
 
@@ -413,16 +858,48 @@ python test_setup.py
 data-governance-platform/
 ├── backend/
 │   ├── app/
-│   │   ├── models/          # SQLAlchemy models
-│   │   ├── schemas/         # Pydantic schemas
+│   │   ├── models/          # SQLAlchemy models (Dataset, Contract, Subscription, User)
+│   │   ├── schemas/         # Pydantic schemas for validation
 │   │   ├── api/             # FastAPI endpoints
+│   │   │   ├── datasets.py  # Dataset CRUD and schema import
+│   │   │   ├── subscriptions.py  # Subscription workflow (NEW!)
+│   │   │   └── git.py       # Git operations
 │   │   ├── services/        # Business logic
+│   │   │   ├── contract_service.py  # Contract generation & versioning
+│   │   │   ├── policy_engine.py     # Policy validation
+│   │   │   ├── postgres_connector.py # Schema import
+│   │   │   └── git_service.py       # Git integration
 │   │   ├── config.py        # Configuration
 │   │   ├── database.py      # Database setup
 │   │   └── main.py          # FastAPI app
-│   ├── policies/            # YAML policy files
+│   ├── policies/            # YAML policy files (17 policies)
 │   ├── contracts/           # Git repository for contracts
 │   └── requirements.txt     # Python dependencies
+├── frontend/               # React frontend (NEW!)
+│   ├── src/
+│   │   ├── components/
+│   │   │   └── Layout.jsx   # App layout with navigation
+│   │   ├── contexts/
+│   │   │   └── AuthContext.jsx  # Role-based auth
+│   │   ├── pages/
+│   │   │   ├── DataOwner/
+│   │   │   │   ├── DatasetRegistrationWizard.jsx  # Multi-step registration
+│   │   │   │   └── OwnerDashboard.jsx             # Owner dashboard
+│   │   │   ├── DataConsumer/
+│   │   │   │   └── DataCatalogBrowser.jsx         # Catalog & subscriptions
+│   │   │   ├── DataSteward/
+│   │   │   │   └── ApprovalQueue.jsx              # Approval workflow
+│   │   │   ├── Admin/
+│   │   │   │   └── ComplianceDashboard.jsx        # Metrics & analytics
+│   │   │   └── RoleSelector.jsx                   # Role selection
+│   │   ├── services/
+│   │   │   └── api.js       # API client with axios
+│   │   ├── stores/
+│   │   │   └── index.js     # Zustand state management
+│   │   ├── App.jsx          # Router configuration
+│   │   └── main.jsx         # React entry point
+│   ├── package.json         # NPM dependencies
+│   └── vite.config.js       # Vite configuration
 ├── demo/
 │   ├── setup_postgres.sql   # Database schema
 │   └── sample_data.sql      # Sample data with violations
@@ -458,6 +935,10 @@ This is a demonstration project for educational purposes.
 4. **Developer-Friendly**: Clear error messages with actionable remediation
 5. **Git Integration**: Full audit trail and diff capabilities
 6. **Dual Contracts**: Human-readable for understanding, machine-readable for automation
+7. **Role-Based UIs**: Dedicated interfaces for owners, consumers, stewards, and admins
+8. **End-to-End Workflows**: Complete subscription lifecycle with automatic contract versioning
+9. **Real-Time Analytics**: Live compliance metrics and violation trends
+10. **Self-Service**: Empowers data consumers to discover and request access independently
 
 ---
 

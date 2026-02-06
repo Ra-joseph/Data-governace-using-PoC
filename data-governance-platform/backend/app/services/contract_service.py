@@ -14,11 +14,12 @@ from app.schemas.contract import ValidationResult
 
 class ContractService:
     """Service for managing data contracts."""
-    
-    def __init__(self):
+
+    def __init__(self, db: Session = None):
         """Initialize contract service."""
         self.policy_engine = PolicyEngine()
         self.git_service = GitService()
+        self.db = db
     
     def create_contract_from_dataset(self, db: Session, dataset_id: int, 
                                     version: str = "1.0.0") -> Contract:
@@ -265,3 +266,84 @@ class ContractService:
                 })
         
         return diff[:20]  # Limit to first 20 differences
+
+    def add_subscription_to_contract(self, contract_id: int, subscription_id: int,
+                                    subscription_data: Dict[str, Any]) -> Contract:
+        """
+        Add subscription details to contract and create new version.
+
+        Args:
+            contract_id: Contract ID
+            subscription_id: Subscription ID
+            subscription_data: Subscription details (consumer, SLA, fields)
+
+        Returns:
+            New Contract version with subscription
+        """
+        if not self.db:
+            raise ValueError("Database session required")
+
+        # Get existing contract
+        old_contract = self.db.query(Contract).filter(Contract.id == contract_id).first()
+        if not old_contract:
+            raise ValueError(f"Contract with ID {contract_id} not found")
+
+        # Get dataset
+        dataset = self.db.query(Dataset).filter(Dataset.id == old_contract.dataset_id).first()
+
+        # Load existing contract data
+        contract_data = old_contract.machine_readable.copy()
+
+        # Add subscription information
+        if 'subscriptions' not in contract_data:
+            contract_data['subscriptions'] = []
+
+        contract_data['subscriptions'].append({
+            'subscription_id': subscription_id,
+            'consumer': subscription_data.get('consumer'),
+            'sla_requirements': subscription_data.get('sla_requirements', {}),
+            'approved_fields': subscription_data.get('approved_fields', []),
+            'approved_at': datetime.now().isoformat()
+        })
+
+        # Increment version (minor bump: 1.0.0 -> 1.1.0)
+        old_version_parts = old_contract.version.split('.')
+        new_version = f"{old_version_parts[0]}.{int(old_version_parts[1]) + 1}.{old_version_parts[2]}"
+        contract_data['dataset']['version'] = new_version
+
+        # Regenerate YAML
+        human_readable = self._generate_yaml(contract_data, dataset.name, new_version)
+
+        # Validate enriched contract
+        validation_result = self.policy_engine.validate_contract(contract_data)
+
+        # Commit to Git
+        git_info = self.git_service.commit_contract(
+            human_readable,
+            dataset.name,
+            new_version,
+            f"Add subscription for {subscription_data.get('consumer')} to {dataset.name} v{new_version}"
+        )
+
+        # Create new contract version
+        new_contract = Contract(
+            dataset_id=old_contract.dataset_id,
+            version=new_version,
+            human_readable=human_readable,
+            machine_readable=contract_data,
+            schema_hash=old_contract.schema_hash,
+            governance_rules=contract_data['governance'],
+            quality_rules=contract_data.get('quality_rules'),
+            sla_requirements=subscription_data.get('sla_requirements'),
+            validation_status=validation_result.status.value,
+            validation_results=validation_result.dict(),
+            last_validated_at=datetime.now(),
+            git_commit_hash=git_info['commit_hash'],
+            git_file_path=git_info['file_path']
+        )
+
+        self.db.add(new_contract)
+        self.db.commit()
+        self.db.refresh(new_contract)
+
+        return new_contract
