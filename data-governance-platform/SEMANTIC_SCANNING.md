@@ -1,6 +1,24 @@
 # Semantic Policy Scanning with Local LLM
 
-## Overview
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Features](#features)
+- [Setup Guide](#setup-guide)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Performance Considerations](#performance-considerations)
+- [Best Practices](#best-practices)
+- [Troubleshooting](#troubleshooting)
+- [Comparison: Rule-Based vs Semantic](#comparison-rule-based-vs-semantic)
+- [Advanced: Using Remote LLMs](#advanced-using-remote-llms)
+- [FAQs](#faqs)
+- [Examples](#examples)
+- [Conclusion](#conclusion)
+- [Quick Start Checklist](#quick-start-checklist)
+
+## 🎯 Overview
 
 The Data Governance Platform now supports **semantic policy scanning** powered by local LLM models via [Ollama](https://ollama.ai/). This feature enables advanced policy validation that goes beyond rule-based pattern matching to understand the **semantic meaning and context** of your data.
 
@@ -43,7 +61,7 @@ Semantic scanning uses AI to analyze these nuanced scenarios that require unders
                   mistral:7b          codellama:7b
 ```
 
-## Features
+## ✨ Features
 
 ### 8 Semantic Policies
 
@@ -79,7 +97,7 @@ Semantic scanning uses AI to analyze these nuanced scenarios that require unders
    - Evaluates if approved use cases fit the data classification
    - Example: Flags when "marketing" use case conflicts with "restricted" classification
 
-## Setup Guide
+## 🚀 Setup Guide
 
 ### Prerequisites
 
@@ -136,7 +154,7 @@ Expected response:
 }
 ```
 
-## Usage
+## 📚 Usage
 
 ### API Endpoints
 
@@ -225,7 +243,7 @@ print(f"Total warnings: {result.warnings}")
 print(f"Total failures: {result.failures}")
 ```
 
-## Configuration
+## 🔧 Configuration
 
 Edit `/backend/policies/semantic_policies.yaml` to configure:
 
@@ -270,7 +288,7 @@ semantic_config:
 - **GPU**: Optional (CPU works fine for 7B models)
 - **Disk**: 4-7GB per model
 
-## Best Practices
+## ✅ Best Practices
 
 ### When to Use Semantic Scanning
 
@@ -309,7 +327,7 @@ result = engine.validate_contract(
 engine.llm_client.clear_cache()
 ```
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Ollama Not Running
 
@@ -421,7 +439,7 @@ A: No, it complements them. Use both for comprehensive validation.
 **Q: What about data privacy?**
 A: With local Ollama, your data never leaves your infrastructure. This is a key advantage over cloud LLMs.
 
-## Examples
+## 📚 Examples
 
 ### Example 1: Detecting Context-Sensitive PII
 
@@ -471,7 +489,7 @@ Remediation:
   - Implement MFA instead
 ```
 
-## Conclusion
+## 🎯 Conclusion
 
 Semantic scanning brings AI-powered intelligence to data governance, catching issues that rule-based systems miss. With local LLM execution via Ollama, you get:
 
@@ -482,9 +500,7 @@ Semantic scanning brings AI-powered intelligence to data governance, catching is
 
 Start with `mistral:7b`, enable caching, and run semantic validation on critical datasets to experience the power of AI-assisted data governance!
 
----
-
-## Quick Start Checklist
+## ✅ Quick Start Checklist
 
 - [ ] Install Ollama: `curl -fsSL https://ollama.ai/install.sh | sh`
 - [ ] Start Ollama: `ollama serve`

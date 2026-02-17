@@ -1,3 +1,13 @@
+"""
+Contract service for data contract lifecycle management.
+
+This module provides the ContractService class which handles the complete
+lifecycle of data contracts including creation, validation, versioning,
+Git-based version control, and approval workflows. It integrates with the
+PolicyEngine for rule-based validation and optionally with SemanticPolicyEngine
+for LLM-powered semantic validation.
+"""
+
 import json
 import yaml
 import hashlib
@@ -17,14 +27,35 @@ logger = logging.getLogger(__name__)
 
 
 class ContractService:
-    """Service for managing data contracts."""
+    """
+    Service for managing data contract lifecycle.
+
+    Handles creation of data contracts from datasets, validation against
+    governance policies, semantic versioning, Git-based version control,
+    and contract approval workflows. Integrates both rule-based and
+    optional semantic (LLM-based) policy validation.
+
+    Attributes:
+        policy_engine: PolicyEngine for rule-based validation.
+        semantic_engine: SemanticPolicyEngine for LLM-based validation.
+        git_service: GitService for version control operations.
+        db: Database session for persistence.
+        enable_semantic: Whether semantic validation is enabled.
+
+    Example:
+        >>> service = ContractService(db, enable_semantic=True)
+        >>> contract = service.create_contract_from_dataset(db, dataset_id=1)
+        >>> result = service.validate_contract(contract.machine_readable)
+    """
 
     def __init__(self, db: Session = None, enable_semantic: bool = False):
-        """Initialize contract service.
+        """
+        Initialize contract service.
 
         Args:
-            db: Database session
-            enable_semantic: Whether to enable semantic validation with LLM
+            db: Optional database session for contract persistence.
+            enable_semantic: Enable semantic validation with local LLM via Ollama.
+                           Defaults to False for faster validation.
         """
         self.policy_engine = PolicyEngine()
         self.semantic_engine = SemanticPolicyEngine(enabled=enable_semantic)

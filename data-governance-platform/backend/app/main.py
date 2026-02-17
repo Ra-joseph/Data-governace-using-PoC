@@ -1,3 +1,11 @@
+"""
+Data Governance Platform API application.
+
+This is the main FastAPI application module that initializes the
+Data Governance Platform API, configures CORS middleware, registers
+API routers, and provides health check endpoints.
+"""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
@@ -25,7 +33,12 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup_event():
-    """Initialize database on startup."""
+    """
+    Initialize database on startup.
+
+    Creates all database tables if they don't exist and performs
+    any necessary initialization for the application.
+    """
     print("Initializing database...")
     init_db()
     print("Database initialized successfully!")
@@ -40,7 +53,12 @@ app.include_router(semantic.router, prefix=settings.API_V1_PREFIX)
 
 @app.get("/")
 def root():
-    """Root endpoint."""
+    """
+    Root endpoint.
+
+    Returns:
+        dict: API information including name, version, and docs URL.
+    """
     return {
         "message": "Data Governance Platform API",
         "version": settings.APP_VERSION,
@@ -50,7 +68,12 @@ def root():
 
 @app.get("/health")
 def health_check():
-    """Health check endpoint."""
+    """
+    Health check endpoint.
+
+    Returns:
+        dict: Health status, service name, and version information.
+    """
     return {
         "status": "healthy",
         "service": settings.APP_NAME,

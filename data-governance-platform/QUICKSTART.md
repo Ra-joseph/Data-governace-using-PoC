@@ -1,6 +1,22 @@
-# Quick Start Guide (5 Minutes)
+# Quick Start Guide
 
 Get the Data Governance Platform running in 5 easy steps.
+
+## Table of Contents
+
+- [Prerequisites Check](#prerequisites-check)
+- [Step 1: Setup](#step-1-setup)
+- [Step 2: Start PostgreSQL](#step-2-start-postgresql)
+- [Step 3: Start Backend](#step-3-start-backend)
+- [Step 4: Test](#step-4-test)
+- [Step 5: Explore](#step-5-explore)
+- [What's Next](#whats-next)
+- [Troubleshooting](#troubleshooting)
+- [Understanding the Demo](#understanding-the-demo)
+- [Key Concepts](#key-concepts)
+- [Common Use Cases](#common-use-cases)
+- [Architecture Overview](#architecture-overview)
+- [Ready for More](#ready-for-more)
 
 ## Prerequisites Check
 
@@ -9,7 +25,7 @@ Before starting, make sure you have:
 - [ ] Docker installed and running (`docker --version`)
 - [ ] Git installed (`git --version`)
 
-## Step 1: Setup (2 minutes)
+## Step 1: Setup
 
 ```bash
 # Create and activate virtual environment
@@ -22,7 +38,7 @@ pip install -r requirements.txt
 cd ..
 ```
 
-## Step 2: Start PostgreSQL (1 minute)
+## Step 2: Start PostgreSQL
 
 ```bash
 # Start the demo database
@@ -34,7 +50,7 @@ docker ps | grep governance_postgres
 
 You should see the container running on port 5432.
 
-## Step 3: Start Backend (1 minute)
+## Step 3: Start Backend
 
 ```bash
 # Make start script executable
@@ -48,7 +64,7 @@ The API will start at http://localhost:8000
 
 Keep this terminal open - you'll see API logs here.
 
-## Step 4: Test (1 minute)
+## Step 4: Test
 
 Open a **new terminal** and run:
 
@@ -306,4 +322,4 @@ PostgreSQL Connector → Source Database
 
 Check the Troubleshooting section in README.md or review the test output for specific error messages.
 
-Happy Data Governing! 🎉
+Happy Data Governing!

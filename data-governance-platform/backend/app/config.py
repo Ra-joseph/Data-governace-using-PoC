@@ -1,9 +1,46 @@
+"""
+Application configuration settings.
+
+This module defines all configuration settings for the Data Governance Platform
+using Pydantic BaseSettings. Settings can be overridden via environment variables
+or a .env file. Includes database connections, API settings, Git configuration,
+and external service credentials.
+"""
+
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Application configuration settings."""
+    """
+    Application configuration settings.
+
+    Configuration class for the Data Governance Platform. All settings can be
+    overridden via environment variables or a .env file. Settings are validated
+    using Pydantic and loaded at application startup.
+
+    Attributes:
+        APP_NAME: Application name displayed in API docs.
+        APP_VERSION: Current version following semantic versioning.
+        DEBUG: Enable debug mode for development.
+        API_V1_PREFIX: API version prefix for all endpoints.
+        SQLALCHEMY_DATABASE_URL: SQLite database URL for metadata storage.
+        POSTGRES_HOST: PostgreSQL host for demo database.
+        POSTGRES_PORT: PostgreSQL port number.
+        POSTGRES_DB: PostgreSQL database name.
+        POSTGRES_USER: PostgreSQL username.
+        POSTGRES_PASSWORD: PostgreSQL password.
+        GIT_CONTRACTS_REPO_PATH: Path to Git repository for contracts.
+        GIT_USER_NAME: Git commit author name.
+        GIT_USER_EMAIL: Git commit author email.
+        POLICIES_PATH: Path to YAML policy definitions.
+        CORS_ORIGINS: List of allowed CORS origins.
+
+    Example:
+        >>> settings = Settings()
+        >>> print(settings.postgres_connection_string)
+        postgresql://user:pass@localhost:5432/db
+    """
     
     # Application Settings
     APP_NAME: str = "Data Governance Platform"
@@ -48,7 +85,16 @@ class Settings(BaseSettings):
     
     @property
     def postgres_connection_string(self) -> str:
-        """Generate PostgreSQL connection string."""
+        """
+        Generate PostgreSQL connection string.
+
+        Constructs a PostgreSQL connection string from individual configuration
+        values for use with SQLAlchemy or psycopg2.
+
+        Returns:
+            str: PostgreSQL connection string in the format
+                 postgresql://user:password@host:port/database
+        """
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
 

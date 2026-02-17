@@ -1,3 +1,12 @@
+"""
+Policy engine for governance policy validation.
+
+This module provides the PolicyEngine class which validates data contracts
+against YAML-defined governance policies. Includes three policy categories:
+Sensitive Data (SD), Data Quality (DQ), and Schema Governance (SG) policies.
+Validation results include detailed violation messages with remediation guidance.
+"""
+
 import yaml
 from typing import Dict, List, Any
 from pathlib import Path
@@ -6,15 +15,47 @@ from app.config import settings
 
 
 class PolicyEngine:
-    """Engine for validating contracts against governance policies."""
-    
+    """
+    Engine for validating contracts against governance policies.
+
+    Loads YAML policy definitions and validates data contracts against
+    17 governance policies across three categories:
+    - Sensitive Data (SD001-SD005): PII, encryption, retention, compliance
+    - Data Quality (DQ001-DQ003): Completeness, freshness, uniqueness
+    - Schema Governance (SG001-SG004): Documentation, ownership, constraints
+
+    Attributes:
+        policies_path: Path to directory containing YAML policy files.
+        policies: Dictionary of loaded policy definitions.
+
+    Example:
+        >>> engine = PolicyEngine()
+        >>> result = engine.validate_contract(contract_data)
+        >>> print(f"Status: {result.status}, Failures: {result.failures}")
+    """
+
     def __init__(self, policies_path: str = None):
-        """Initialize PolicyEngine with policy files."""
+        """
+        Initialize PolicyEngine with policy files.
+
+        Args:
+            policies_path: Optional custom path to policies directory.
+                          Defaults to settings.POLICIES_PATH.
+        """
         self.policies_path = Path(policies_path or settings.POLICIES_PATH)
         self.policies = self._load_policies()
     
     def _load_policies(self) -> Dict[str, Any]:
-        """Load all policy files from the policies directory."""
+        """
+        Load all policy files from the policies directory.
+
+        Reads YAML policy definition files and constructs a dictionary
+        of policy configurations indexed by policy category name.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping policy names to their
+                           definitions loaded from YAML files.
+        """
         policies = {}
         
         policy_files = [
@@ -81,7 +122,19 @@ class PolicyEngine:
         )
     
     def _validate_sensitive_data(self, schema: List[Dict], governance: Dict) -> List[Violation]:
-        """Validate sensitive data policies (SD001-SD005)."""
+        """
+        Validate sensitive data policies (SD001-SD005).
+
+        Checks PII encryption requirements, retention policies, compliance tags,
+        restricted data use cases, and cross-border data transfer requirements.
+
+        Args:
+            schema: List of field definitions with PII flags and types.
+            governance: Governance metadata with classification and policies.
+
+        Returns:
+            List[Violation]: List of policy violations found.
+        """
         violations = []
         
         # Check if schema contains PII
@@ -132,7 +185,21 @@ class PolicyEngine:
         return violations
     
     def _validate_data_quality(self, schema: List[Dict], governance: Dict, quality_rules: Dict) -> List[Violation]:
-        """Validate data quality policies (DQ001-DQ005)."""
+        """
+        Validate data quality policies (DQ001-DQ003).
+
+        Checks completeness thresholds for critical data, freshness SLA
+        requirements for temporal datasets, and uniqueness specifications
+        for key fields.
+
+        Args:
+            schema: List of field definitions with types and constraints.
+            governance: Governance metadata with classification level.
+            quality_rules: Quality thresholds and SLA requirements.
+
+        Returns:
+            List[Violation]: List of policy violations found.
+        """
         violations = []
         
         classification = governance.get('classification', 'internal')
@@ -178,7 +245,19 @@ class PolicyEngine:
         return violations
     
     def _validate_schema_governance(self, dataset: Dict, schema: List[Dict]) -> List[Violation]:
-        """Validate schema governance policies (SG001-SG007)."""
+        """
+        Validate schema governance policies (SG001-SG004).
+
+        Checks field documentation, required field consistency, dataset
+        ownership requirements, and string field constraints.
+
+        Args:
+            dataset: Dataset metadata with owner information.
+            schema: List of field definitions with documentation.
+
+        Returns:
+            List[Violation]: List of policy violations found.
+        """
         violations = []
         
         # SG001: Field documentation
@@ -236,7 +315,15 @@ class PolicyEngine:
         return violations
     
     def _get_all_policy_ids(self) -> List[str]:
-        """Get list of all policy IDs for counting."""
+        """
+        Get list of all policy IDs for counting.
+
+        Extracts policy IDs from all loaded policy definitions to
+        calculate total policy count for validation results.
+
+        Returns:
+            List[str]: List of all policy IDs (e.g., ["SD001", "SD002", ...]).
+        """
         policy_ids = []
         for policy_doc in self.policies.values():
             for policy in policy_doc.get('policies', []):

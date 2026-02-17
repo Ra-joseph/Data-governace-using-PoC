@@ -2,6 +2,21 @@
 
 A modern, production-ready React frontend for the Data Governance Platform with distinctive design and comprehensive Git integration.
 
+## Table of Contents
+
+- [Design Philosophy](#design-philosophy)
+- [Quick Start](#quick-start)
+- [Project Structure](#project-structure)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [State Management](#state-management)
+- [API Integration](#api-integration)
+- [Styling System](#styling-system)
+- [Development](#development)
+- [Building for Production](#building-for-production)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+
 ## 🎨 Design Philosophy
 
 This frontend implements a **refined, professional aesthetic** with data visualization focus:
@@ -92,7 +107,7 @@ frontend/
    - Responsive design (desktop, tablet, mobile)
    - System status indicator
 
-### 🔜 Coming Soon (Phase 2)
+#### 🔜 Coming Soon (Phase 2)
 
 - Schema Import Wizard
 - Policy Manager

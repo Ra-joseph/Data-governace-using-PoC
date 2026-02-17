@@ -1,5 +1,10 @@
 """
 API endpoints for semantic policy scanning using LLM.
+
+This module provides REST API endpoints for semantic validation of data contracts
+using large language models (LLMs) via Ollama. It enables checking semantic policies
+that require contextual understanding beyond rule-based validation, such as naming
+conventions, documentation quality, and business logic consistency.
 """
 
 from typing import List, Optional
@@ -37,7 +42,20 @@ def check_semantic_health():
     """
     Check if semantic scanning is available and properly configured.
 
-    Returns information about Ollama status, available models, and loaded policies.
+    Verifies that Ollama is running, required models are available, and semantic
+    policies are loaded. Provides diagnostic information for troubleshooting.
+
+    Returns:
+        Health status including:
+            - available: Overall availability boolean
+            - ollama_running: Whether Ollama service is running
+            - available_models: List of pulled models
+            - current_model: Configured model name
+            - policies_loaded: Number of semantic policies loaded
+            - message: Human-readable status message
+
+    Example:
+        GET /semantic/health
     """
     try:
         # Initialize semantic engine
@@ -98,7 +116,19 @@ def list_semantic_policies():
     """
     List all available semantic policies.
 
-    Returns the semantic policies that can be run, with their descriptions.
+    Returns metadata about all semantic policies that can be run against
+    contracts, including their IDs, names, severity levels, and descriptions.
+
+    Returns:
+        Dictionary containing:
+            - total: Number of semantic policies
+            - policies: List of policy objects (id, name, severity, description)
+
+    Raises:
+        HTTPException 500: If policies cannot be loaded.
+
+    Example:
+        GET /semantic/policies
     """
     try:
         semantic_engine = SemanticPolicyEngine(enabled=False)  # Don't need Ollama to list policies
@@ -127,10 +157,32 @@ def validate_with_semantic(
     db: Session = Depends(get_db)
 ):
     """
-    Run semantic validation on an existing contract.
+    Run semantic validation on an existing contract using LLM.
 
-    This endpoint runs only semantic policies (not rule-based policies)
-    on a contract and returns the results.
+    Performs semantic policy validation using large language models to check
+    for issues that require contextual understanding. This runs only semantic
+    policies (not rule-based policies) and returns detailed validation results.
+
+    Args:
+        request: Validation request containing:
+            - contract_id: ID of contract to validate
+            - selected_policies: Optional list of policy IDs to run
+        db: Database session (injected dependency).
+
+    Returns:
+        ValidationResult with status, violation counts, and detailed violations.
+
+    Raises:
+        HTTPException 404: If contract not found.
+        HTTPException 503: If Ollama is not available or model not loaded.
+        HTTPException 500: If validation fails.
+
+    Example:
+        POST /semantic/validate
+        {
+          "contract_id": 1,
+          "selected_policies": ["SEM001", "SEM002"]
+        }
     """
     # Get contract
     contract = db.query(Contract).filter(Contract.id == request.contract_id).first()
@@ -169,7 +221,22 @@ def list_available_models():
     """
     List available LLM models in Ollama.
 
-    Returns the models that can be used for semantic scanning.
+    Queries Ollama to get all downloaded models that can be used for semantic
+    scanning, along with recommended models for optimal performance.
+
+    Returns:
+        Dictionary containing:
+            - total: Number of available models
+            - current_model: Currently configured model
+            - models: List of available model names
+            - recommended_models: List of recommended model names
+
+    Raises:
+        HTTPException 503: If Ollama is not running.
+        HTTPException 500: If query fails.
+
+    Example:
+        GET /semantic/models
     """
     try:
         ollama_client = get_ollama_client()
@@ -203,10 +270,31 @@ def list_available_models():
 @router.post("/models/pull/{model_name}")
 def pull_model(model_name: str):
     """
-    Trigger a model pull in Ollama.
+    Trigger a model download in Ollama.
 
-    Note: This endpoint initiates the pull but returns immediately.
-    The actual download happens in the background in Ollama.
+    Initiates downloading a model from Ollama's registry. The endpoint returns
+    immediately while the download continues in the background. Large models
+    may take several minutes to download.
+
+    Args:
+        model_name: Name of the model to pull (e.g., "mistral:7b", "llama2:7b").
+
+    Returns:
+        Dictionary containing:
+            - message: Status message
+            - model: Model name being pulled
+            - note: Additional information about background download
+
+    Raises:
+        HTTPException 503: If Ollama is not running.
+        HTTPException 500: If pull request fails.
+
+    Example:
+        POST /semantic/models/pull/mistral:7b
+
+    Note:
+        The download happens asynchronously. Use GET /semantic/models to check
+        when the model is available.
     """
     import requests
 

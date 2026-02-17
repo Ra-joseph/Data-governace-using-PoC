@@ -1,3 +1,12 @@
+"""
+PostgreSQL connector for schema discovery and import.
+
+This module provides the PostgresConnector class which connects to PostgreSQL
+databases to discover table schemas, extract metadata, detect PII fields, and
+import complete schema definitions for data governance purposes. It supports
+automated schema discovery with intelligent type mapping and PII detection.
+"""
+
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from typing import Dict, List, Any, Optional, Tuple
@@ -6,7 +15,30 @@ from app.config import settings
 
 
 class PostgresConnector:
-    """Connector for importing schemas from PostgreSQL databases."""
+    """
+    Connector for importing schemas from PostgreSQL databases.
+
+    This service connects to PostgreSQL databases and extracts comprehensive
+    schema information including column definitions, data types, constraints,
+    foreign keys, indexes, and table statistics. It automatically detects
+    potential PII fields and suggests appropriate data classification levels.
+
+    Attributes:
+        host: PostgreSQL server hostname
+        port: PostgreSQL server port
+        database: Database name to connect to
+        user: Username for authentication
+        password: Password for authentication
+        connection: Active psycopg2 connection (or None)
+        PII_KEYWORDS: List of keywords that indicate PII fields
+        TYPE_MAPPING: Dictionary mapping PostgreSQL types to generic types
+
+    Example:
+        >>> connector = PostgresConnector()
+        >>> if connector.test_connection():
+        ...     schema = connector.import_table_schema("customers")
+        ...     print(f"Imported {len(schema['schema_definition'])} fields")
+    """
     
     # PII detection keywords
     PII_KEYWORDS = [
@@ -49,7 +81,19 @@ class PostgresConnector:
     
     def __init__(self, host: str = None, port: int = None, database: str = None,
                  user: str = None, password: str = None):
-        """Initialize PostgreSQL connector."""
+        """
+        Initialize PostgreSQL connector with connection parameters.
+
+        All parameters are optional and will default to values from application
+        settings if not provided.
+
+        Args:
+            host: PostgreSQL server hostname. Defaults to settings.POSTGRES_HOST.
+            port: PostgreSQL server port. Defaults to settings.POSTGRES_PORT.
+            database: Database name. Defaults to settings.POSTGRES_DB.
+            user: Username for authentication. Defaults to settings.POSTGRES_USER.
+            password: Password for authentication. Defaults to settings.POSTGRES_PASSWORD.
+        """
         self.host = host or settings.POSTGRES_HOST
         self.port = port or settings.POSTGRES_PORT
         self.database = database or settings.POSTGRES_DB
@@ -58,7 +102,19 @@ class PostgresConnector:
         self.connection = None
     
     def connect(self):
-        """Establish database connection."""
+        """
+        Establish connection to PostgreSQL database.
+
+        Creates a new connection if one doesn't exist or if the existing
+        connection is closed. Reuses existing open connections.
+
+        Returns:
+            psycopg2 connection object.
+
+        Raises:
+            psycopg2.Error: If connection fails due to invalid credentials,
+                           network issues, or database unavailability.
+        """
         if not self.connection or self.connection.closed:
             self.connection = psycopg2.connect(
                 host=self.host,
@@ -70,12 +126,32 @@ class PostgresConnector:
         return self.connection
     
     def disconnect(self):
-        """Close database connection."""
+        """
+        Close the database connection.
+
+        Safely closes the connection if one exists and is open. Does nothing
+        if connection is already closed or doesn't exist.
+        """
         if self.connection and not self.connection.closed:
             self.connection.close()
     
     def test_connection(self) -> bool:
-        """Test database connectivity."""
+        """
+        Test database connectivity.
+
+        Attempts to connect and execute a simple query to verify the database
+        is reachable and credentials are valid.
+
+        Returns:
+            True if connection successful, False otherwise.
+
+        Example:
+            >>> connector = PostgresConnector()
+            >>> if connector.test_connection():
+            ...     print("Database is accessible")
+            ... else:
+            ...     print("Cannot connect to database")
+        """
         try:
             conn = self.connect()
             cursor = conn.cursor()
@@ -90,13 +166,27 @@ class PostgresConnector:
     
     def list_tables(self, schema: str = 'public') -> List[Dict[str, Any]]:
         """
-        List all tables in the specified schema.
-        
+        List all tables in the specified database schema.
+
+        Queries the information_schema to retrieve all tables and views in
+        the specified schema.
+
         Args:
-            schema: Database schema name
-            
+            schema: Database schema name to query. Defaults to 'public'.
+
         Returns:
-            List of table information
+            List of dictionaries, each containing:
+                - table_name: Name of the table
+                - schema_name: Schema containing the table
+                - table_type: Type (BASE TABLE, VIEW, etc.)
+
+        Raises:
+            Exception: If query fails or connection cannot be established.
+
+        Example:
+            >>> tables = connector.list_tables('public')
+            >>> for table in tables:
+            ...     print(f"{table['table_name']} ({table['table_type']})")
         """
         try:
             conn = self.connect()
@@ -126,13 +216,33 @@ class PostgresConnector:
     def import_table_schema(self, table_name: str, schema: str = 'public') -> Dict[str, Any]:
         """
         Import complete schema definition from a PostgreSQL table.
-        
+
+        Performs comprehensive schema extraction including columns, data types,
+        constraints, relationships, indexes, and statistics. Automatically detects
+        PII fields and suggests appropriate data classification.
+
         Args:
-            table_name: Name of the table
-            schema: Database schema name
-            
+            table_name: Name of the table to import.
+            schema: Database schema name. Defaults to 'public'.
+
         Returns:
-            Dictionary containing schema definition and metadata
+            Dictionary containing:
+                - table_name: Name of the table
+                - schema_name: Database schema
+                - description: Table description (from comment or generated)
+                - schema_definition: List of FieldSchema objects
+                - metadata: Dict with PII detection, classification suggestion,
+                           keys, indexes, and statistics
+
+        Raises:
+            Exception: If table doesn't exist, connection fails, or query errors.
+
+        Example:
+            >>> result = connector.import_table_schema("customers", "public")
+            >>> print(f"Table: {result['table_name']}")
+            >>> print(f"Fields: {len(result['schema_definition'])}")
+            >>> print(f"Contains PII: {result['metadata']['contains_pii']}")
+            >>> print(f"Suggested classification: {result['metadata']['suggested_classification']}")
         """
         try:
             conn = self.connect()
@@ -210,7 +320,17 @@ class PostgresConnector:
             self.disconnect()
     
     def _get_columns(self, conn, table_name: str, schema: str) -> List[Dict]:
-        """Get column information from information_schema."""
+        """
+        Get column information from information_schema.
+
+        Args:
+            conn: Active psycopg2 connection.
+            table_name: Name of the table.
+            schema: Database schema name.
+
+        Returns:
+            List of column dictionaries with type, nullability, and metadata.
+        """
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
         query = """
@@ -238,7 +358,17 @@ class PostgresConnector:
         return [dict(row) for row in columns]
     
     def _get_primary_keys(self, conn, table_name: str, schema: str) -> List[str]:
-        """Get primary key columns."""
+        """
+        Get primary key columns for a table.
+
+        Args:
+            conn: Active psycopg2 connection.
+            table_name: Name of the table.
+            schema: Database schema name.
+
+        Returns:
+            List of column names that form the primary key.
+        """
         cursor = conn.cursor()
         
         query = """
@@ -255,7 +385,17 @@ class PostgresConnector:
         return pks
     
     def _get_foreign_keys(self, conn, table_name: str, schema: str) -> Dict[str, str]:
-        """Get foreign key relationships."""
+        """
+        Get foreign key relationships for a table.
+
+        Args:
+            conn: Active psycopg2 connection.
+            table_name: Name of the table.
+            schema: Database schema name.
+
+        Returns:
+            Dictionary mapping column names to referenced table.column strings.
+        """
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         
         query = """
@@ -285,7 +425,17 @@ class PostgresConnector:
         }
     
     def _get_indexes(self, conn, table_name: str, schema: str) -> List[str]:
-        """Get table indexes."""
+        """
+        Get all indexes for a table.
+
+        Args:
+            conn: Active psycopg2 connection.
+            table_name: Name of the table.
+            schema: Database schema name.
+
+        Returns:
+            List of index names.
+        """
         cursor = conn.cursor()
         
         query = """
@@ -301,7 +451,17 @@ class PostgresConnector:
         return indexes
     
     def _get_table_comment(self, conn, table_name: str, schema: str) -> Optional[str]:
-        """Get table comment/description."""
+        """
+        Get table comment/description from PostgreSQL metadata.
+
+        Args:
+            conn: Active psycopg2 connection.
+            table_name: Name of the table.
+            schema: Database schema name.
+
+        Returns:
+            Table comment string, or None if not set.
+        """
         cursor = conn.cursor()
         
         query = """
@@ -316,14 +476,24 @@ class PostgresConnector:
     
     def get_table_statistics(self, table_name: str, schema: str = 'public') -> Dict[str, Any]:
         """
-        Get table statistics including row count and size.
-        
+        Get table statistics including row count and disk size.
+
+        Queries PostgreSQL system catalogs to get accurate row counts and
+        disk space usage including indexes and TOAST storage.
+
         Args:
-            table_name: Name of the table
-            schema: Database schema name
-            
+            table_name: Name of the table.
+            schema: Database schema name. Defaults to 'public'.
+
         Returns:
-            Dictionary with statistics
+            Dictionary containing:
+                - row_count: Number of rows in the table
+                - total_size: Human-readable total size (e.g., "45 MB")
+                - error: Error message if statistics couldn't be retrieved
+
+        Example:
+            >>> stats = connector.get_table_statistics("customers")
+            >>> print(f"Rows: {stats['row_count']}, Size: {stats['total_size']}")
         """
         try:
             conn = self.connect()
@@ -355,11 +525,33 @@ class PostgresConnector:
             }
     
     def _is_pii_field(self, field_name: str) -> bool:
-        """Detect if field name suggests PII data."""
+        """
+        Detect if field name suggests personally identifiable information (PII).
+
+        Uses keyword matching against common PII field names like email, ssn,
+        phone, address, etc.
+
+        Args:
+            field_name: Column name to check.
+
+        Returns:
+            True if field name contains PII keywords, False otherwise.
+        """
         field_lower = field_name.lower()
         return any(keyword in field_lower for keyword in self.PII_KEYWORDS)
     
     def _map_type(self, pg_type: str) -> str:
-        """Map PostgreSQL type to generic type."""
+        """
+        Map PostgreSQL data type to generic platform type.
+
+        Converts database-specific types to standardized types used in
+        data contracts (string, integer, float, boolean, date, timestamp, json).
+
+        Args:
+            pg_type: PostgreSQL type name (e.g., 'varchar', 'int4', 'timestamp').
+
+        Returns:
+            Generic type string. Defaults to 'string' for unknown types.
+        """
         pg_type_lower = pg_type.lower()
         return self.TYPE_MAPPING.get(pg_type_lower, 'string')

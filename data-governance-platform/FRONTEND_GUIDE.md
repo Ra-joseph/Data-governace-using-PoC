@@ -1,6 +1,29 @@
 # Frontend + Git Integration - Complete Guide
 
-## 🎉 What's New
+## Table of Contents
+
+- [What's New](#whats-new)
+- [Complete Package](#complete-package)
+- [Quick Start](#quick-start)
+- [Design Highlights](#design-highlights)
+- [Git Integration Features](#git-integration-features)
+- [Data Visualization](#data-visualization)
+- [API Integration](#api-integration)
+- [Animation System](#animation-system)
+- [Responsive Design](#responsive-design)
+- [Testing Your Setup](#testing-your-setup)
+- [What You Can Do Now](#what-you-can-do-now)
+- [Customization](#customization)
+- [Troubleshooting](#troubleshooting)
+- [Performance Tips](#performance-tips)
+- [Production Deployment](#production-deployment)
+- [Project Statistics](#project-statistics)
+- [Learning Path](#learning-path)
+- [Success Criteria](#success-criteria)
+- [Next Steps](#next-steps)
+- [Key Achievements](#key-achievements)
+
+## ✨ What's New
 
 You now have a **complete, production-ready React frontend** with comprehensive **Git integration** for full version control and audit trails!
 
@@ -27,9 +50,9 @@ You now have a **complete, production-ready React frontend** with comprehensive 
 - ✅ `/api/v1/git/file-history/{filename}` - File-specific history
 - ✅ `/api/v1/git/blame/{filename}` - Line-by-line authorship
 
-## 🚀 Quick Start (10 Minutes)
+## 🚀 Quick Start
 
-### Step 1: Install Frontend Dependencies (3 min)
+### Step 1: Install Frontend Dependencies
 
 ```bash
 cd frontend
@@ -45,7 +68,7 @@ source ../venv/bin/activate
 uvicorn app.main:app --reload
 ```
 
-### Step 3: Start Frontend (1 min)
+### Step 3: Start Frontend
 
 ```bash
 # In frontend directory
@@ -55,7 +78,7 @@ npm run dev
 Frontend runs on: **http://localhost:3000**
 Backend API on: **http://localhost:8000**
 
-### Step 4: Explore the Platform (5 min)
+### Step 4: Explore the Platform
 
 Open http://localhost:3000 and explore:
 
@@ -248,7 +271,7 @@ whileHover={{ scale: 1.02 }}
 - Touch-optimized
 - 14px base font
 
-## 🧪 Testing Your Setup
+## 🔧 Testing Your Setup
 
 ### 1. Backend Health Check
 
@@ -451,7 +474,7 @@ VITE_API_URL=https://your-api-domain.com
 - Compliance Dashboard
 - User Authentication
 
-## 🎓 Learning Path
+## 📚 Learning Path
 
 ### Day 1: Setup & Explore
 1. Install and run frontend
@@ -477,7 +500,7 @@ VITE_API_URL=https://your-api-domain.com
 3. Build a custom component
 4. Add new Git features
 
-## 🎉 Success Criteria
+## ✅ Success Criteria
 
 Your setup is complete when:
 
@@ -501,7 +524,7 @@ Your setup is complete when:
 5. **Extend**: Add your own features
 6. **Deploy**: Push to production when ready
 
-## 🏆 Key Achievements
+## ✨ Key Achievements
 
 ### What You Have Now
 
