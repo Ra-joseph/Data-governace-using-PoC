@@ -20,6 +20,7 @@ from app.models.contract import Contract
 from app.models.dataset import Dataset
 from app.services.policy_engine import PolicyEngine
 from app.services.semantic_policy_engine import SemanticPolicyEngine
+from app.services.policy_orchestrator import PolicyOrchestrator, ValidationStrategy
 from app.services.git_service import GitService
 from app.schemas.contract import ValidationResult, Violation, ValidationStatus
 
@@ -48,7 +49,12 @@ class ContractService:
         >>> result = service.validate_contract(contract.machine_readable)
     """
 
-    def __init__(self, db: Session = None, enable_semantic: bool = False):
+    def __init__(
+        self,
+        db: Session = None,
+        enable_semantic: bool = False,
+        validation_strategy: ValidationStrategy = ValidationStrategy.ADAPTIVE
+    ):
         """
         Initialize contract service.
 
@@ -56,12 +62,23 @@ class ContractService:
             db: Optional database session for contract persistence.
             enable_semantic: Enable semantic validation with local LLM via Ollama.
                            Defaults to False for faster validation.
+            validation_strategy: Default validation strategy for orchestrator.
+                               Defaults to ADAPTIVE (auto-selects based on risk).
         """
+        # Legacy engines (for backward compatibility)
         self.policy_engine = PolicyEngine()
         self.semantic_engine = SemanticPolicyEngine(enabled=enable_semantic)
+
+        # New orchestrator (recommended)
+        self.orchestrator = PolicyOrchestrator(
+            enable_semantic=enable_semantic,
+            default_strategy=validation_strategy
+        )
+
         self.git_service = GitService()
         self.db = db
         self.enable_semantic = enable_semantic
+        self.validation_strategy = validation_strategy
     
     def create_contract_from_dataset(self, db: Session, dataset_id: int, 
                                     version: str = "1.0.0") -> Contract:
@@ -291,44 +308,35 @@ class ContractService:
     def validate_contract_combined(
         self,
         contract_data: Dict[str, Any],
-        semantic_policies: Optional[List[str]] = None
+        strategy: Optional[ValidationStrategy] = None
     ) -> ValidationResult:
         """
-        Validate contract using both rule-based and semantic engines.
+        Validate contract using intelligent orchestration.
+
+        This method uses the PolicyOrchestrator to automatically decide
+        which validation engines to use based on contract characteristics.
 
         Args:
             contract_data: Contract data in JSON/dict format
-            semantic_policies: Optional list of semantic policy IDs to run
+            strategy: Validation strategy (FAST, BALANCED, THOROUGH, ADAPTIVE)
+                     If None, uses the default strategy from initialization
 
         Returns:
-            Combined ValidationResult from both engines
+            Orchestrated ValidationResult
         """
-        # Run rule-based validation
-        rule_result = self.policy_engine.validate_contract(contract_data)
+        logger.info(f"Starting orchestrated validation with strategy: "
+                   f"{strategy.value if strategy else 'default'}")
 
-        # If semantic validation is not enabled, return only rule-based results
-        if not self.enable_semantic or not self.semantic_engine.is_available():
-            if self.enable_semantic and not self.semantic_engine.is_available():
-                logger.warning("Semantic validation enabled but Ollama is not available")
-            return rule_result
+        # Use orchestrator for intelligent validation
+        result = self.orchestrator.validate_contract(
+            contract_data,
+            strategy=strategy
+        )
 
-        # Run semantic validation
-        try:
-            logger.info("Running semantic validation...")
-            semantic_result = self.semantic_engine.validate_contract(
-                contract_data,
-                selected_policies=semantic_policies
-            )
+        logger.info(f"Orchestrated validation complete: {result.status.value}, "
+                   f"violations={len(result.violations)}")
 
-            # Combine results
-            combined_result = self._combine_validation_results(rule_result, semantic_result)
-            logger.info(f"Combined validation complete: {combined_result.status.value}")
-            return combined_result
-
-        except Exception as e:
-            logger.error(f"Semantic validation failed: {e}", exc_info=True)
-            # Return rule-based results if semantic validation fails
-            return rule_result
+        return result
 
     def _combine_validation_results(
         self,

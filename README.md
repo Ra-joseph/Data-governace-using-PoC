@@ -10,7 +10,8 @@ A production-ready proof-of-concept demonstrating federated data governance usin
 
 ### Backend
 - **17 Governance Policies**: Sensitive data, data quality, and schema governance
-- **8 Semantic Policies (NEW!)**: LLM-powered context-aware validation with local Ollama
+- **8 Semantic Policies**: LLM-powered context-aware validation with local Ollama
+- **Intelligent Orchestration (NEW!)**: Auto-decides between rule-based & LLM validation based on risk
 - **Automated Schema Import**: PostgreSQL with PII detection
 - **Dual Contracts**: Human-readable YAML + Machine-readable JSON
 - **Git Version Control**: Full audit trail for all contracts
@@ -177,6 +178,7 @@ Use these tables to test the full workflow from registration to subscription app
 - ✅ Compliance Dashboard
 - ✅ Violation Tracking
 - ✅ **Semantic Policy Scanning (LLM-powered)**
+- ✅ **Intelligent Policy Orchestration**
 
 ## 🆕 Semantic Scanning (NEW!)
 
@@ -189,6 +191,20 @@ The platform now supports AI-powered semantic policy validation using local LLMs
 - **Security Pattern Recognition**: Detects vulnerabilities in schema design
 
 📖 **See [SEMANTIC_SCANNING.md](./data-governance-platform/SEMANTIC_SCANNING.md) for complete guide**
+
+## 🧠 Policy Orchestration (NEW!)
+
+The platform now features an **intelligent orchestration layer** that automatically decides when to use rule-based vs LLM-based validation:
+
+- **4 Validation Strategies**: FAST, BALANCED, THOROUGH, ADAPTIVE
+- **Risk Assessment**: Analyzes contracts to determine risk level (LOW → CRITICAL)
+- **Smart Routing**: Automatically chooses optimal validation based on data characteristics
+- **Performance Optimized**: Avoids expensive LLM calls when not needed (100ms vs 24s)
+- **Production Ready**: Used in all contract validation workflows
+
+**Example**: Low-risk internal data → FAST (rule-based only, 100ms). Critical PII with GDPR → THOROUGH (all policies, 24s).
+
+📖 **See [POLICY_ORCHESTRATION.md](./data-governance-platform/POLICY_ORCHESTRATION.md) for complete guide**
 
 ## 🔜 Future Enhancements
 
