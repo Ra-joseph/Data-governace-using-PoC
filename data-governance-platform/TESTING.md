@@ -1,10 +1,30 @@
 # Testing Documentation
 
-## Overview
+## Table of Contents
+
+- [Overview](#overview)
+- [Test Summary](#test-summary)
+- [Running Tests](#running-tests)
+- [Test Structure](#test-structure)
+- [Test Fixtures](#test-fixtures)
+- [Policy Engine Tests](#policy-engine-tests)
+- [API Endpoint Tests](#api-endpoint-tests)
+- [Test Markers](#test-markers)
+- [Continuous Integration](#continuous-integration)
+- [Known Issues](#known-issues)
+- [Adding New Tests](#adding-new-tests)
+- [Test Best Practices](#test-best-practices)
+- [Performance Testing](#performance-testing)
+- [Security Testing](#security-testing)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [Resources](#resources)
+
+## 🎯 Overview
 
 This document describes the comprehensive testing setup for the Data Governance Platform, including unit tests for backend services, API endpoints, and frontend components.
 
-## Test Summary
+## 📊 Test Summary
 
 ### Backend Tests
 
@@ -39,7 +59,7 @@ Frontend testing setup using Vitest with React Testing Library.
 - API service tests
 - Component tests (to be expanded)
 
-## Running Tests
+## 🚀 Running Tests
 
 ### Backend Tests
 
@@ -79,7 +99,7 @@ npm run test:ui
 npm run test:coverage
 ```
 
-## Test Structure
+## 📁 Test Structure
 
 ### Backend Test Files
 
@@ -102,7 +122,7 @@ frontend/src/test/
 └── api.test.js              # API service tests
 ```
 
-## Test Fixtures
+## 🔧 Test Fixtures
 
 The test suite includes several reusable fixtures:
 
@@ -114,7 +134,7 @@ The test suite includes several reusable fixtures:
 - `sample_contract_with_violations`: Contract data with policy violations
 - `mock_postgres_tables`: Mock PostgreSQL table information
 
-## Policy Engine Tests
+## ✅ Policy Engine Tests
 
 All 17 governance policies are tested:
 
@@ -135,7 +155,7 @@ All 17 governance policies are tested:
 - ✓ SG003: Dataset ownership required
 - ✓ SG004: String field constraints
 
-## API Endpoint Tests
+## 🔌 API Endpoint Tests
 
 ### Datasets API
 - ✓ Health check
@@ -171,7 +191,7 @@ All 17 governance policies are tested:
 - ✓ Get file blame
 - ✓ Error handling
 
-## Test Markers
+## 🏷️ Test Markers
 
 Tests are organized using pytest markers:
 
@@ -181,7 +201,7 @@ Tests are organized using pytest markers:
 - `@pytest.mark.service`: Service layer tests
 - `@pytest.mark.slow`: Tests that take longer to run
 
-## Continuous Integration
+## 🔄 Continuous Integration
 
 ### Pre-commit Checklist
 
@@ -238,7 +258,7 @@ jobs:
           npm test
 ```
 
-## Known Issues
+## ⚠️ Known Issues
 
 ### Backend Tests
 
@@ -257,7 +277,7 @@ Frontend tests are set up but need expansion:
 - [ ] Add integration tests for user workflows
 - [ ] Add E2E tests with Playwright
 
-## Adding New Tests
+## ➕ Adding New Tests
 
 ### Backend Test Template
 
@@ -292,7 +312,7 @@ describe('MyComponent', () => {
 })
 ```
 
-## Test Best Practices
+## ✅ Test Best Practices
 
 1. **Isolation**: Each test should be independent
 2. **Clarity**: Test names should clearly describe what is being tested
@@ -303,7 +323,7 @@ describe('MyComponent', () => {
 7. **Fixtures**: Use fixtures for common test data
 8. **Cleanup**: Ensure tests clean up after themselves
 
-## Performance Testing
+## 📊 Performance Testing
 
 For performance testing of the application:
 
@@ -315,7 +335,7 @@ locust -f tests/performance/locustfile.py
 pytest tests/performance/ --benchmark
 ```
 
-## Security Testing
+## 🔒 Security Testing
 
 Security considerations:
 
@@ -325,7 +345,7 @@ Security considerations:
 - [ ] Input validation testing
 - [ ] CORS policy testing
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Common Issues
 
@@ -350,7 +370,7 @@ npm test
 - Tests use in-memory SQLite, no external database needed
 - Check conftest.py for database setup
 
-## Contributing
+## 🤝 Contributing
 
 When contributing tests:
 
@@ -360,7 +380,7 @@ When contributing tests:
 4. Update this documentation
 5. Run all tests before submitting PR
 
-## Resources
+## 📚 Resources
 
 - [Pytest Documentation](https://docs.pytest.org/)
 - [FastAPI Testing](https://fastapi.tiangolo.com/tutorial/testing/)

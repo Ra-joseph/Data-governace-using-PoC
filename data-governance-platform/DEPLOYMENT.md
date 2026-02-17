@@ -1,5 +1,18 @@
 # Data Governance Platform - Deployment Instructions
 
+## Table of Contents
+
+- [What's Included](#whats-included)
+- [Quick Deployment](#quick-deployment)
+- [Verification Checklist](#verification-checklist)
+- [Security Checklist](#security-checklist)
+- [Production Deployment](#production-deployment)
+- [Monitoring & Observability](#monitoring--observability)
+- [Maintenance](#maintenance)
+- [Support & Resources](#support--resources)
+- [Learning Resources](#learning-resources)
+- [Next Steps](#next-steps)
+
 ## 📦 What's Included
 
 This complete, production-ready Data Governance Platform includes:
@@ -31,7 +44,7 @@ This complete, production-ready Data Governance Platform includes:
 
 ## 🚀 Quick Deployment
 
-### Local Development (5 Minutes)
+### Local Development
 
 ```bash
 # 1. Extract the zip file
@@ -78,7 +91,7 @@ docker-compose -f docker-compose.prod.yml up -d
 
 *(Note: docker-compose.prod.yml not included - add for production)*
 
-## 📋 Verification Checklist
+## ✅ Verification Checklist
 
 After deployment, verify:
 
@@ -89,7 +102,7 @@ After deployment, verify:
 - [ ] Contracts directory initialized with Git
 - [ ] Policy files loaded (3 YAML files)
 
-## 🔒 Security Checklist (Before Production)
+## 🔒 Security Checklist
 
 ### Critical (Must Have)
 - [ ] Implement authentication (OAuth2/JWT)
@@ -120,7 +133,7 @@ After deployment, verify:
 - [ ] Implement blue-green deployment
 - [ ] Add chaos engineering tests
 
-## 🏢 Production Deployment
+## 🚀 Production Deployment
 
 ### Prerequisites
 - **Kubernetes Cluster** or **Azure App Service**
@@ -223,29 +236,29 @@ az webapp deployment source config-zip \
 
 ## 🔄 Maintenance
 
-### Daily
+### 📅 Daily
 - Monitor error rates and response times
 - Check system health endpoints
 - Review critical alerts
 
-### Weekly
+### 📅 Weekly
 - Review policy violation trends
 - Check database performance
 - Update dependencies (security patches)
 
-### Monthly
+### 📅 Monthly
 - Capacity planning review
 - Security audit
 - Backup verification
 - Performance optimization
 
-### Quarterly
+### 📅 Quarterly
 - Major version updates
 - Security penetration testing
 - Disaster recovery drill
 - User feedback review
 
-## 📞 Support & Resources
+## 📚 Support & Resources
 
 ### Documentation
 - **Full Docs**: README.md (comprehensive guide)
@@ -259,7 +272,7 @@ az webapp deployment source config-zip \
 3. Check troubleshooting section in README
 4. Review logs: `docker logs governance_postgres`
 
-### Common Issues
+### 🔧 Common Issues
 
 **PostgreSQL won't start:**
 ```bash
@@ -283,7 +296,7 @@ docker ps  # PostgreSQL
 curl http://localhost:8000/health  # Backend
 ```
 
-## 🎓 Learning Resources
+## 📚 Learning Resources
 
 ### Included Examples
 1. **Financial Demo**: 3 tables with realistic data

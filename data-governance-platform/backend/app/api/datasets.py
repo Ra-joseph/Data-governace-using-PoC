@@ -1,3 +1,12 @@
+"""
+API endpoints for dataset management and schema discovery.
+
+This module provides REST API endpoints for managing datasets including creation,
+retrieval, updating, deletion, and schema import from external data sources.
+It integrates with the contract service for automatic contract generation and
+validation, and supports schema discovery from PostgreSQL databases.
+"""
+
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -21,6 +30,34 @@ contract_service = ContractService()
 def create_dataset(dataset: DatasetCreate, db: Session = Depends(get_db)):
     """
     Create a new dataset with automatic contract generation and validation.
+
+    Creates a dataset record with governance metadata and automatically generates
+    an initial data contract (version 1.0.0). The contract is validated against
+    governance policies, and the dataset status is set based on validation results.
+
+    Args:
+        dataset: Dataset creation request with schema, governance rules, and metadata.
+        db: Database session (injected dependency).
+
+    Returns:
+        Created dataset with contract information and validation status.
+
+    Raises:
+        HTTPException 400: If dataset name already exists.
+        HTTPException 500: If contract creation or validation fails.
+
+    Example:
+        POST /datasets/
+        {
+          "name": "customer_accounts",
+          "description": "Customer account information",
+          "owner_name": "John Doe",
+          "owner_email": "john@example.com",
+          "source_type": "postgres",
+          "physical_location": "db.public.customers",
+          "schema_definition": [...],
+          "governance": {"classification": "confidential"}
+        }
     """
     # Check if dataset with same name exists
     existing = db.query(Dataset).filter(Dataset.name == dataset.name).first()
@@ -83,7 +120,25 @@ def list_datasets(
     db: Session = Depends(get_db)
 ):
     """
-    List all datasets with optional filtering.
+    List all datasets with optional filtering and pagination.
+
+    Retrieves datasets with enriched information including contract validation
+    results and subscriber counts. Supports filtering by status, classification,
+    and owner.
+
+    Args:
+        status: Filter by dataset status (draft, published, deprecated).
+        classification: Filter by data classification level.
+        owner_email: Filter by dataset owner email.
+        skip: Number of records to skip for pagination (default: 0).
+        limit: Maximum records to return (default: 100, max: 1000).
+        db: Database session (injected dependency).
+
+    Returns:
+        List of dataset dictionaries with contract and subscription information.
+
+    Example:
+        GET /datasets/?status=published&classification=confidential&limit=50
     """
     query = db.query(Dataset).filter(Dataset.is_active == True)
 
@@ -147,6 +202,22 @@ def list_datasets(
 def get_dataset(dataset_id: int, db: Session = Depends(get_db)):
     """
     Get a specific dataset by ID with enriched information.
+
+    Retrieves complete dataset details including schema definition, governance
+    metadata, contract validation results, and subscription information.
+
+    Args:
+        dataset_id: Unique identifier of the dataset.
+        db: Database session (injected dependency).
+
+    Returns:
+        Dataset dictionary with full details, contract info, and subscriptions.
+
+    Raises:
+        HTTPException 404: If dataset not found or is inactive.
+
+    Example:
+        GET /datasets/42
     """
     dataset = db.query(Dataset).filter(Dataset.id == dataset_id, Dataset.is_active == True).first()
     if not dataset:
@@ -204,7 +275,30 @@ def get_dataset(dataset_id: int, db: Session = Depends(get_db)):
 @router.put("/{dataset_id}", response_model=DatasetResponse)
 def update_dataset(dataset_id: int, dataset_update: DatasetUpdate, db: Session = Depends(get_db)):
     """
-    Update a dataset and create a new contract version.
+    Update a dataset and create a new contract version if schema changed.
+
+    Updates dataset metadata, governance rules, or schema definition. If the
+    schema changes, automatically creates a new contract version with incremented
+    major version number to indicate breaking changes.
+
+    Args:
+        dataset_id: Unique identifier of the dataset to update.
+        dataset_update: Update request with optional fields to modify.
+        db: Database session (injected dependency).
+
+    Returns:
+        Updated dataset with new contract version if schema changed.
+
+    Raises:
+        HTTPException 404: If dataset not found or is inactive.
+        HTTPException 500: If contract update fails.
+
+    Example:
+        PUT /datasets/42
+        {
+          "description": "Updated description",
+          "schema_definition": [...]  // Triggers new contract version
+        }
     """
     db_dataset = db.query(Dataset).filter(Dataset.id == dataset_id, Dataset.is_active == True).first()
     if not db_dataset:
@@ -268,6 +362,23 @@ def update_dataset(dataset_id: int, dataset_update: DatasetUpdate, db: Session =
 def delete_dataset(dataset_id: int, db: Session = Depends(get_db)):
     """
     Soft delete a dataset (set is_active=False, status=deprecated).
+
+    Performs a soft delete by marking the dataset as inactive and deprecated
+    rather than physically removing it. This preserves audit history and
+    allows for potential recovery.
+
+    Args:
+        dataset_id: Unique identifier of the dataset to delete.
+        db: Database session (injected dependency).
+
+    Returns:
+        None (HTTP 204 No Content).
+
+    Raises:
+        HTTPException 404: If dataset not found or already inactive.
+
+    Example:
+        DELETE /datasets/42
     """
     db_dataset = db.query(Dataset).filter(Dataset.id == dataset_id, Dataset.is_active == True).first()
     if not db_dataset:
@@ -284,6 +395,31 @@ def delete_dataset(dataset_id: int, db: Session = Depends(get_db)):
 def import_schema(request: SchemaImportRequest):
     """
     Import schema from external data sources (PostgreSQL, files, Azure).
+
+    Connects to external data sources to automatically discover and import
+    schema definitions including field types, constraints, relationships, and
+    metadata. Performs PII detection and suggests appropriate classification.
+
+    Args:
+        request: Schema import request specifying source type, connection details,
+                and table/file to import.
+
+    Returns:
+        Imported schema definition with metadata, PII detection results, and
+        suggested governance settings.
+
+    Raises:
+        HTTPException 400: If required parameters missing or source type invalid.
+        HTTPException 500: If connection fails or schema import errors.
+        HTTPException 501: If source type not yet implemented (file, Azure).
+
+    Example:
+        POST /datasets/import-schema
+        {
+          "source_type": "postgres",
+          "table_name": "customers",
+          "schema_name": "public"
+        }
     """
     if request.source_type.value == "postgres":
         if not request.table_name:
@@ -323,7 +459,22 @@ def import_schema(request: SchemaImportRequest):
 @router.get("/postgres/tables", response_model=List[TableInfo])
 def list_postgres_tables(schema: str = Query("public")):
     """
-    List all tables in PostgreSQL database.
+    List all tables in the configured PostgreSQL database.
+
+    Queries the database to discover all available tables and views in the
+    specified schema, useful for selecting tables to import.
+
+    Args:
+        schema: Database schema name to query (default: "public").
+
+    Returns:
+        List of table information including name, schema, and type.
+
+    Raises:
+        HTTPException 500: If database connection fails or query errors.
+
+    Example:
+        GET /datasets/postgres/tables?schema=public
     """
     try:
         connector = PostgresConnector()

@@ -1,3 +1,12 @@
+"""
+Database model for consumer subscription management.
+
+This module defines the Subscription model which represents a data consumer's
+subscription to a dataset. It handles the complete subscription lifecycle including
+request submission, approval workflow, SLA requirements, access credentials, and
+expiration management.
+"""
+
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, JSON, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -5,7 +14,57 @@ from app.database import Base
 
 
 class Subscription(Base):
-    """Subscription model representing a consumer's subscription to a dataset."""
+    """
+    Data subscription model for managing dataset access requests.
+
+    This model tracks consumer subscriptions to datasets, managing the complete
+    lifecycle from initial request through approval, access provisioning, and
+    eventual expiration. It captures SLA requirements, quality expectations,
+    data filters, and maintains a full audit trail of the approval workflow.
+
+    Attributes:
+        id: Primary key identifier
+        dataset_id: Foreign key to the subscribed dataset
+        contract_id: Foreign key to the associated data contract (set on approval)
+        consumer_id: Foreign key to the consumer user (if registered)
+        consumer_name: Full name of the data consumer
+        consumer_email: Contact email for the consumer
+        consumer_team: Team or department of the consumer
+        purpose: Business justification for data access
+        use_case: Type of use (analytics, ml, reporting, dashboard, api, other)
+        sla_freshness: Required data freshness (1h, 6h, 24h, weekly)
+        sla_availability: Required availability SLA (99.9%, 99.5%, 99.0%)
+        sla_query_performance: Required query performance (<1s, <5s, <30s)
+        quality_completeness: Minimum completeness percentage required
+        quality_accuracy: Minimum accuracy percentage required
+        data_filters: JSON filters for data segmentation (regions, date ranges, etc.)
+        status: Workflow status (pending, approved, rejected, active, cancelled)
+        approved_by: Foreign key to approving user (data steward)
+        approved_at: Timestamp of approval/rejection
+        rejection_reason: Explanation if rejected
+        access_granted: Boolean flag for active access
+        access_credentials: Encrypted credentials for data access
+        access_endpoint: Connection string or API endpoint for access
+        created_at: Timestamp of subscription creation
+        updated_at: Timestamp of last modification
+        expires_at: Expiration timestamp for time-limited access
+        dataset: Relationship to Dataset model
+        contract: Relationship to Contract model
+        consumer: Relationship to User model (consumer)
+        approver: Relationship to User model (approver)
+
+    Example:
+        >>> subscription = Subscription(
+        ...     dataset_id=1,
+        ...     consumer_name="Jane Smith",
+        ...     consumer_email="jane@example.com",
+        ...     purpose="Customer analytics for Q1 reporting",
+        ...     use_case="analytics",
+        ...     status="pending"
+        ... )
+        >>> db.add(subscription)
+        >>> db.commit()
+    """
     
     __tablename__ = "subscriptions"
     
@@ -61,4 +120,10 @@ class Subscription(Base):
     approver = relationship("User", foreign_keys=[approved_by])
     
     def __repr__(self):
+        """
+        String representation of the subscription.
+
+        Returns:
+            String containing consumer name, dataset ID, and status.
+        """
         return f"<Subscription(consumer='{self.consumer_name}', dataset_id={self.dataset_id}, status='{self.status}')>"

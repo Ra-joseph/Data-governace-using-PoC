@@ -1,3 +1,12 @@
+"""
+Database configuration and session management.
+
+This module sets up SQLAlchemy database connections, session management,
+and provides utilities for database initialization. It configures both
+SQLite for metadata storage and provides dependency injection for
+database sessions in FastAPI endpoints.
+"""
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -17,7 +26,21 @@ Base = declarative_base()
 
 
 def get_db():
-    """Dependency to get database session."""
+    """
+    Get database session for dependency injection.
+
+    Creates a new database session for each request and ensures
+    proper cleanup after the request is complete. Use this as a
+    FastAPI dependency for endpoints that need database access.
+
+    Yields:
+        Session: SQLAlchemy database session.
+
+    Example:
+        >>> @app.get("/items")
+        >>> def get_items(db: Session = Depends(get_db)):
+        ...     return db.query(Item).all()
+    """
     db = SessionLocal()
     try:
         yield db
@@ -26,6 +49,16 @@ def get_db():
 
 
 def init_db():
-    """Initialize database tables."""
+    """
+    Initialize database tables.
+
+    Creates all database tables defined in models if they don't exist.
+    This function is called during application startup to ensure the
+    database schema is properly initialized.
+
+    Note:
+        This function imports models to ensure they are registered with
+        SQLAlchemy before creating tables.
+    """
     from app.models import dataset, contract, subscription, user
     Base.metadata.create_all(bind=engine)

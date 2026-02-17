@@ -1,3 +1,12 @@
+"""
+API endpoints for subscription management and approval workflow.
+
+This module provides REST API endpoints for managing dataset subscriptions,
+including consumer requests, data steward approval/rejection, access credential
+provisioning, and subscription lifecycle management. It integrates with the
+contract service to update contracts with subscription SLA requirements.
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
@@ -25,9 +34,39 @@ def create_subscription(
     db: Session = Depends(get_db)
 ):
     """
-    Create a new subscription request.
+    Create a new subscription request for dataset access.
 
-    Data consumers submit subscription requests which are pending approval by data stewards.
+    Data consumers submit subscription requests that enter a pending state
+    awaiting approval from data stewards. Requests include business justification,
+    use case, SLA requirements, and quality expectations.
+
+    Args:
+        subscription_data: Subscription request dictionary containing:
+            - dataset_id: ID of dataset to subscribe to
+            - consumer_name: Name of requesting consumer
+            - consumer_email: Contact email
+            - business_justification: Purpose for data access
+            - use_case: Type of use (analytics, ml, reporting, etc.)
+            - sla_requirements: Optional SLA specifications
+            - required_fields: Optional list of needed fields
+            - access_duration_days: Optional duration (default: 365)
+        db: Database session (injected dependency).
+
+    Returns:
+        Created subscription in pending status.
+
+    Raises:
+        HTTPException 404: If dataset not found.
+
+    Example:
+        POST /api/v1/subscriptions/
+        {
+          "dataset_id": 1,
+          "consumer_name": "Jane Smith",
+          "consumer_email": "jane@example.com",
+          "business_justification": "Q1 analytics reporting",
+          "use_case": "analytics"
+        }
     """
     # Verify dataset exists
     dataset = db.query(Dataset).filter(Dataset.id == subscription_data.get("dataset_id")).first()
@@ -73,6 +112,22 @@ def list_subscriptions(
 ):
     """
     List subscriptions with optional filtering.
+
+    Retrieves subscriptions with enhanced dataset information, supporting
+    filtering by status, dataset, or consumer.
+
+    Args:
+        status: Filter by subscription status (pending, approved, rejected, etc.).
+        dataset_id: Filter by specific dataset ID.
+        consumer_email: Filter by consumer email address.
+        db: Database session (injected dependency).
+
+    Returns:
+        List of subscriptions ordered by creation date (newest first).
+
+    Example:
+        GET /api/v1/subscriptions/?status=pending
+        GET /api/v1/subscriptions/?dataset_id=1&status=approved
     """
     query = db.query(Subscription)
 
@@ -98,6 +153,22 @@ def list_subscriptions(
 def get_subscription(subscription_id: int, db: Session = Depends(get_db)):
     """
     Get a specific subscription by ID.
+
+    Retrieves complete subscription details including SLA requirements,
+    approval status, and access credentials (if approved).
+
+    Args:
+        subscription_id: Unique identifier of the subscription.
+        db: Database session (injected dependency).
+
+    Returns:
+        Subscription details.
+
+    Raises:
+        HTTPException 404: If subscription not found.
+
+    Example:
+        GET /api/v1/subscriptions/42
     """
     subscription = db.query(Subscription).filter(Subscription.id == subscription_id).first()
 
@@ -117,12 +188,50 @@ def approve_subscription(
     db: Session = Depends(get_db)
 ):
     """
-    Approve or reject a subscription request.
+    Approve or reject a subscription request (data steward action).
 
-    When approved:
-    1. Updates subscription status
-    2. Grants access credentials
-    3. Generates new version of data contract with subscription details
+    Data stewards review and approve/reject subscription requests. On approval,
+    the system grants access, provisions credentials, sets expiration dates, and
+    updates the data contract with subscription SLA requirements.
+
+    Workflow on approval:
+    1. Updates subscription status to "approved"
+    2. Grants access and sets credentials
+    3. Sets expiration based on access duration
+    4. Creates new contract version with subscription SLA
+    5. Links subscription to contract
+
+    Workflow on rejection:
+    1. Updates subscription status to "rejected"
+    2. Records rejection reason
+
+    Args:
+        subscription_id: Unique identifier of the subscription to approve/reject.
+        approval_data: Approval decision dictionary containing:
+            - status: "approved" or "rejected"
+            - access_credentials: Dict with username, api_key, connection_string (if approved)
+            - approved_fields: List of approved field names (if approved)
+            - reviewer_notes: Rejection reason (if rejected)
+        db: Database session (injected dependency).
+
+    Returns:
+        Updated subscription with approval status and credentials.
+
+    Raises:
+        HTTPException 404: If subscription not found.
+        HTTPException 400: If subscription not in pending status.
+
+    Example:
+        POST /api/v1/subscriptions/42/approve
+        {
+          "status": "approved",
+          "access_credentials": {
+            "username": "jane_analytics",
+            "api_key": "abc123...",
+            "connection_string": "postgresql://..."
+          },
+          "approved_fields": ["customer_id", "email", "created_at"]
+        }
     """
     subscription = db.query(Subscription).filter(Subscription.id == subscription_id).first()
 
@@ -209,7 +318,29 @@ def update_subscription(
     db: Session = Depends(get_db)
 ):
     """
-    Update a subscription (before approval).
+    Update a subscription request (before approval).
+
+    Allows consumers to modify pending subscription requests before steward
+    review. Only pending subscriptions can be updated.
+
+    Args:
+        subscription_id: Unique identifier of the subscription to update.
+        update_data: Dictionary of fields to update (purpose, use_case, SLA, etc.).
+        db: Database session (injected dependency).
+
+    Returns:
+        Updated subscription.
+
+    Raises:
+        HTTPException 404: If subscription not found.
+        HTTPException 400: If subscription is not in pending status.
+
+    Example:
+        PUT /api/v1/subscriptions/42
+        {
+          "purpose": "Updated business justification",
+          "sla_freshness": "6h"
+        }
     """
     subscription = db.query(Subscription).filter(Subscription.id == subscription_id).first()
 
@@ -241,7 +372,24 @@ def update_subscription(
 @router.delete("/{subscription_id}", status_code=status.HTTP_204_NO_CONTENT)
 def cancel_subscription(subscription_id: int, db: Session = Depends(get_db)):
     """
-    Cancel a subscription.
+    Cancel a subscription and revoke access.
+
+    Sets subscription status to cancelled and revokes data access. This can
+    be called by consumers to cancel their own subscriptions or by stewards
+    to revoke access.
+
+    Args:
+        subscription_id: Unique identifier of the subscription to cancel.
+        db: Database session (injected dependency).
+
+    Returns:
+        None (HTTP 204 No Content).
+
+    Raises:
+        HTTPException 404: If subscription not found.
+
+    Example:
+        DELETE /api/v1/subscriptions/42
     """
     subscription = db.query(Subscription).filter(Subscription.id == subscription_id).first()
 
