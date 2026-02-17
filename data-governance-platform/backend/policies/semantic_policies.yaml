@@ -1,0 +1,300 @@
+name: semantic_policies
+version: 1.0.0
+description: Policies requiring semantic understanding that cannot be achieved by rule-based engines
+
+policies:
+  - id: SEM001
+    name: sensitive_data_context_detection
+    severity: critical
+    description: Detect fields that may contain sensitive data based on context, not just naming patterns
+    rule: |
+      Analyze field names and descriptions to identify potential PII or sensitive data
+      that may not match standard naming patterns (e.g., "user_info", "personal_details")
+    prompt_template: |
+      Analyze this database field and determine if it likely contains sensitive or personally
+      identifiable information (PII) based on its name, description, and context:
+
+      Field Name: {field_name}
+      Field Type: {field_type}
+      Description: {field_description}
+
+      Consider:
+      - Does the field name or description suggest personal information?
+      - Could this field contain data like names, addresses, financial info, health data?
+      - Are there contextual clues that suggest sensitivity?
+
+      Respond with JSON:
+      {{
+        "is_sensitive": true/false,
+        "confidence": 0-100,
+        "reasoning": "brief explanation",
+        "suggested_classification": "public/internal/confidential/restricted",
+        "recommended_actions": ["action1", "action2"]
+      }}
+
+  - id: SEM002
+    name: business_logic_consistency
+    severity: warning
+    description: Detect logical inconsistencies in governance rules based on business context
+    rule: |
+      Analyze relationships between fields, classifications, and quality rules to identify
+      logical inconsistencies that don't make business sense
+    prompt_template: |
+      Analyze these dataset governance rules for logical consistency:
+
+      Dataset: {dataset_name}
+      Classification: {classification}
+      Fields: {fields_summary}
+      Quality Rules: {quality_rules}
+      Retention: {retention_days} days
+
+      Check for:
+      - Do quality thresholds match the classification level?
+      - Are retention periods appropriate for the data type?
+      - Do field relationships make business sense?
+      - Are there conflicting requirements?
+
+      Respond with JSON:
+      {{
+        "is_consistent": true/false,
+        "issues": [
+          {{
+            "field": "field_name or 'governance'",
+            "issue": "description of inconsistency",
+            "severity": "critical/warning/info",
+            "suggestion": "how to fix"
+          }}
+        ]
+      }}
+
+  - id: SEM003
+    name: security_pattern_detection
+    severity: critical
+    description: Detect potential security vulnerabilities based on schema patterns
+    rule: |
+      Analyze schema structure to identify patterns that could lead to security issues
+      like injection vulnerabilities, excessive data exposure, or weak access controls
+    prompt_template: |
+      Analyze this database schema for potential security concerns:
+
+      Dataset: {dataset_name}
+      Fields: {fields_list}
+      Access Pattern: {access_pattern}
+      Consumer Use Cases: {use_cases}
+
+      Look for:
+      - Fields that expose too much information together
+      - Patterns that suggest SQL injection risks
+      - Missing encryption on sensitive combinations
+      - Overly permissive access patterns
+
+      Respond with JSON:
+      {{
+        "security_concerns": [
+          {{
+            "concern_type": "type of security issue",
+            "affected_fields": ["field1", "field2"],
+            "severity": "critical/high/medium/low",
+            "description": "what the issue is",
+            "remediation": "how to fix",
+            "cve_references": ["CVE-xxx if applicable"]
+          }}
+        ]
+      }}
+
+  - id: SEM004
+    name: compliance_intent_verification
+    severity: critical
+    description: Verify that stated compliance tags align with actual data and usage
+    rule: |
+      Analyze whether the compliance frameworks listed actually apply to this data
+      and if the governance rules satisfy those frameworks
+    prompt_template: |
+      Verify compliance alignment for this dataset:
+
+      Dataset: {dataset_name}
+      Stated Compliance: {compliance_tags}
+      Data Types: {data_types}
+      Geographic Scope: {data_residency}
+      Retention: {retention_days} days
+      Use Cases: {approved_use_cases}
+
+      For each compliance tag (GDPR, CCPA, HIPAA, etc.):
+      - Does this compliance framework actually apply?
+      - Are the requirements being met?
+      - What's missing?
+
+      Respond with JSON:
+      {{
+        "compliance_analysis": [
+          {{
+            "framework": "GDPR/CCPA/HIPAA/etc",
+            "applicable": true/false,
+            "requirements_met": true/false,
+            "missing_requirements": ["requirement1", "requirement2"],
+            "recommendations": ["action1", "action2"]
+          }}
+        ]
+      }}
+
+  - id: SEM005
+    name: data_quality_semantic_validation
+    severity: warning
+    description: Validate that quality thresholds make semantic sense for the data type
+    rule: |
+      Analyze whether quality rules are appropriate given the nature of the data
+      and its intended use
+    prompt_template: |
+      Evaluate if these quality rules make sense:
+
+      Dataset: {dataset_name}
+      Data Purpose: {purpose}
+      Quality Rules: {quality_rules}
+      Field Types: {field_types}
+      Update Frequency: {freshness_sla}
+
+      Consider:
+      - Are completeness thresholds realistic for this data type?
+      - Does freshness SLA match the data's temporal nature?
+      - Do uniqueness constraints make business sense?
+      - Are accuracy thresholds achievable?
+
+      Respond with JSON:
+      {{
+        "quality_assessment": [
+          {{
+            "rule": "rule_name",
+            "is_appropriate": true/false,
+            "reasoning": "why or why not",
+            "suggested_value": "alternative if inappropriate"
+          }}
+        ]
+      }}
+
+  - id: SEM006
+    name: field_relationship_analysis
+    severity: warning
+    description: Detect semantic relationships between fields that suggest governance requirements
+    rule: |
+      Analyze field names and types to identify relationships that should have
+      governance policies (e.g., user_id + email suggests PII, amount + currency suggests financial data)
+    prompt_template: |
+      Analyze field relationships in this schema:
+
+      Fields: {fields_list}
+
+      Look for:
+      - Related fields that together become more sensitive
+      - Missing foreign key relationships
+      - Fields that suggest specific compliance needs
+      - Combinations that indicate specific data domains
+
+      Respond with JSON:
+      {{
+        "relationships": [
+          {{
+            "fields": ["field1", "field2"],
+            "relationship_type": "pii_combination/financial/health/etc",
+            "implications": "what this means for governance",
+            "required_actions": ["action1", "action2"]
+          }}
+        ]
+      }}
+
+  - id: SEM007
+    name: naming_convention_analysis
+    severity: info
+    description: Analyze naming conventions and suggest improvements for clarity and consistency
+    rule: |
+      Evaluate field and dataset naming for clarity, consistency, and best practices
+    prompt_template: |
+      Analyze naming conventions:
+
+      Dataset Name: {dataset_name}
+      Field Names: {field_names}
+
+      Evaluate:
+      - Are names clear and self-documenting?
+      - Is there consistent naming style (snake_case, camelCase)?
+      - Do names follow domain conventions?
+      - Are abbreviations unclear?
+
+      Respond with JSON:
+      {{
+        "naming_analysis": {{
+          "consistency_score": 0-100,
+          "issues": [
+            {{
+              "field": "field_name",
+              "issue": "what's wrong",
+              "suggestion": "better name"
+            }}
+          ],
+          "overall_recommendations": ["recommendation1", "recommendation2"]
+        }}
+      }}
+
+  - id: SEM008
+    name: use_case_appropriateness
+    severity: warning
+    description: Evaluate if approved use cases are appropriate for the data classification
+    rule: |
+      Analyze whether the stated use cases are legitimate and appropriate given
+      the data sensitivity and compliance requirements
+    prompt_template: |
+      Evaluate use case appropriateness:
+
+      Dataset: {dataset_name}
+      Classification: {classification}
+      Data Types: {data_types}
+      Approved Use Cases: {approved_use_cases}
+      Compliance: {compliance_tags}
+
+      For each use case:
+      - Is it appropriate for this classification level?
+      - Does it comply with stated frameworks?
+      - Are there risks?
+
+      Respond with JSON:
+      {{
+        "use_case_analysis": [
+          {{
+            "use_case": "use_case_name",
+            "is_appropriate": true/false,
+            "risk_level": "low/medium/high",
+            "concerns": ["concern1", "concern2"],
+            "recommendations": ["action1", "action2"]
+          }}
+        ]
+      }}
+
+# Configuration for semantic analysis
+semantic_config:
+  # LLM provider settings
+  provider: "ollama"  # ollama, openai, huggingface
+
+  # Ollama settings (for local execution)
+  ollama:
+    base_url: "http://localhost:11434"
+    model: "mistral:7b"  # Can use: mistral:7b, codellama:7b, llama2:7b
+    temperature: 0.1  # Low temperature for consistent policy evaluation
+    timeout: 30
+
+  # OpenAI settings (if using hosted)
+  openai:
+    api_key: "${OPENAI_API_KEY}"
+    model: "gpt-3.5-turbo"
+    temperature: 0.1
+
+  # Hugging Face settings (for local transformers)
+  huggingface:
+    model: "bigcode/starcoder"
+    device: "cpu"  # or "cuda" for GPU
+
+  # Execution settings
+  execution:
+    enable_caching: true  # Cache LLM responses
+    cache_ttl: 3600  # 1 hour
+    max_retries: 3
+    parallel_execution: false  # Process policies sequentially by default
+    confidence_threshold: 70  # Minimum confidence to report an issue
