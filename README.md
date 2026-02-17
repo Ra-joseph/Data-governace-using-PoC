@@ -10,6 +10,7 @@ A production-ready proof-of-concept demonstrating federated data governance usin
 
 ### Backend
 - **17 Governance Policies**: Sensitive data, data quality, and schema governance
+- **8 Semantic Policies (NEW!)**: LLM-powered context-aware validation with local Ollama
 - **Automated Schema Import**: PostgreSQL with PII detection
 - **Dual Contracts**: Human-readable YAML + Machine-readable JSON
 - **Git Version Control**: Full audit trail for all contracts
@@ -175,6 +176,19 @@ Use these tables to test the full workflow from registration to subscription app
 - ✅ Subscription Workflow
 - ✅ Compliance Dashboard
 - ✅ Violation Tracking
+- ✅ **Semantic Policy Scanning (LLM-powered)**
+
+## 🆕 Semantic Scanning (NEW!)
+
+The platform now supports AI-powered semantic policy validation using local LLMs via **Ollama**:
+
+- **8 Semantic Policies**: Context-aware validation beyond rule-based patterns
+- **Local LLM Execution**: Privacy-first with Ollama (no data leaves your infrastructure)
+- **Smart Detection**: Identifies sensitive data based on context, not just naming patterns
+- **Business Logic Validation**: Ensures governance rules make business sense
+- **Security Pattern Recognition**: Detects vulnerabilities in schema design
+
+📖 **See [SEMANTIC_SCANNING.md](./data-governance-platform/SEMANTIC_SCANNING.md) for complete guide**
 
 ## 🔜 Future Enhancements
 
@@ -185,6 +199,7 @@ Use these tables to test the full workflow from registration to subscription app
 - Email/Slack notifications
 - Advanced analytics (ML-powered)
 - Mobile app
+- Expand semantic policies (custom domain-specific validations)
 
 ## 📄 License
 

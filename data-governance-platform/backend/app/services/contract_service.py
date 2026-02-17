@@ -1,25 +1,36 @@
 import json
 import yaml
 import hashlib
-from typing import Dict, Any, Optional
+import logging
+from typing import Dict, Any, Optional, List
 from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.models.contract import Contract
 from app.models.dataset import Dataset
 from app.services.policy_engine import PolicyEngine
+from app.services.semantic_policy_engine import SemanticPolicyEngine
 from app.services.git_service import GitService
-from app.schemas.contract import ValidationResult
+from app.schemas.contract import ValidationResult, Violation, ValidationStatus
+
+logger = logging.getLogger(__name__)
 
 
 class ContractService:
     """Service for managing data contracts."""
 
-    def __init__(self, db: Session = None):
-        """Initialize contract service."""
+    def __init__(self, db: Session = None, enable_semantic: bool = False):
+        """Initialize contract service.
+
+        Args:
+            db: Database session
+            enable_semantic: Whether to enable semantic validation with LLM
+        """
         self.policy_engine = PolicyEngine()
+        self.semantic_engine = SemanticPolicyEngine(enabled=enable_semantic)
         self.git_service = GitService()
         self.db = db
+        self.enable_semantic = enable_semantic
     
     def create_contract_from_dataset(self, db: Session, dataset_id: int, 
                                     version: str = "1.0.0") -> Contract:
@@ -76,8 +87,8 @@ class ContractService:
         # Calculate schema hash
         schema_hash = self._calculate_schema_hash(dataset.schema_definition)
         
-        # Validate contract
-        validation_result = self.policy_engine.validate_contract(contract_data)
+        # Validate contract (rule-based + optional semantic)
+        validation_result = self.validate_contract_combined(contract_data)
         
         # Commit to Git
         git_info = self.git_service.commit_contract(
@@ -144,8 +155,8 @@ class ContractService:
         # Regenerate YAML
         human_readable = self._generate_yaml(contract_data, dataset.name, new_version)
         
-        # Validate enriched contract
-        validation_result = self.policy_engine.validate_contract(contract_data)
+        # Validate enriched contract (rule-based + optional semantic)
+        validation_result = self.validate_contract_combined(contract_data)
         
         # Commit to Git
         git_info = self.git_service.commit_contract(
@@ -196,8 +207,8 @@ class ContractService:
             contract_data = contract_json
         else:
             raise ValueError("Either contract_yaml or contract_json must be provided")
-        
-        return self.policy_engine.validate_contract(contract_data)
+
+        return self.validate_contract_combined(contract_data)
     
     def get_contract_diff(self, db: Session, old_version_id: int, 
                          new_version_id: int) -> Dict[str, Any]:
@@ -245,7 +256,88 @@ class ContractService:
         """Calculate SHA-256 hash of schema for version tracking."""
         schema_str = json.dumps(schema, sort_keys=True)
         return hashlib.sha256(schema_str.encode()).hexdigest()
-    
+
+    def validate_contract_combined(
+        self,
+        contract_data: Dict[str, Any],
+        semantic_policies: Optional[List[str]] = None
+    ) -> ValidationResult:
+        """
+        Validate contract using both rule-based and semantic engines.
+
+        Args:
+            contract_data: Contract data in JSON/dict format
+            semantic_policies: Optional list of semantic policy IDs to run
+
+        Returns:
+            Combined ValidationResult from both engines
+        """
+        # Run rule-based validation
+        rule_result = self.policy_engine.validate_contract(contract_data)
+
+        # If semantic validation is not enabled, return only rule-based results
+        if not self.enable_semantic or not self.semantic_engine.is_available():
+            if self.enable_semantic and not self.semantic_engine.is_available():
+                logger.warning("Semantic validation enabled but Ollama is not available")
+            return rule_result
+
+        # Run semantic validation
+        try:
+            logger.info("Running semantic validation...")
+            semantic_result = self.semantic_engine.validate_contract(
+                contract_data,
+                selected_policies=semantic_policies
+            )
+
+            # Combine results
+            combined_result = self._combine_validation_results(rule_result, semantic_result)
+            logger.info(f"Combined validation complete: {combined_result.status.value}")
+            return combined_result
+
+        except Exception as e:
+            logger.error(f"Semantic validation failed: {e}", exc_info=True)
+            # Return rule-based results if semantic validation fails
+            return rule_result
+
+    def _combine_validation_results(
+        self,
+        rule_result: ValidationResult,
+        semantic_result: ValidationResult
+    ) -> ValidationResult:
+        """
+        Combine validation results from rule-based and semantic engines.
+
+        Args:
+            rule_result: Result from rule-based policy engine
+            semantic_result: Result from semantic policy engine
+
+        Returns:
+            Combined ValidationResult
+        """
+        # Merge violations
+        all_violations = rule_result.violations + semantic_result.violations
+
+        # Calculate combined counts
+        total_passed = rule_result.passed + semantic_result.passed
+        total_warnings = rule_result.warnings + semantic_result.warnings
+        total_failures = rule_result.failures + semantic_result.failures
+
+        # Determine overall status (most severe wins)
+        if total_failures > 0:
+            combined_status = ValidationStatus.FAILED
+        elif total_warnings > 0:
+            combined_status = ValidationStatus.WARNING
+        else:
+            combined_status = ValidationStatus.PASSED
+
+        return ValidationResult(
+            status=combined_status,
+            passed=total_passed,
+            warnings=total_warnings,
+            failures=total_failures,
+            violations=all_violations
+        )
+
     def _get_yaml_diff(self, old_yaml: str, new_yaml: str) -> list:
         """Get line-by-line diff of YAML files."""
         old_lines = old_yaml.split('\n')
@@ -314,8 +406,8 @@ class ContractService:
         # Regenerate YAML
         human_readable = self._generate_yaml(contract_data, dataset.name, new_version)
 
-        # Validate enriched contract
-        validation_result = self.policy_engine.validate_contract(contract_data)
+        # Validate enriched contract (rule-based + optional semantic)
+        validation_result = self.validate_contract_combined(contract_data)
 
         # Commit to Git
         git_info = self.git_service.commit_contract(
