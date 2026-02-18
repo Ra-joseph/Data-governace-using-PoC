@@ -26,9 +26,12 @@ This package contains **EVERYTHING** you need for a production-ready Data Govern
 - ✅ `backend/app/config.py` - Configuration management
 - ✅ `backend/app/database.py` - SQLAlchemy setup
 
-#### API Endpoints (2 routers, 15+ endpoints)
-- ✅ `backend/app/api/datasets.py` - 7 dataset endpoints
-- ✅ `backend/app/api/git.py` - 7 Git version control endpoints ⭐
+#### API Endpoints (5 routers, 28+ endpoints)
+- ✅ `backend/app/api/datasets.py` - 7 dataset + schema import endpoints
+- ✅ `backend/app/api/subscriptions.py` - 6 subscription workflow endpoints
+- ✅ `backend/app/api/git.py` - 5 Git version control endpoints
+- ✅ `backend/app/api/semantic.py` - 5 LLM-powered validation endpoints
+- ✅ `backend/app/api/orchestration.py` - 5 intelligent routing endpoints
 
 #### Data Models (4 SQLAlchemy models, 71 fields total)
 - ✅ `backend/app/models/dataset.py` - Dataset model (20 fields)
@@ -41,16 +44,20 @@ This package contains **EVERYTHING** you need for a production-ready Data Govern
 - ✅ `backend/app/schemas/contract.py` - Contract schemas (6 classes)
 - ✅ `backend/app/schemas/subscription.py` - Subscription schemas (8 classes)
 
-#### Business Logic Services (4 major services)
-- ✅ `backend/app/services/policy_engine.py` - Policy validation (400+ lines)
-- ✅ `backend/app/services/contract_service.py` - Contract management (250+ lines)
-- ✅ `backend/app/services/postgres_connector.py` - PostgreSQL integration (350+ lines)
-- ✅ `backend/app/services/git_service.py` - Git version control (200+ lines)
+#### Business Logic Services (7 major services)
+- ✅ `backend/app/services/policy_engine.py` - 17 YAML governance policies
+- ✅ `backend/app/services/contract_service.py` - Contract generation & versioning
+- ✅ `backend/app/services/postgres_connector.py` - PostgreSQL import with PII detection
+- ✅ `backend/app/services/git_service.py` - Git version control and audit trail
+- ✅ `backend/app/services/semantic_policy_engine.py` - 8 LLM-powered semantic policies
+- ✅ `backend/app/services/policy_orchestrator.py` - FAST/BALANCED/THOROUGH/ADAPTIVE routing
+- ✅ `backend/app/services/ollama_client.py` - Local Ollama LLM client
 
-#### Policy Files (17 governance policies)
+#### Policy Files (25 total governance policies)
 - ✅ `backend/policies/sensitive_data_policies.yaml` - 5 policies (SD001-SD005)
 - ✅ `backend/policies/data_quality_policies.yaml` - 5 policies (DQ001-DQ005)
 - ✅ `backend/policies/schema_governance_policies.yaml` - 7 policies (SG001-SG007)
+- ✅ `backend/policies/semantic_policies.yaml` - 8 semantic policies (SEM001-SEM008)
 
 #### Infrastructure
 - ✅ `backend/requirements.txt` - 15 Python dependencies
@@ -73,19 +80,18 @@ This package contains **EVERYTHING** you need for a production-ready Data Govern
 - ✅ `frontend/src/components/Layout.jsx` - Sidebar navigation layout
 - ✅ `frontend/src/components/Layout.css` - Layout styles
 
-#### Pages (8 page components)
-- ✅ `frontend/src/pages/Dashboard.jsx` - Metrics & charts (300+ lines)
-- ✅ `frontend/src/pages/Dashboard.css` - Dashboard styles (400+ lines)
-- ✅ `frontend/src/pages/DatasetCatalog.jsx` - Dataset grid view (200+ lines)
-- ✅ `frontend/src/pages/DatasetCatalog.css` - Catalog styles (200+ lines)
-- ✅ `frontend/src/pages/DatasetDetail.jsx` - Dataset details view
-- ✅ `frontend/src/pages/GitHistory.jsx` - Git timeline ⭐ (300+ lines)
-- ✅ `frontend/src/pages/GitHistory.css` - Git history styles ⭐ (300+ lines)
-- ✅ `frontend/src/pages/SchemaImport.jsx` - Phase 2 placeholder
-- ✅ `frontend/src/pages/PolicyManager.jsx` - Phase 2 placeholder
-- ✅ `frontend/src/pages/ContractViewer.jsx` - Phase 2 placeholder
-- ✅ `frontend/src/pages/SubscriptionQueue.jsx` - Phase 2 placeholder
-- ✅ `frontend/src/pages/ComplianceDashboard.jsx` - Phase 2 placeholder
+#### Pages (Multi-Role UI — 4 dedicated role interfaces)
+- ✅ `frontend/src/pages/RoleSelector.jsx` - Role selection entry point
+- ✅ `frontend/src/pages/DataOwner/DatasetRegistrationWizard.jsx` - 4-step wizard (26.7 KB)
+- ✅ `frontend/src/pages/DataOwner/OwnerDashboard.jsx` - Owned datasets + violations (12.8 KB)
+- ✅ `frontend/src/pages/DataConsumer/DataCatalogBrowser.jsx` - Catalog + subscriptions (20.5 KB)
+- ✅ `frontend/src/pages/DataSteward/ApprovalQueue.jsx` - Subscription approval (22.9 KB)
+- ✅ `frontend/src/pages/Admin/ComplianceDashboard.jsx` - Compliance metrics (15.4 KB)
+- ✅ `frontend/src/pages/Dashboard.jsx` - Multi-role dashboard routing
+- ✅ `frontend/src/pages/DatasetCatalog.jsx` - Catalog browser
+- ✅ `frontend/src/pages/DatasetDetail.jsx` - Dataset detail view
+- ✅ `frontend/src/pages/GitHistory.jsx` - Contract git history
+- ✅ `frontend/src/pages/ContractViewer.jsx` - Contract viewer
 
 #### Services & State (2 core modules)
 - ✅ `frontend/src/services/api.js` - Complete API layer with axios
@@ -142,70 +148,79 @@ This package contains **EVERYTHING** you need for a production-ready Data Govern
 ### Technology Stack
 
 **Backend:**
-- ✅ Python 3.10+
-- ✅ FastAPI (modern async API)
-- ✅ SQLAlchemy 2.0 (ORM)
-- ✅ PostgreSQL (demo) + SQLite (metadata)
-- ✅ Pydantic v2 (validation)
-- ✅ GitPython (version control)
-- ✅ PyYAML (policy definitions)
+- ✅ Python 3.10+ with FastAPI 0.109.0
+- ✅ SQLAlchemy 2.0.25 ORM
+- ✅ PostgreSQL 15 (demo) + SQLite (metadata)
+- ✅ Pydantic v2 / pydantic-settings 2.1.0 (validation)
+- ✅ GitPython 3.1.41 (contract version control)
+- ✅ PyYAML 6.0.1 (25 policy definitions)
+- ✅ Ollama (local LLM for semantic validation)
+- ✅ pytest 7.4.4 + httpx 0.26.0 (101-test suite)
 
 **Frontend:**
-- ✅ React 18.2
-- ✅ Vite (build tool)
-- ✅ Zustand (state management)
-- ✅ Axios (HTTP client)
-- ✅ Framer Motion (animations)
-- ✅ Recharts (data visualization)
-- ✅ React Router 6 (navigation)
+- ✅ React 18.2 + Vite 5.0.8
+- ✅ React Router 6.21.0 (navigation)
+- ✅ Zustand 4.4.7 (state management)
+- ✅ Axios 1.6.2 (HTTP client)
+- ✅ Framer Motion 10.16.16 (animations)
+- ✅ Recharts 2.10.3 (compliance analytics)
 - ✅ Lucide React (icons)
+- ✅ react-hot-toast (notifications)
+- ✅ Vitest + React Testing Library (frontend tests)
 
 **Infrastructure:**
-- ✅ Docker Compose (PostgreSQL)
-- ✅ Git (contract version control)
-- ✅ npm (frontend dependencies)
-- ✅ pip (backend dependencies)
+- ✅ Docker + Docker Compose (PostgreSQL 15 demo)
+- ✅ Git (contract version control and audit trail)
+- ✅ npm (frontend dependency management)
+- ✅ pip / venv (backend dependency management)
 
 ## 🎯 What You Get
 
 ### Complete Features ✅
 
-1. **Backend API** (15+ endpoints)
-   - Dataset management (CRUD)
-   - Schema import from PostgreSQL
-   - Contract generation and validation
-   - Git version control (7 endpoints) ⭐
-   - Policy validation
+1. **Backend API** (28+ endpoints, 5 routers)
+   - Dataset management (CRUD + schema import)
+   - Contract generation with dual YAML/JSON format
+   - Subscription workflow (request → approve → credentials)
+   - Git version control and audit trail
+   - Semantic LLM-powered policy validation
+   - Intelligent policy orchestration
 
-2. **Frontend UI** (8 pages)
-   - Dashboard with metrics and charts
-   - Dataset catalog with search
-   - Dataset detail views
-   - Git history with timeline ⭐
-   - Responsive navigation
+2. **Multi-Role Frontend** (4 dedicated role UIs)
+   - Data Owner: Dataset registration wizard + violation dashboard
+   - Data Consumer: Catalog browser + subscription request form
+   - Data Steward: Approval queue + credential management
+   - Platform Admin: Compliance metrics + Recharts analytics
 
-3. **Database Demo** (3 tables, 39 records)
-   - Financial scenario
-   - Intentional policy violations
-   - Realistic data patterns
+3. **Policy Engine** (25 total policies)
+   - 17 rule-based YAML policies (SD, DQ, SG categories)
+   - 8 semantic LLM policies (via local Ollama)
+   - Intelligent FAST/BALANCED/THOROUGH/ADAPTIVE strategies
+   - Risk assessment and complexity scoring
 
-4. **Policy Engine** (17 policies)
-   - Sensitive data policies
-   - Data quality policies
-   - Schema governance policies
+4. **Database Demo** (3 tables, 39 records)
+   - Financial services scenario with realistic PII data
+   - Intentional policy violations for learning
+   - Suspicious fraud patterns and data quality issues
 
-5. **Git Integration** ⭐
-   - Complete commit history
-   - Repository status
-   - Contract file browser
-   - Visual timeline
-   - Commit details
+5. **Git Integration**
+   - Complete commit history with diffs
+   - Semantic versioning (MAJOR.MINOR.PATCH)
+   - SHA-256 schema hash for change detection
+   - Contract comparison across versions
 
-6. **Documentation** (9 guides)
-   - Setup instructions
-   - API documentation
-   - Technical details
-   - Deployment guides
+6. **Test Suite** (101 tests)
+   - Policy engine tests (17 — all passing)
+   - API endpoint tests (55 — mostly passing)
+   - Service layer tests (16)
+   - Model tests (13)
+   - Frontend Vitest setup
+
+7. **Documentation** (9 guides, 25,000+ words)
+   - Complete README with architecture diagrams
+   - QUICKSTART (full-stack setup in minutes)
+   - Semantic scanning and orchestration guides
+   - Deployment guide for production
 
 ---
 
@@ -233,9 +248,14 @@ python test_setup.py
 
 ### Access URLs
 
-- **Frontend**: http://localhost:3000
+- **Frontend (Role Selector)**: http://localhost:5173/select-role
+- **Data Owner UI**: http://localhost:5173/owner/dashboard
+- **Data Consumer UI**: http://localhost:5173/consumer/catalog
+- **Data Steward UI**: http://localhost:5173/steward/approvals
+- **Platform Admin UI**: http://localhost:5173/admin/dashboard
 - **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/api/docs
+- **API Docs (Swagger)**: http://localhost:8000/api/docs
+- **API Docs (ReDoc)**: http://localhost:8000/api/redoc
 - **PostgreSQL**: localhost:5432
 
 ---

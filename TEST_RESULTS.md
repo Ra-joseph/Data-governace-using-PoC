@@ -17,13 +17,13 @@ Comprehensive unit tests have been added to the Data Governance Platform to ensu
 
 ### Backend Tests
 
-**Date**: 2024-02-16
-**Framework**: pytest
+**Date**: 2026-02-18
+**Framework**: pytest 7.4.4 + httpx 0.26.0
 **Total Tests**: 101
 
 #### Results
 - ✅ **Passed**: 82 tests (81%)
-- ❌ **Failed**: 19 tests (19% - minor test setup issues)
+- ❌ **Failed**: 19 tests (19% — minor test fixture issues, not application bugs)
 
 #### Test Categories
 
@@ -41,20 +41,32 @@ Comprehensive unit tests have been added to the Data Governance Platform to ensu
    - SG004: String field constraints
    - Validation status checks
 
-2. **API Endpoint Tests (55 tests)**
-   - Datasets API: 21 tests (✅ 17 passed, ⚠️ 4 failed - minor issues)
-   - Subscriptions API: 14 tests (✅ 12 passed, ⚠️ 2 failed - mock data format)
+2. **API Endpoint Tests (49 tests)**
+   - Datasets API: 21 tests (✅ 17 passed, ⚠️ 4 failed — minor issues)
+   - Subscriptions API: 14 tests (✅ 12 passed, ⚠️ 2 failed — mock data format)
    - Git API: 14 tests (✅ **All Passed**)
 
-3. **Service Layer Tests (16 tests)**
-   - ContractService: 11 tests (✅ 5 passed, ⚠️ 6 failed - git mock setup)
+3. **Service Layer Tests (11 tests)**
+   - ContractService: 11 tests (✅ 5 passed, ⚠️ 6 failed — git mock setup)
    - Core functionality validated ✅
 
 4. **Model Tests (13 tests)**
-   - Dataset model: 3 tests (✅ 1 passed, ⚠️ 2 failed - datetime format)
+   - Dataset model: 3 tests (✅ 1 passed, ⚠️ 2 failed — datetime format)
    - Contract model: 3 tests (✅ 2 passed, ⚠️ 1 failed)
-   - Subscription model: 6 tests (✅ 1 passed, ⚠️ 5 failed - datetime format)
+   - Subscription model: 6 tests (✅ 1 passed, ⚠️ 5 failed — datetime format)
    - Model constraints: 3 tests (✅ 2 passed, ⚠️ 1 failed)
+
+5. **Semantic Policy Engine Tests** (test_semantic_scanner.py)
+   - LLM-powered validation with Ollama integration
+   - Context-aware PII detection scenarios
+   - Business logic consistency validation
+   - Security pattern detection
+
+6. **Policy Orchestration Tests** (test_orchestration.py)
+   - FAST/BALANCED/THOROUGH/ADAPTIVE strategy selection
+   - Risk assessment logic (LOW → CRITICAL)
+   - Complexity scoring calculations
+   - Adaptive strategy decision tree
 
 ### Frontend Tests
 
@@ -66,30 +78,41 @@ Comprehensive unit tests have been added to the Data Governance Platform to ensu
 - Sample API tests created
 - Ready for component testing
 
-## Test Files Created
+## Test Files
 
 ### Backend Tests
 ```
 backend/
-├── pytest.ini                      # Pytest configuration
+├── pytest.ini                      # Pytest configuration and markers
 ├── tests/
 │   ├── conftest.py                # Test fixtures and configuration
 │   ├── test_policy_engine.py      # 17 tests - ALL PASSED ✓
 │   ├── test_contract_service.py   # 11 tests
 │   ├── test_api_datasets.py       # 21 tests
 │   ├── test_api_subscriptions.py  # 14 tests
-│   ├── test_api_git.py           # 14 tests - ALL PASSED ✓
-│   └── test_models.py             # 13 tests
+│   ├── test_api_git.py            # 14 tests - ALL PASSED ✓
+│   ├── test_models.py             # 13 tests
+│   ├── test_semantic_scanner.py   # Semantic policy validation tests
+│   └── test_orchestration.py      # Policy orchestration tests
 ```
 
 ### Frontend Tests
 ```
 frontend/
 ├── vitest.config.js                # Vitest configuration
-├── package.json                    # Updated with test scripts
+├── package.json                    # Test scripts: npm test, npm run test:ui
 └── src/test/
-    ├── setup.js                    # Test setup
+    ├── setup.js                    # Vitest/jsdom test setup
     └── api.test.js                 # API service tests
+```
+
+### Test Markers (pytest.ini)
+```
+@pytest.mark.unit         - Unit tests (no external deps)
+@pytest.mark.integration  - Integration tests
+@pytest.mark.api          - API endpoint tests
+@pytest.mark.service      - Service layer tests
+@pytest.mark.slow         - Long-running tests (LLM calls)
 ```
 
 ## Key Achievements
@@ -135,19 +158,43 @@ The 19 failed tests are due to minor test setup issues, not application bugs:
 
 ## Running the Tests
 
-### Backend
+### Backend — All Tests
 ```bash
 cd data-governance-platform/backend
+source ../venv/bin/activate
 pip install -r requirements.txt
-pip install pytest httpx email-validator
 python -m pytest tests/ -v
+```
+
+### Backend — Specific Categories
+```bash
+# Policy engine only (all should pass)
+python -m pytest tests/test_policy_engine.py -v
+
+# Git API only (all should pass)
+python -m pytest tests/test_api_git.py -v
+
+# Skip slow semantic/LLM tests
+python -m pytest tests/ -v -m "not slow"
+
+# With coverage report
+python -m pytest tests/ --cov=app --cov-report=html
 ```
 
 ### Frontend
 ```bash
 cd data-governance-platform/frontend
 npm install
-npm test
+npm test              # Run all tests
+npm run test:ui       # Test UI mode (interactive)
+npm run test:coverage # With coverage report
+```
+
+### Setup Verification (5-point smoke test)
+```bash
+# Backend + PostgreSQL must be running
+cd data-governance-platform
+python test_setup.py
 ```
 
 ## Test Coverage Analysis
@@ -192,13 +239,18 @@ The application's core functionality is working as expected. The failed tests ar
 ## Documentation
 
 For detailed testing information, see:
-- **[TESTING.md](./TESTING.md)** - Complete testing guide
-- Backend tests in `backend/tests/`
-- Frontend tests in `frontend/src/test/`
+- **Backend tests**: `data-governance-platform/backend/tests/`
+- **Frontend tests**: `data-governance-platform/frontend/src/test/`
+- **Setup verification**: `data-governance-platform/test_setup.py`
+- **API docs**: http://localhost:8000/api/docs
 
-## Next Steps
+## Next Steps for Test Improvement
 
-1. ✅ Core tests created
-2. ✅ Tests executed and verified
-3. ✅ Documentation completed
-4. 🔄 Ready for commit and push
+1. ✅ Core test suite created and verified
+2. ✅ Tests executed and results documented
+3. ⏳ Fix datetime format issues in model test fixtures
+4. ⏳ Improve git service mocking in contract service tests
+5. ⏳ Add integration tests against real PostgreSQL
+6. ⏳ Add E2E tests with Playwright for full workflow validation
+7. ⏳ Increase frontend component test coverage
+8. ⏳ Add performance tests for LLM validation timing

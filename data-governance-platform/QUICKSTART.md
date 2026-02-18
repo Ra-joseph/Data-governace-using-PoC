@@ -1,38 +1,38 @@
 # Quick Start Guide
 
-Get the Data Governance Platform running in 5 easy steps.
+Get the full Data Governance Platform (backend + frontend) running in minutes.
 
 ## Table of Contents
 
 - [Prerequisites Check](#prerequisites-check)
-- [Step 1: Setup](#step-1-setup)
+- [Step 1: Setup Python Environment](#step-1-setup-python-environment)
 - [Step 2: Start PostgreSQL](#step-2-start-postgresql)
-- [Step 3: Start Backend](#step-3-start-backend)
-- [Step 4: Test](#step-4-test)
-- [Step 5: Explore](#step-5-explore)
-- [What's Next](#whats-next)
-- [Troubleshooting](#troubleshooting)
+- [Step 3: Start Backend API](#step-3-start-backend-api)
+- [Step 4: Start Frontend](#step-4-start-frontend)
+- [Step 5: Verify Setup](#step-5-verify-setup)
+- [Step 6: Explore the Platform](#step-6-explore-the-platform)
+- [Optional: Enable Semantic Scanning](#optional-enable-semantic-scanning)
 - [Understanding the Demo](#understanding-the-demo)
-- [Key Concepts](#key-concepts)
-- [Common Use Cases](#common-use-cases)
+- [Common Use Cases by Role](#common-use-cases-by-role)
+- [Troubleshooting](#troubleshooting)
 - [Architecture Overview](#architecture-overview)
-- [Ready for More](#ready-for-more)
 
 ## Prerequisites Check
 
 Before starting, make sure you have:
 - [ ] Python 3.10 or higher (`python --version`)
+- [ ] Node.js 18 or higher (`node --version`)
 - [ ] Docker installed and running (`docker --version`)
 - [ ] Git installed (`git --version`)
 
-## Step 1: Setup
+## Step 1: Setup Python Environment
 
 ```bash
-# Create and activate virtual environment
+# From data-governance-platform/ directory
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
+# Install backend dependencies
 cd backend
 pip install -r requirements.txt
 cd ..
@@ -41,66 +41,120 @@ cd ..
 ## Step 2: Start PostgreSQL
 
 ```bash
-# Start the demo database
+# Start the demo database (customer_accounts, transactions, fraud_alerts)
 docker-compose up -d
 
 # Verify it's running
 docker ps | grep governance_postgres
 ```
 
-You should see the container running on port 5432.
+You should see `governance_postgres` running on port 5432.
 
-## Step 3: Start Backend
+## Step 3: Start Backend API
 
 ```bash
-# Make start script executable
+# Option A: Use the start script
 chmod +x start.sh
-
-# Start the API
 ./start.sh
+
+# Option B: Manual start
+cd backend
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-The API will start at http://localhost:8000
+The API starts at **http://localhost:8000**. Keep this terminal open — you'll see API logs here.
 
-Keep this terminal open - you'll see API logs here.
-
-## Step 4: Test
+## Step 4: Start Frontend
 
 Open a **new terminal** and run:
 
 ```bash
-# Activate virtual environment again
+# From data-governance-platform/ directory
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend starts at **http://localhost:5173**. Keep this terminal open.
+
+## Step 5: Verify Setup
+
+Open a **new terminal** and run:
+
+```bash
+# Activate virtual environment
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Run automated tests
+# Run automated setup tests
 python test_setup.py
 ```
 
-You should see 5 green checkmarks:
-- ✓ Health Check
-- ✓ PostgreSQL Connection
-- ✓ Schema Import
-- ✓ Dataset Registration
-- ✓ List Datasets
+Expected output:
+```
+✓ Health Check
+✓ PostgreSQL Connection
+✓ Schema Import
+✓ Dataset Registration
+✓ List Datasets
 
-## Step 5: Explore
+🎉 All tests passed! Setup is complete.
+```
 
-### View API Documentation
+## Step 6: Explore the Platform
 
-Open in your browser:
-- Swagger UI: http://localhost:8000/api/docs
-- ReDoc: http://localhost:8000/api/redoc
+### Using the Frontend (Recommended)
 
-### Try Some Commands
+1. **Open** http://localhost:5173/select-role
+2. **Select a role** to access its dedicated interface:
+
+| Role | URL | What you can do |
+|------|-----|-----------------|
+| Data Owner | `/owner/dashboard` | Register datasets, view violations, track subscribers |
+| Data Consumer | `/consumer/catalog` | Browse catalog, request dataset access with SLA |
+| Data Steward | `/steward/approvals` | Review and approve subscription requests |
+| Platform Admin | `/admin/dashboard` | View compliance metrics and violation analytics |
+
+### Quick Walkthrough (End-to-End)
+
+```
+1. Data Owner → Register Dataset
+   - Select "customer_accounts" from PostgreSQL import
+   - Complete the 4-step wizard
+   - View policy violations (SD001, SD003 will trigger)
+
+2. Data Consumer → Request Access
+   - Browse the catalog
+   - Click "Request Access" on your dataset
+   - Fill in business justification and SLA requirements
+
+3. Data Steward → Approve Request
+   - Go to /steward/approvals
+   - Review the pending request
+   - Approve with credentials
+
+4. Platform Admin → View Metrics
+   - Go to /admin/dashboard
+   - See compliance rate, violation trends, top policies
+```
+
+### Using the API Directly
 
 ```bash
+# View API documentation (Swagger UI)
+open http://localhost:8000/api/docs
+
 # List all tables in PostgreSQL
 curl http://localhost:8000/api/v1/datasets/postgres/tables
 
-# Import a schema
+# Import a schema with PII detection
 curl -X POST http://localhost:8000/api/v1/datasets/import-schema \
   -H "Content-Type: application/json" \
-  -d '{"source_type": "postgres", "table_name": "transactions"}'
+  -d '{"source_type": "postgres", "table_name": "customer_accounts", "schema_name": "public"}'
+
+# Register a dataset
+curl -X POST http://localhost:8000/api/v1/datasets/ \
+  -H "Content-Type: application/json" \
+  -d @examples/register_customer_accounts.json
 
 # List registered datasets
 curl http://localhost:8000/api/v1/datasets/
@@ -109,98 +163,78 @@ curl http://localhost:8000/api/v1/datasets/
 ### View Generated Contracts
 
 ```bash
-# Contracts are stored in Git
+# Contracts are stored in Git with semantic versioning
 ls -la backend/contracts/
 
 # View a contract
 cat backend/contracts/customer_accounts_v1.0.0.yaml
+
+# View Git history
+cd backend/contracts && git log --oneline
 ```
 
-### Check Git History
+## Optional: Enable Semantic Scanning
+
+For AI-powered policy validation (requires 4-7 GB disk space):
 
 ```bash
-cd backend/contracts
-git log --oneline
-git show HEAD
-cd ../..
+# Install Ollama
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Start Ollama
+ollama serve
+
+# Pull a model (in a new terminal)
+ollama pull mistral:7b  # Recommended: ~4GB, good balance of speed/quality
+
+# Verify semantic scanning is available
+curl http://localhost:8000/api/v1/semantic/health
 ```
 
-## What's Next?
-
-1. **Read the README**: Full documentation in `README.md`
-2. **Explore the Demo**: Check out the 3 demo tables with intentional violations
-3. **Review Policies**: See YAML policy files in `backend/policies/`
-4. **Try the API**: Use Swagger UI to test all endpoints
-5. **Check Validation**: See how policy violations are caught and reported
-
-## Troubleshooting
-
-### PostgreSQL won't start?
-
-```bash
-# Check if port 5432 is in use
-lsof -i :5432
-
-# Stop and restart
-docker-compose down
-docker-compose up -d
+Expected response:
+```json
+{
+  "available": true,
+  "ollama_running": true,
+  "available_models": ["mistral:7b"],
+  "policies_loaded": 8
+}
 ```
 
-### Backend won't start?
-
-```bash
-# Check Python version
-python --version  # Must be 3.10+
-
-# Reinstall dependencies
-pip install -r backend/requirements.txt
-```
-
-### Tests fail?
-
-```bash
-# Make sure both services are running
-docker ps  # PostgreSQL
-curl http://localhost:8000/health  # Backend
-```
+See [SEMANTIC_SCANNING.md](./SEMANTIC_SCANNING.md) for full setup and [POLICY_ORCHESTRATION.md](./POLICY_ORCHESTRATION.md) for intelligent routing.
 
 ## Understanding the Demo
 
-### The Financial Scenario
+### The Financial Services Scenario
 
-The demo includes 3 tables with realistic financial data:
+The demo includes 3 tables with realistic financial data containing **intentional policy violations**:
 
-1. **customer_accounts** - Contains PII (email, SSN, phone)
-   - **Intentional Violations**: Missing encryption, no compliance tags
-   
-2. **transactions** - Time-sensitive financial transactions
-   - **Intentional Violations**: Missing freshness SLA, NULL status values
-   
-3. **fraud_alerts** - Critical fraud detection data
-   - **Intentional Violations**: Missing quality thresholds, NULL risk scores
+| Table | Records | PII | Violations |
+|-------|---------|-----|------------|
+| `customer_accounts` | 10 | email, SSN, phone, DOB | Missing encryption, no compliance tags |
+| `transactions` | 23 | None | Missing freshness SLA, NULL status values |
+| `fraud_alerts` | 6 | None | Missing quality thresholds, NULL risk scores |
 
-### What Gets Validated?
+### What Gets Validated
 
-When you register `customer_accounts`, the platform checks:
+When you register `customer_accounts`, the platform checks all applicable policies:
 
-✓ **Sensitive Data Policies**
-- Are PII fields encrypted?
-- Is retention period specified?
-- Are compliance tags present?
+**Sensitive Data Policies (SD001-SD005)**
+- Are PII fields documented as encrypted? → **SD001 Critical violation**
+- Is retention period specified? → SD002 check
+- Are compliance tags present (GDPR, CCPA)? → **SD003 Warning**
 
-✓ **Data Quality Policies**
+**Data Quality Policies (DQ001-DQ005)**
 - Is completeness threshold adequate?
 - Is freshness SLA specified?
-- Are uniqueness fields identified?
+- Are uniqueness constraints defined?
 
-✓ **Schema Governance Policies**
+**Schema Governance Policies (SG001-SG007)**
 - Are all fields documented?
-- Are required fields consistent?
-- Is ownership specified?
+- Are required fields non-nullable?
+- Is ownership specified? → SG003 check
 
-### The Validation Report
-
-You'll see output like:
+### Sample Validation Report
 
 ```json
 {
@@ -212,114 +246,171 @@ You'll see output like:
     {
       "type": "critical",
       "policy": "SD001: pii_encryption_required",
-      "message": "PII fields require encryption...",
-      "remediation": "Set encryption_required: true..."
+      "field": "customer_ssn, customer_email, customer_phone",
+      "message": "PII fields require encryption but encryption_required is False",
+      "remediation": "Set 'encryption_required: true' and add 'encryption_details' to your contract specifying algorithm (e.g., AES-256) and key management approach."
+    },
+    {
+      "type": "warning",
+      "policy": "SD003: pii_compliance_tags",
+      "field": "governance.compliance_tags",
+      "message": "Datasets with PII should specify compliance frameworks",
+      "remediation": "Add compliance_tags: ['GDPR', 'CCPA'] to governance metadata."
     }
   ]
 }
 ```
 
-Each violation includes:
-- **Type**: Critical, Warning, or Info
-- **Policy**: Which policy was violated
-- **Message**: What's wrong
-- **Remediation**: How to fix it
-
-## Key Concepts
-
-### Federated Governance (UN Peacekeeping Model)
-
-- **Shared Policies**: Central governance team defines policies
-- **Distributed Enforcement**: Policies enforced at data source
-- **Local Autonomy**: Teams own their data but follow standards
-- **Prevention at Borders**: Catch violations early, not in production
-
-### Policy-as-Code
-
-All policies are defined in YAML files:
-- Version controlled
-- Testable
-- Auditable
-- Easy to update
-
-### Dual Contracts
-
-Each dataset gets two formats:
-- **YAML**: Human-readable for documentation
-- **JSON**: Machine-readable for automation
-
-Both are version-controlled in Git!
-
-## Common Use Cases
+## Common Use Cases by Role
 
 ### As a Data Owner
 
 ```bash
-# 1. Import your table schema
+# Import schema and see automatic PII detection
 curl -X POST http://localhost:8000/api/v1/datasets/import-schema \
   -H "Content-Type: application/json" \
-  -d '{"source_type": "postgres", "table_name": "your_table"}'
+  -d '{"source_type": "postgres", "table_name": "customer_accounts"}'
 
-# 2. Review the suggested classification and PII detection
-
-# 3. Register your dataset (fix any violations first!)
+# Register dataset (review validation report for violations)
 curl -X POST http://localhost:8000/api/v1/datasets/ \
   -H "Content-Type: application/json" \
-  -d @your_dataset.json
+  -d @examples/register_customer_accounts.json
 ```
 
 ### As a Data Consumer
 
 ```bash
-# 1. Browse available datasets
-curl http://localhost:8000/api/v1/datasets/
+# Browse available published datasets
+curl "http://localhost:8000/api/v1/datasets/?status=published"
 
-# 2. View a specific dataset
+# View dataset details and schema
 curl http://localhost:8000/api/v1/datasets/1
 
-# 3. Request subscription (Phase 2)
-# Coming soon: subscription workflow with SLA negotiation
+# Create subscription request
+curl -X POST http://localhost:8000/api/v1/subscriptions/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "dataset_id": 1,
+    "consumer_name": "Analytics Team",
+    "consumer_email": "analytics@company.com",
+    "business_justification": "Customer segmentation analysis",
+    "use_case": "analytics",
+    "sla_requirements": {"max_latency_ms": 500, "min_availability_percent": 99}
+  }'
 ```
 
 ### As a Data Steward
 
 ```bash
-# 1. Review all datasets
-curl http://localhost:8000/api/v1/datasets/
+# Review pending subscriptions
+curl "http://localhost:8000/api/v1/subscriptions/?status=pending"
 
-# 2. Check validation status
-# Look for datasets in "draft" status
+# Approve a subscription (generates credentials + new contract version)
+curl -X POST http://localhost:8000/api/v1/subscriptions/1/approve \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "approve",
+    "approved_fields": ["account_id", "customer_name", "customer_email"],
+    "access_credentials": {
+      "username": "analytics_user",
+      "api_key": "key_abc123"
+    },
+    "notes": "Approved for analytics use case"
+  }'
 
-# 3. Review contracts in Git
-cd backend/contracts
-git log --all --graph --oneline
+# View Git history of contracts
+curl http://localhost:8000/api/v1/git/commits
+```
+
+## Troubleshooting
+
+### PostgreSQL won't start
+
+```bash
+# Check if port 5432 is in use
+lsof -i :5432
+
+# Stop and restart with fresh volumes
+docker-compose down -v
+docker-compose up -d
+```
+
+### Backend won't start
+
+```bash
+# Check Python version (must be 3.10+)
+python --version
+
+# Reinstall dependencies
+pip install -r backend/requirements.txt --upgrade
+
+# Check for port conflicts
+lsof -i :8000
+```
+
+### Frontend won't start
+
+```bash
+# Check Node.js version (must be 18+)
+node --version
+
+# Clear and reinstall
+cd frontend
+rm -rf node_modules package-lock.json
+npm install
+npm run dev
+```
+
+### Frontend can't connect to backend
+
+```bash
+# Verify backend is running
+curl http://localhost:8000/health
+
+# Check browser console (F12 → Console) for CORS or connection errors
+# Verify Vite proxy in frontend/vite.config.js targets http://localhost:8000
+```
+
+### Tests fail
+
+```bash
+# Ensure both services are running
+docker ps          # PostgreSQL should be listed
+curl http://localhost:8000/health  # Should return {"status": "healthy"}
+
+# Run tests with verbose output
+python test_setup.py
 ```
 
 ## Architecture Overview
 
 ```
-User Request
+User Browser
     ↓
-FastAPI Endpoint
+React Frontend (http://localhost:5173)
+    ↓  Axios HTTP / Vite proxy
+FastAPI Backend (http://localhost:8000)
     ↓
-Service Layer ← Policy Engine (validates)
-    ↓           ↓
-Database    Git Repo (contracts)
+Policy Orchestrator
+    ├── Rule Engine (17 YAML policies)  ←── backend/policies/*.yaml
+    └── Semantic Engine (8 LLM policies) ←── Ollama (optional)
     ↓
-PostgreSQL Connector → Source Database
+Contract Service → Git Repository (backend/contracts/)
+    ↓
+SQLite Metadata DB ←── Dataset, Contract, Subscription, User records
+    ↓
+PostgreSQL Connector → Demo Database (Docker port 5432)
 ```
 
 ## Ready for More?
 
-- **Full Documentation**: See `README.md` for complete details
-- **API Docs**: http://localhost:8000/api/docs
+- **Full Documentation**: See [README.md](./README.md) for complete details
+- **API Docs**: http://localhost:8000/api/docs (Swagger UI)
 - **Policy Files**: Explore `backend/policies/*.yaml`
-- **Demo Data**: Check `demo/*.sql` files
+- **Semantic Scanning**: See [SEMANTIC_SCANNING.md](./SEMANTIC_SCANNING.md)
+- **Policy Orchestration**: See [POLICY_ORCHESTRATION.md](./POLICY_ORCHESTRATION.md)
+- **Deployment**: See [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ---
 
-**Questions or Issues?**
-
-Check the Troubleshooting section in README.md or review the test output for specific error messages.
-
-Happy Data Governing!
+**Questions or Issues?** Check the Troubleshooting section above or open an issue on GitHub.

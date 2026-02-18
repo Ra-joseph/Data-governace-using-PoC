@@ -17,58 +17,74 @@
 
 This complete, production-ready Data Governance Platform includes:
 
-### Core Application (32 Files)
-- **Backend API**: FastAPI application with 6 main services
+### Core Application (90+ Files)
+- **Backend API**: FastAPI application with 5 routers and 28+ endpoints
 - **Database Models**: 4 SQLAlchemy models (Dataset, Contract, Subscription, User)
-- **Pydantic Schemas**: 3 schema modules with full validation
-- **Policy Engine**: YAML-based policy validation with 15+ policies
-- **Services**: PostgreSQL connector, Git service, Contract service
+- **Pydantic Schemas**: 3 schema modules with full v2 validation
+- **Rule-Based Policy Engine**: 17 YAML-defined governance policies (SD, DQ, SG)
+- **Semantic Policy Engine**: 8 LLM-powered policies via local Ollama
+- **Policy Orchestrator**: FAST/BALANCED/THOROUGH/ADAPTIVE validation routing
+- **Services**: PostgreSQL connector (PII detection), Git service, Contract service, Ollama client
+- **Frontend**: React 18 multi-role application (Owner, Consumer, Steward, Admin)
 - **Demo Database**: PostgreSQL with 3 tables and realistic financial data
 
-### Documentation (3 Files)
-- **README.md**: Complete documentation (100+ pages equivalent)
-- **QUICKSTART.md**: 5-minute setup guide
-- **PROJECT_SUMMARY.md**: Technical deep-dive
+### Documentation (9 Files)
+- **README.md**: Complete platform documentation
+- **QUICKSTART.md**: Full-stack setup guide (backend + frontend)
+- **PROJECT_SUMMARY.md**: Technical architecture deep-dive
+- **DEPLOYMENT.md**: This file — deployment instructions
+- **SEMANTIC_SCANNING.md**: LLM-powered validation guide
+- **POLICY_ORCHESTRATION.md**: Intelligent routing guide
+- **FRONTEND_GUIDE.md**: Multi-role frontend guide
+- **MANIFEST.md**: Complete file listing
+- **FULL_STACK_INVENTORY.md**: Full package inventory
 
-### Configuration (4 Files)
-- **docker-compose.yml**: PostgreSQL demo setup
-- **.env.example**: Environment configuration template
-- **requirements.txt**: Python dependencies
-- **start.sh**: Quick start script
+### Configuration (5 Files)
+- **docker-compose.yml**: PostgreSQL 15 demo setup
+- **requirements.txt**: Python dependencies (15+ packages)
+- **package.json**: Frontend npm dependencies (15 packages)
+- **start.sh**: Quick backend start script
+- **vite.config.js**: Frontend build configuration with API proxy
 
 ### Demo & Testing (5 Files)
-- **setup_postgres.sql**: Database schema with intentional violations
-- **sample_data.sql**: 39 records across 3 tables
-- **test_setup.py**: Automated validation suite with colored output
-- **register_customer_accounts.json**: Example dataset registration
+- **setup_postgres.sql**: Database schema with 3 tables
+- **sample_data.sql**: 39 records with intentional violations
+- **test_setup.py**: Automated 5-check setup verification
+- **register_customer_accounts.json**: Example dataset registration payload
+- **backend/tests/**: 101 pytest tests across 8 test files
 
 ## 🚀 Quick Deployment
 
-### Local Development
+### Local Development (Full Stack)
 
 ```bash
-# 1. Extract the zip file
-unzip data-governance-platform.zip
-cd data-governance-platform
+# 1. Clone the repository
+git clone https://github.com/Ra-joseph/Data-governace-using-PoC.git
+cd Data-governace-using-PoC/data-governance-platform
 
 # 2. Setup Python environment
 python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 cd backend && pip install -r requirements.txt && cd ..
 
-# 3. Start PostgreSQL
+# 3. Start PostgreSQL demo database
 docker-compose up -d
 
-# 4. Start backend
+# 4. Start backend (Terminal 1)
 chmod +x start.sh
 ./start.sh
 
-# 5. Test (in new terminal)
+# 5. Start frontend (Terminal 2)
+cd frontend
+npm install
+npm run dev
+
+# 6. Verify setup (Terminal 3)
 source venv/bin/activate
 python test_setup.py
 ```
 
-**Expected Output:**
+**Expected Test Output:**
 ```
 ✓ Health Check
 ✓ PostgreSQL Connection
@@ -77,6 +93,22 @@ python test_setup.py
 ✓ List Datasets
 
 🎉 All tests passed! Setup is complete.
+```
+
+**Access the Application:**
+- Role Selector: http://localhost:5173/select-role
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/api/docs
+
+### Backend Only (No Frontend)
+
+```bash
+cd backend
+python3 -m venv ../venv
+source ../venv/bin/activate
+pip install -r requirements.txt
+docker-compose -f ../docker-compose.yml up -d
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Docker Deployment (Alternative)
@@ -89,18 +121,30 @@ docker build -t governance-platform:latest ./backend
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
-*(Note: docker-compose.prod.yml not included - add for production)*
+*(Note: docker-compose.prod.yml not included — create for production)*
 
 ## ✅ Verification Checklist
 
 After deployment, verify:
 
+**Backend**
 - [ ] API accessible at http://localhost:8000
 - [ ] Swagger docs at http://localhost:8000/api/docs
-- [ ] PostgreSQL running with 3 demo tables
-- [ ] All 5 tests pass (run test_setup.py)
-- [ ] Contracts directory initialized with Git
-- [ ] Policy files loaded (3 YAML files)
+- [ ] Health check: `curl http://localhost:8000/health` → `{"status": "healthy"}`
+- [ ] PostgreSQL running with 3 demo tables: `docker ps | grep governance_postgres`
+- [ ] All 5 setup tests pass: `python test_setup.py`
+- [ ] Contracts directory initialized with Git: `ls backend/contracts/`
+- [ ] Policy files loaded (4 YAML files): `ls backend/policies/`
+
+**Frontend**
+- [ ] Frontend accessible at http://localhost:5173/select-role
+- [ ] 4 role cards visible (Owner, Consumer, Steward, Admin)
+- [ ] Dashboard charts load when selecting Admin role
+- [ ] Catalog loads datasets when selecting Consumer role
+
+**Optional: Semantic Scanning**
+- [ ] Ollama running: `curl http://localhost:11434` → response from Ollama
+- [ ] Semantic health: `curl http://localhost:8000/api/v1/semantic/health` → `{"available": true}`
 
 ## 🔒 Security Checklist
 
@@ -354,6 +398,6 @@ You now have a complete, production-ready Data Governance Platform that:
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: February 4, 2026
+**Version**: 2.0.0 (Phase 1 + Phase 2 + Semantic AI)
+**Last Updated**: February 18, 2026
 **License**: Educational/Demo Project

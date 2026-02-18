@@ -30,25 +30,38 @@ Traditional governance catches problems after they've caused damage. This platfo
 ### Technology Stack
 
 **Backend:**
-- Python 3.10+ with FastAPI (modern async API framework)
-- SQLAlchemy 2.0 (ORM for database abstraction)
-- PostgreSQL (demo) / SQLite (metadata storage)
-- Pydantic v2 (data validation)
+- Python 3.10+ with FastAPI 0.109.0 (modern async API framework)
+- SQLAlchemy 2.0.25 ORM — SQLite (metadata storage) + PostgreSQL 15 (demo data)
+- Pydantic v2 / pydantic-settings 2.1.0 (data validation and configuration)
+- Uvicorn 0.27.0 (ASGI server)
 
 **Data Management:**
-- GitPython (contract version control)
-- PyYAML (policy definitions)
-- psycopg2 (PostgreSQL connectivity)
+- GitPython 3.1.41 (contract version control and audit trail)
+- PyYAML 6.0.1 (policy definitions — 25 total policies)
+- psycopg2 (PostgreSQL connectivity for schema import)
+
+**AI/LLM Integration:**
+- Ollama (local LLM server, privacy-first semantic validation)
+- ollama Python client via httpx (communication with Ollama API)
 
 **Testing & Validation:**
-- pytest (unit testing)
-- httpx (API testing)
-- colorama (colored terminal output)
+- pytest 7.4.4 + httpx 0.26.0 (101-test backend suite)
+- Vitest + React Testing Library (frontend tests)
+- colorama 0.4.6 (colored terminal output)
 
-**Future Azure Integration:**
-- Azure Storage Blob SDK
-- Azure Identity (authentication)
-- Azure Data Lake Storage Gen2
+**Frontend:**
+- React 18.2 + Vite 5.0.8 (build tool with API proxy)
+- React Router 6.21.0 (client-side routing)
+- Zustand 4.4.7 (state management)
+- Axios 1.6.2 (HTTP client)
+- Recharts 2.10.3 (compliance analytics charts)
+- Framer Motion 10.16.16 (animations)
+- Lucide React (icons)
+
+**Azure Integration (optional/extensible):**
+- azure-storage-blob 12.19.0 (contract backups)
+- azure-identity 1.15.0 (authentication)
+- Azure Data Lake Storage Gen2 (data source connector)
 
 ### System Components
 
@@ -208,18 +221,71 @@ PostgreSQL → Generic types:
 - Commit history with authors
 - Revert capabilities
 
-#### 6. API Layer (FastAPI)
+#### 6. Semantic Policy Engine (`semantic_policy_engine.py` - 17.2 KB)
+
+**Core Functionality:**
+- LLM-powered validation using local Ollama (privacy-first)
+- 8 semantic policies (SEM001-SEM008)
+- Context-aware detection beyond rule-based patterns
+- Caching layer (1-hour TTL) for repeated validations
+- Graceful fallback when Ollama is unavailable
+
+**Semantic Policies:**
+1. **SEM001**: Sensitive Data Context Detection — context-based PII identification
+2. **SEM002**: Business Logic Consistency — validates governance rules make business sense
+3. **SEM003**: Security Pattern Detection — identifies schema vulnerabilities
+4. **SEM004**: Compliance Intent Verification — verifies tags match data characteristics
+5. **SEM005**: Data Quality Semantic Validation — quality thresholds vs field purpose
+6. **SEM006**: Field Relationship Analysis — combined sensitivity analysis
+7. **SEM007**: Naming Convention Analysis — clarity and consistency review
+8. **SEM008**: Use Case Appropriateness — use case vs classification alignment
+
+#### 7. Policy Orchestrator (`policy_orchestrator.py` - 20 KB)
+
+**Core Functionality:**
+- Intelligent routing between rule-based and LLM validation
+- Risk assessment (LOW → CRITICAL) based on schema analysis
+- Complexity scoring (0-100) across field count, PII, compliance, and classification
+- 4 validation strategies with predictable performance characteristics
+
+**Validation Strategies:**
+
+| Strategy | Avg Time | Policies | Use Case |
+|----------|----------|----------|----------|
+| FAST | ~100ms | 17 rule-based | Development, low-risk data |
+| BALANCED | ~5-10s | 17 + 2-4 semantic | Most production cases |
+| THOROUGH | ~20-30s | 17 + 8 semantic | Compliance audits, critical data |
+| ADAPTIVE | variable | Risk-determined | Automated workflows |
+
+#### 8. API Layer (FastAPI)
 
 **Datasets Endpoints:**
-- `POST /datasets/` - Register new dataset
-- `GET /datasets/` - List with filtering
-- `GET /datasets/{id}` - Get details
-- `PUT /datasets/{id}` - Update dataset
+- `POST /datasets/` - Register new dataset (triggers contract + validation)
+- `GET /datasets/` - List with filtering (`skip`, `limit`, `status`, `classification`)
+- `GET /datasets/{id}` - Get details with contracts and violations
+- `PUT /datasets/{id}` - Update dataset (re-validates)
 - `DELETE /datasets/{id}` - Soft delete
 
 **Schema Import:**
-- `POST /datasets/import-schema` - Import from sources
-- `GET /datasets/postgres/tables` - List tables
+- `POST /datasets/import-schema` - Import from PostgreSQL or file with PII detection
+- `GET /datasets/postgres/tables` - List available tables
+
+**Subscriptions:**
+- `POST /subscriptions/` - Create subscription request
+- `GET /subscriptions/` - List with status/dataset/consumer filters
+- `GET /subscriptions/{id}` - Get details
+- `POST /subscriptions/{id}/approve` - Approve (generates credentials + new contract version)
+- `PUT /subscriptions/{id}` / `DELETE /subscriptions/{id}` - Update/cancel
+
+**Semantic:**
+- `GET /semantic/health` - Ollama status and model inventory
+- `POST /semantic/validate` - Run LLM-powered validation
+- `GET/POST /semantic/models` - List and pull models
+
+**Orchestration:**
+- `POST /orchestration/analyze` - Risk assessment and strategy recommendation
+- `POST /orchestration/validate` - Validate with explicit strategy
+- `GET /orchestration/strategies` / `stats` - Configuration and performance info
 
 **System:**
 - `GET /` - API information
@@ -228,7 +294,7 @@ PostgreSQL → Generic types:
 **Response Format:**
 All responses follow consistent structure:
 - Success: HTTP 200/201 with data
-- Validation errors: HTTP 422 with details
+- Validation errors: HTTP 422 with Pydantic details
 - Not found: HTTP 404 with message
 - Server errors: HTTP 500 with safe message
 
@@ -494,80 +560,74 @@ policies:
    - Separate service for Git operations
    - Artifact storage in Azure Blob
 
+## Feature Completion Status
+
+### Completed Features ✅
+
+**Phase 1: Core Backend**
+- ✅ Dataset Registry with SQLAlchemy ORM (20 fields, lifecycle status)
+- ✅ Contract Management (dual YAML+JSON, SHA-256 hashing, semantic versioning)
+- ✅ Rule-Based Policy Engine (17 policies across 3 categories)
+- ✅ PostgreSQL Connector (schema import with heuristic PII detection)
+- ✅ Git Service (contract versioning, audit trail, diffs)
+- ✅ FastAPI backend with Swagger/ReDoc documentation
+
+**Phase 2: Frontend & Subscriptions**
+- ✅ Multi-Role React Frontend (Data Owner, Consumer, Steward, Admin)
+- ✅ Dataset Registration Wizard (4-step multi-form with schema import)
+- ✅ Catalog Browser with search/filter and subscription requests
+- ✅ Approval Queue with credential generation and contract versioning
+- ✅ Compliance Dashboard with Recharts analytics (4 chart types)
+- ✅ End-to-end subscription lifecycle (pending → approved → versioned contract)
+
+**Phase 2.5: AI-Enhanced Validation**
+- ✅ Semantic Policy Engine (8 LLM-powered policies via Ollama)
+- ✅ Policy Orchestrator (FAST/BALANCED/THOROUGH/ADAPTIVE strategies)
+- ✅ Risk assessment and complexity scoring
+- ✅ 101-test backend test suite (81% pass rate)
+- ✅ Frontend Vitest test configuration
+
 ## Future Enhancements
 
-### Phase 2: Frontend & Subscriptions
-
-**Data Owner Portal:**
-- Dataset registration wizard
-- Schema import interface
-- Validation result viewer
-- Contract review and approval
-
-**Data Consumer Portal:**
-- Dataset catalog browser
-- Search and filter
-- Subscription request form
-- SLA negotiation interface
-
-**Data Steward Portal:**
-- Approval queue
-- Contract diff viewer
-- Violation dashboard
-- Policy management
-
-**Platform Dashboard:**
-- Compliance metrics
-- Violation trends
-- Popular datasets
-- System health
-
-### Phase 3: Advanced Features
+### Phase 3: Additional Connectors & Monitoring
 
 **Additional Connectors:**
-- Azure Data Lake Storage Gen2
-- Azure Blob Storage
-- CSV/Parquet file parsing
+- Azure Data Lake Storage Gen2 schema import
+- Azure Blob Storage (CSV/Parquet file parsing)
 - Snowflake connector
 - Databricks connector
-
-**Data Lineage:**
-- Track data transformations
-- Visualize dependencies
-- Impact analysis
-- Root cause tracing
+- AWS S3 support
 
 **Real-Time Monitoring:**
-- Quality metrics dashboard
-- SLA compliance tracking
-- Anomaly detection
-- Automated alerting
-
-**Advanced Compliance:**
-- Automated data classification
-- Privacy impact assessment
-- Consent management
-- Right to be forgotten
+- Quality metrics dashboard with live SLA tracking
+- Anomaly detection on published datasets
+- Email/Slack notification system for approvals and violations
+- Contract change alerts to consumers
 
 **CI/CD Integration:**
-- Pre-commit hooks
-- Pipeline validation
-- Automated testing
-- Deployment gates
+- Pre-commit hooks to block non-compliant contracts
+- GitHub Actions pipeline validation step
+- Deployment gates based on compliance status
 
 ### Phase 4: AI & Automation
 
 **ML-Powered Features:**
-- Intelligent PII detection
-- Automatic classification suggestion
-- Quality anomaly detection
-- Usage pattern analysis
+- Model-based PII detection (beyond heuristic keyword matching)
+- Automatic classification suggestion from schema analysis
+- Quality anomaly detection on actual data
+- Usage pattern analysis and optimization recommendations
 
 **Automation:**
-- Auto-remediation for simple violations
-- Smart contract generation
-- Policy recommendation engine
+- Auto-remediation for simple, predictable violations
+- Smart contract generation with AI-suggested governance metadata
+- Policy recommendation engine based on industry/domain
 - Predictive compliance scoring
+
+**Advanced Compliance:**
+- Automated data classification with confidence scores
+- Privacy impact assessment (PIA) generation
+- Consent management integration
+- Right to be forgotten (RTBF) workflow
 
 ## Success Metrics
 
@@ -639,6 +699,6 @@ The UN Peacekeeping model enables organizations to maintain central standards wh
 
 ---
 
-**Project Status**: Production-Ready Architecture (Phase 1 Complete)
-**Next Milestone**: React Frontend & Subscription Workflow (Phase 2)
+**Project Status**: Phase 1 + Phase 2 + Semantic AI Complete ✅
+**Next Milestone**: Phase 3 — Additional Connectors & Real-Time Monitoring
 **Long-Term Vision**: AI-Powered Governance Platform (Phase 4)

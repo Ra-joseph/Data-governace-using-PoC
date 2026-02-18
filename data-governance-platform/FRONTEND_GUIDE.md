@@ -1,331 +1,409 @@
-# Frontend + Git Integration - Complete Guide
+# Frontend Guide — Multi-Role React Application
 
 ## Table of Contents
 
-- [What's New](#whats-new)
-- [Complete Package](#complete-package)
+- [Overview](#overview)
 - [Quick Start](#quick-start)
-- [Design Highlights](#design-highlights)
-- [Git Integration Features](#git-integration-features)
-- [Data Visualization](#data-visualization)
+- [Role-Based User Interfaces](#role-based-user-interfaces)
+  - [Data Owner UI](#data-owner-ui)
+  - [Data Consumer UI](#data-consumer-ui)
+  - [Data Steward UI](#data-steward-ui)
+  - [Platform Admin UI](#platform-admin-ui)
+- [Architecture](#architecture)
+- [Component Structure](#component-structure)
+- [State Management](#state-management)
 - [API Integration](#api-integration)
-- [Animation System](#animation-system)
-- [Responsive Design](#responsive-design)
-- [Testing Your Setup](#testing-your-setup)
-- [What You Can Do Now](#what-you-can-do-now)
+- [Design System](#design-system)
+- [Testing](#testing)
 - [Customization](#customization)
 - [Troubleshooting](#troubleshooting)
-- [Performance Tips](#performance-tips)
-- [Production Deployment](#production-deployment)
-- [Project Statistics](#project-statistics)
-- [Learning Path](#learning-path)
-- [Success Criteria](#success-criteria)
-- [Next Steps](#next-steps)
-- [Key Achievements](#key-achievements)
+- [Production Build](#production-build)
 
-## ✨ What's New
+## Overview
 
-You now have a **complete, production-ready React frontend** with comprehensive **Git integration** for full version control and audit trails!
+The Data Governance Platform frontend is a **multi-role React 18 application** built with Vite, providing dedicated user interfaces for each role in the governance workflow:
 
-## 📦 Complete Package
+- **Data Owner**: Register datasets, view violations, track subscribers
+- **Data Consumer**: Browse catalog, request access with SLA negotiation
+- **Data Steward**: Review and approve subscription requests
+- **Platform Admin**: Monitor compliance metrics and violation trends
 
-### Frontend (30+ Files)
-- ✅ **Dashboard** with live metrics and charts
-- ✅ **Dataset Catalog** with search and filtering
-- ✅ **Dataset Detail** views
-- ✅ **Git History Viewer** with commit timeline ⭐ NEW
-- ✅ **Repository Status Dashboard** ⭐ NEW
-- ✅ **Contract File Browser** ⭐ NEW
-- ✅ Responsive navigation and layout
-- ✅ State management (Zustand)
-- ✅ API integration (Axios)
-- ✅ Animations (Framer Motion)
-- ✅ Charts (Recharts)
+**Access URL**: http://localhost:5173/select-role
 
-### Enhanced Backend (Git APIs)
-- ✅ `/api/v1/git/history` - Get commit history
-- ✅ `/api/v1/git/contracts` - List all contracts
-- ✅ `/api/v1/git/status` - Repository status
-- ✅ `/api/v1/git/diff` - Compare commits
-- ✅ `/api/v1/git/file-history/{filename}` - File-specific history
-- ✅ `/api/v1/git/blame/{filename}` - Line-by-line authorship
-
-## 🚀 Quick Start
-
-### Step 1: Install Frontend Dependencies
+## Quick Start
 
 ```bash
+# Prerequisites: Node.js 18+, backend running on port 8000
+
+# Install dependencies
 cd frontend
 npm install
-```
 
-### Step 2: Start Backend (if not running)
-
-```bash
-# In backend directory
-cd ../backend
-source ../venv/bin/activate
-uvicorn app.main:app --reload
-```
-
-### Step 3: Start Frontend
-
-```bash
-# In frontend directory
+# Start development server
 npm run dev
 ```
 
-Frontend runs on: **http://localhost:3000**
-Backend API on: **http://localhost:8000**
+Frontend starts on **http://localhost:5173**.
 
-### Step 4: Explore the Platform
+### Verify Frontend is Working
 
-Open http://localhost:3000 and explore:
+1. Open http://localhost:5173/select-role
+2. You should see 4 role cards (Data Owner, Consumer, Steward, Admin)
+3. Click any card to access that role's interface
+4. Data loads from the backend API (port 8000) via Vite proxy
 
-1. **Dashboard** - See metrics, charts, and activity
-2. **Dataset Catalog** - Browse registered datasets
-3. **Git History** ⭐ - View complete commit timeline
-4. Click any dataset to see details
-5. Check Git commits and repository status
+## Role-Based User Interfaces
 
-## 🎨 Design Highlights
+### Data Owner UI
 
-### Distinctive Aesthetics
+**Entry point**: http://localhost:5173/select-role → "Data Owner"
 
-**Typography**:
-- Display: Outfit (modern, geometric)
-- Mono: IBM Plex Mono (technical, readable)
+#### Owner Dashboard (`/owner/dashboard`)
 
-**Color Palette**:
-- Background: Dark theme (#0a0e14)
-- Accent: Purple (#8b5cf6)
-- Success: Green (#10b981)
-- Warning: Orange (#f59e0b)
-- Error: Red (#ef4444)
+The dashboard shows all datasets owned by the current user:
 
-**Visual Effects**:
-- Gradient backgrounds with texture
-- Smooth animations and transitions
-- Glow effects on hover
-- Card depth with shadows
-- Timeline visualizations
+- **Dataset cards** with name, status, and violation count
+- **Violation alerts** with severity badges (critical/warning)
+- **Subscriber count** for each dataset
+- **Quick actions**: Register new dataset, view details
 
-### Professional Polish
-
-- Consistent spacing system
-- Refined typography scale
-- Thoughtful color usage
-- Smooth micro-interactions
-- Responsive across devices
-
-## 🎯 Git Integration Features
-
-### 1. Repository Status Dashboard ⭐
-
-Displays at-a-glance:
+**What violations look like:**
 ```
-📄 Total Contracts: 3
-📝 Total Commits: 15
-🏷️ Tags: 2
-🌿 Active Branch: main
+SD001 [CRITICAL] PII fields require encryption
+  → customer_ssn, customer_email, customer_phone
+  → Remediation: Set encryption_required: true...
+
+SD003 [WARNING] PII datasets should have compliance tags
+  → governance.compliance_tags is empty
+  → Remediation: Add compliance_tags: ['GDPR', 'CCPA']
 ```
 
-### 2. Commit Timeline ⭐
+#### Dataset Registration Wizard (`/owner/register`)
 
-Beautiful visual timeline showing:
-- Commit dots connected by lines
-- Commit messages and hashes
-- Author information
-- Time ago ("2 hours ago")
-- Clickable for details
+A 4-step guided form for registering new datasets:
 
-### 3. Contract File Browser ⭐
+**Step 1 — Basic Info**
+- Dataset name and description
+- Owner name and email
+- Data source type (PostgreSQL, file, Azure)
 
-Sidebar showing all contracts:
-- File names
-- File sizes
-- Quick access to history
-- Sticky positioning
+**Step 2 — Schema Definition**
+- Option A: Import from PostgreSQL (auto-detects PII, extracts column types)
+- Option B: Manual field-by-field entry
+- PII fields are highlighted automatically
 
-### 4. Commit Details Modal ⭐
+**Step 3 — Governance Metadata**
+- Data classification (public / internal / confidential / restricted)
+- Retention period (days)
+- Compliance tags (GDPR, CCPA, HIPAA, SOX, PCI-DSS)
+- Encryption settings
 
-Click any commit to see:
-- Full commit hash
-- Author details
-- Complete timestamp
-- Full commit message
-- Actions (view, download)
+**Step 4 — Review & Submit**
+- Final review of all fields
+- Estimated violations shown before submission
+- Submit triggers contract generation and policy validation
 
-### 5. Time Filtering
+After submission, violations are displayed with actionable remediation.
 
-Filter commits by:
-- All Time
-- Today
-- This Week
+---
 
-### 6. Search & Navigation
+### Data Consumer UI
 
-- Search datasets by name
-- Filter by status
-- Quick navigation between pages
-- Breadcrumb trails
+**Entry point**: http://localhost:5173/select-role → "Data Consumer"
 
-## 📊 Data Visualization
+#### Catalog Browser (`/consumer/catalog`)
 
-### Dashboard Charts
+Grid view of all published datasets:
 
-1. **Dataset Growth** (Area Chart)
-   - 6-month trend
-   - Datasets vs Violations
-   - Smooth gradients
+- **Search bar** — filter by name or description
+- **Classification filter** — public, internal, confidential, restricted
+- **Dataset cards** showing owner, classification, field count, compliance status
+- **"Request Access"** button opens subscription form
 
-2. **Classification Distribution** (Pie Chart)
+#### Subscription Request Form
+
+Appears as a modal when clicking "Request Access":
+
+- **Business justification** — why you need this data
+- **Use case** — analytics, reporting, integration, ML, compliance
+- **Field selection** — choose only the fields you need
+- **SLA requirements**:
+  - Max latency (ms)
+  - Min availability (%)
+  - Max staleness (minutes)
+  - Max data age (hours)
+- **Access duration** — how long access is needed
+
+Submitted requests appear in the Data Steward's approval queue.
+
+---
+
+### Data Steward UI
+
+**Entry point**: http://localhost:5173/select-role → "Data Steward"
+
+#### Approval Queue (`/steward/approvals`)
+
+Table view of all subscription requests:
+
+- **Status filter tabs** — Pending, Approved, Rejected
+- **Request details**: consumer email, dataset name, use case, submission date
+- **"Review" button** opens the approval modal
+
+#### Review Modal
+
+- Consumer's business justification and use case
+- Requested fields list
+- SLA requirements
+- **Approve** or **Reject** action
+- **Field selection**: approve all or a subset of requested fields
+- **Access credentials** to provide (username, API key, connection string)
+- **Reviewer notes**
+
+When approved:
+1. Subscription status → "approved"
+2. Access credentials stored
+3. New contract version generated (v1.1.0, v1.2.0, etc.)
+4. Consumer SLA terms embedded in contract
+5. Contract committed to Git
+
+---
+
+### Platform Admin UI
+
+**Entry point**: http://localhost:5173/select-role → "Platform Admin"
+
+#### Compliance Dashboard (`/admin/dashboard`)
+
+**Key Metrics (top row):**
+- Compliance rate (% of datasets passing all policies)
+- Total active violations
+- Active subscriptions
+- Pending approval requests
+
+**Analytics Charts (Recharts):**
+
+1. **Violation Trends** (Line chart)
+   - X-axis: date
+   - Y-axis: violation count
+   - Shows governance health over time
+
+2. **Violations by Severity** (Pie chart)
+   - Critical (red), Warning (orange), Info (blue)
+   - Click segments to filter
+
+3. **Top Violated Policies** (Bar chart)
+   - Policy ID on X-axis
+   - Count on Y-axis
+   - Identifies systemic issues
+
+4. **Compliance by Classification** (Stacked bar)
    - Public, Internal, Confidential, Restricted
-   - Color-coded by sensitivity
-   - Interactive tooltips
+   - Passed vs failed breakdown
 
-3. **Policy Compliance** (Bar Chart)
-   - Violations vs Passed
-   - Per-policy breakdown
-   - Easy comparison
+**Recent Activity Feed:**
+- Latest policy violations with timestamps
+- New subscription requests
+- Dataset registration events
 
-### Metrics Cards
+## Architecture
 
-Real-time display of:
-- Total Datasets
-- Published Datasets
-- Active Violations
-- PII-containing Datasets
+```
+frontend/
+├── src/
+│   ├── App.jsx              # React Router configuration
+│   │   Routes:
+│   │   /select-role        → RoleSelector
+│   │   /owner/dashboard    → OwnerDashboard
+│   │   /owner/register     → DatasetRegistrationWizard
+│   │   /consumer/catalog   → DataCatalogBrowser
+│   │   /steward/approvals  → ApprovalQueue
+│   │   /admin/dashboard    → ComplianceDashboard
+│   │
+│   ├── components/
+│   │   └── Layout.jsx      # Sidebar navigation (role-based links)
+│   │
+│   ├── contexts/
+│   │   └── AuthContext.jsx # Current role context (set on role selection)
+│   │
+│   ├── pages/              # Role-based page components
+│   │   ├── RoleSelector.jsx
+│   │   ├── DataOwner/
+│   │   ├── DataConsumer/
+│   │   ├── DataSteward/
+│   │   └── Admin/
+│   │
+│   ├── services/
+│   │   └── api.js          # All API calls (datasets, subscriptions, git)
+│   │
+│   └── stores/
+│       └── index.js        # Zustand stores (5 stores)
+│
+├── vite.config.js           # API proxy: /api → http://localhost:8000
+└── vitest.config.js         # Test configuration
+```
 
-Each with trend indicators and color coding.
+## Component Structure
 
-## 🔌 API Integration
+### Layout.jsx
 
-### Complete Service Layer
+The shared layout wraps all pages with:
+- **Sidebar navigation** with role-specific links
+- **Top header** with current role indicator
+- **Main content area** for page content
+
+Navigation links change based on role:
+- Owner: Dashboard, Register Dataset
+- Consumer: Catalog, My Subscriptions
+- Steward: Approval Queue, History
+- Admin: Compliance Dashboard, Reports
+
+### AuthContext.jsx
+
+Provides role context throughout the app:
+
+```javascript
+const { currentRole, setRole } = useAuth();
+// currentRole: 'owner' | 'consumer' | 'steward' | 'admin' | null
+```
+
+Set on role selection. Persists in Zustand store for session duration.
+
+## State Management
+
+Uses **Zustand** for lightweight state management:
+
+```javascript
+// stores/index.js — 5 stores
+import { useDatasetStore, useSubscriptionStore, useAuthStore,
+         useGitStore, useUIStore } from './stores';
+
+// Dataset store
+const { datasets, loading, fetchDatasets } = useDatasetStore();
+
+// Subscription store
+const { subscriptions, createSubscription } = useSubscriptionStore();
+```
+
+Zustand was chosen for:
+- No boilerplate (no reducers, no actions)
+- Direct state updates
+- React devtools integration
+- Small bundle size
+
+## API Integration
+
+All API calls go through `src/services/api.js`:
 
 ```javascript
 // Datasets
-datasetAPI.list()
-datasetAPI.get(id)
-datasetAPI.create(data)
-datasetAPI.importSchema(data)
+const datasets = await api.get('/api/v1/datasets/');
+const dataset = await api.get(`/api/v1/datasets/${id}`);
+const schema = await api.post('/api/v1/datasets/import-schema', payload);
 
-// Git Integration ⭐ NEW
-gitAPI.history(filename)
-gitAPI.contracts()
-gitAPI.status()
-gitAPI.diff(commit1, commit2)
+// Subscriptions
+const subs = await api.get('/api/v1/subscriptions/');
+const result = await api.post(`/api/v1/subscriptions/${id}/approve`, data);
+
+// Git
+const commits = await api.get('/api/v1/git/commits');
 ```
 
-### Automatic Proxy
+The Vite dev server proxies `/api` requests to `http://localhost:8000`, so there are no CORS issues in development.
 
-Vite automatically proxies `/api` requests to backend:
-- No CORS issues
-- Seamless development
-- Easy production deployment
-
-## 🎭 Animation System
-
-### Framer Motion Integration
-
-**Page Transitions**:
+**In `vite.config.js`:**
 ```javascript
-initial={{ opacity: 0, y: 20 }}
-animate={{ opacity: 1, y: 0 }}
+server: {
+  proxy: {
+    '/api': {
+      target: 'http://localhost:8000',
+      changeOrigin: true
+    }
+  }
+}
 ```
 
-**Staggered Elements**:
-```javascript
-transition={{ staggerChildren: 0.1 }}
+## Design System
+
+### Color Palette
+
+```css
+:root {
+  --bg-primary: #0a0e14;        /* Dark background */
+  --accent-primary: #8b5cf6;    /* Purple accent */
+  --success: #10b981;           /* Green */
+  --warning: #f59e0b;           /* Orange */
+  --error: #ef4444;             /* Red */
+  --text-primary: #e2e8f0;      /* Light text */
+  --text-secondary: #94a3b8;    /* Muted text */
+}
 ```
 
-**Hover Effects**:
-```javascript
-whileHover={{ scale: 1.02 }}
-```
+### Typography
 
-### Performance
+- **Display**: Outfit (headings, large text)
+- **Mono**: IBM Plex Mono (code, IDs, technical values)
 
-- Hardware-accelerated
-- Smooth 60fps animations
-- Optimized re-renders
-- Lazy loading
+### Severity Badge Colors
 
-## 📱 Responsive Design
+| Severity | Color | Background |
+|----------|-------|-----------|
+| Critical | #ef4444 | rgba(239,68,68,0.1) |
+| Warning | #f59e0b | rgba(245,158,11,0.1) |
+| Info | #3b82f6 | rgba(59,130,246,0.1) |
+| Passed | #10b981 | rgba(16,185,129,0.1) |
 
-### Three Breakpoints
+### Responsive Breakpoints
 
-**Desktop (>1024px)**:
-- Full sidebar with labels
-- Multi-column grids
-- Large charts
+- **Desktop (>1024px)**: Full sidebar + multi-column grids
+- **Tablet (768-1024px)**: Compact sidebar + adapted grids
+- **Mobile (<768px)**: Icon-only sidebar + single column
 
-**Tablet (768-1024px)**:
-- Adapted grids
-- Compact spacing
-- Responsive charts
+## Testing
 
-**Mobile (<768px)**:
-- Icon-only sidebar
-- Single column
-- Touch-optimized
-- 14px base font
-
-## 🔧 Testing Your Setup
-
-### 1. Backend Health Check
+### Frontend Test Setup
 
 ```bash
-curl http://localhost:8000/health
-# Should return: {"status": "healthy"}
+# Run tests
+cd frontend
+npm test
+
+# Run with UI
+npm run test:ui
+
+# Run with coverage
+npm run test:coverage
 ```
 
-### 2. Git Status Check
+### Test Structure
 
-```bash
-curl http://localhost:8000/api/v1/git/status
-# Should return repository information
+```
+frontend/src/test/
+├── setup.js         # Global test setup (jsdom environment)
+└── api.test.js      # API service tests
 ```
 
-### 3. Frontend Health
+### Writing Component Tests
 
-Visit http://localhost:3000
-- Page should load instantly
-- Dashboard shows charts
-- Navigation works smoothly
+```javascript
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import DataCatalogBrowser from '../pages/DataConsumer/DataCatalogBrowser';
 
-### 4. Git Integration Test
+describe('DataCatalogBrowser', () => {
+  it('renders catalog heading', () => {
+    render(
+      <MemoryRouter>
+        <DataCatalogBrowser />
+      </MemoryRouter>
+    );
+    expect(screen.getByText(/Data Catalog/i)).toBeInTheDocument();
+  });
+});
+```
 
-1. Go to http://localhost:3000/git
-2. Should see repository status
-3. Should see commit timeline
-4. Should see contract files
-5. Click a commit for details
-
-## 🎯 What You Can Do Now
-
-### Data Owner
-
-1. **Browse Datasets**: See all registered data assets
-2. **View Details**: Click any dataset for full information
-3. **Track Changes**: View complete Git history
-4. **Monitor Compliance**: Check violations on dashboard
-
-### Data Steward
-
-1. **Review Commits**: See all contract changes
-2. **Compare Versions**: Use Git diff functionality
-3. **Audit Trail**: Complete history with timestamps
-4. **Status Monitoring**: Repository health dashboard
-
-### Developer
-
-1. **API Integration**: All endpoints documented
-2. **Custom Components**: Easy to extend
-3. **State Management**: Zustand for simplicity
-4. **Styling System**: CSS variables for themes
-
-## 🔧 Customization
+## Customization
 
 ### Change Theme Colors
 
@@ -333,61 +411,69 @@ Edit `frontend/src/App.css`:
 
 ```css
 :root {
-  --color-accent-primary: #your-color;
-  --color-accent-secondary: #your-color;
+  --accent-primary: #your-brand-color;
+  --bg-primary: #your-background;
 }
 ```
 
-### Add New Chart
+### Add a New Page
+
+1. Create `src/pages/YourRole/YourPage.jsx`
+2. Add route in `src/App.jsx`:
+   ```jsx
+   <Route path="/your-route" element={<YourPage />} />
+   ```
+3. Add navigation link in `src/components/Layout.jsx`
+
+### Add a New API Call
+
+Add to `src/services/api.js`:
 
 ```javascript
-import { LineChart, Line } from 'recharts';
+export const yourApi = {
+  list: () => api.get('/api/v1/your-endpoint/'),
+  get: (id) => api.get(`/api/v1/your-endpoint/${id}`),
+  create: (data) => api.post('/api/v1/your-endpoint/', data),
+};
+```
+
+### Add a New Chart
+
+```javascript
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
 <ResponsiveContainer width="100%" height={300}>
-  <LineChart data={yourData}>
-    <Line dataKey="value" stroke="#8b5cf6" />
-  </LineChart>
+  <BarChart data={yourData}>
+    <XAxis dataKey="name" />
+    <YAxis />
+    <Bar dataKey="value" fill="#8b5cf6" />
+  </BarChart>
 </ResponsiveContainer>
 ```
 
-### Create New Page
+## Troubleshooting
 
-1. Create `src/pages/YourPage.jsx`
-2. Add route in `src/App.jsx`
-3. Add nav link in `src/components/Layout.jsx`
-
-## 🐛 Troubleshooting
-
-### Frontend Won't Start
+### Frontend won't start
 
 ```bash
-# Clear node_modules
+# Check Node.js version
+node --version  # Must be 18+
+
+# Clear and reinstall
 rm -rf node_modules package-lock.json
 npm install
 npm run dev
 ```
 
-### Can't Connect to API
+### "Failed to fetch" errors in browser
 
 ```bash
-# Check backend is running
+# Backend must be running
 curl http://localhost:8000/health
-
-# Check vite proxy config
-cat vite.config.js
+# Should return: {"status": "healthy"}
 ```
 
-### Git Endpoints Not Working
-
-```bash
-# Ensure backend has git router registered
-grep "git.router" backend/app/main.py
-
-# Test endpoint directly
-curl http://localhost:8000/api/v1/git/status
-```
-
-### Charts Not Rendering
+### Charts not rendering
 
 ```bash
 # Reinstall recharts
@@ -395,164 +481,46 @@ npm uninstall recharts
 npm install recharts@^2.10.3
 ```
 
-## 📈 Performance Tips
+### Subscription approval fails
 
-### Optimization
+Check the browser console (F12 → Console) for errors. Common causes:
+- Dataset must have at least one subscriber field defined
+- Git must be initialized in `backend/contracts/`
+- Backend logs will show specific contract versioning errors
 
-1. **Lazy Load Heavy Components**
-```javascript
-const HeavyComponent = lazy(() => import('./Heavy'));
-```
+### CORS errors
 
-2. **Memoize Expensive Calculations**
-```javascript
-const computed = useMemo(() => expensive(data), [data]);
-```
+In development, the Vite proxy handles CORS. If you see CORS errors:
+1. Check `vite.config.js` has the proxy configuration
+2. Ensure backend is running on port 8000
+3. Use the Vite dev server (port 5173), not a static build
 
-3. **Debounce Search**
-```javascript
-const debouncedSearch = useMemo(
-  () => debounce(handleSearch, 300),
-  []
-);
-```
-
-## 🚀 Production Deployment
-
-### Build for Production
+## Production Build
 
 ```bash
+# Build for production
 cd frontend
 npm run build
+
+# Output is in frontend/dist/
+# Serve with nginx, Netlify, Vercel, or Azure Static Web Apps
 ```
 
-Output in `dist/` folder (optimized, minified).
+**Environment variable for production API URL:**
 
-### Deploy Options
-
-1. **Netlify**: Drop `dist/` folder
-2. **Vercel**: Connect GitHub repo
-3. **Azure Static Web Apps**: Use Azure CLI
-4. **Docker + Nginx**: Serve static files
-
-### Environment Variables
-
-Create `.env.production`:
-
+Create `frontend/.env.production`:
 ```env
 VITE_API_URL=https://your-api-domain.com
 ```
 
-## 📊 Project Statistics
-
-### Frontend Metrics
-
-- **Total Files**: 30+ files
-- **Components**: 10+ React components
-- **Lines of Code**: ~3,500 lines
-- **Dependencies**: 15 packages
-- **Features**: 8 major features
-- **API Endpoints**: 10+ integrated
-
-### Features by Phase
-
-**Phase 1 (Complete ✅)**:
-- Dashboard
-- Dataset Catalog
-- Dataset Details
-- Git History ⭐
-- Navigation
-- API Integration
-- State Management
-- Animations
-
-**Phase 2 (Planned)**:
-- Schema Import Wizard
-- Contract Diff Viewer
-- Subscription Management
-- Policy Editor
-- Compliance Dashboard
-- User Authentication
-
-## 📚 Learning Path
-
-### Day 1: Setup & Explore
-1. Install and run frontend
-2. Browse all pages
-3. Check Git history
-4. View a dataset detail
-
-### Day 2: Understand Architecture
-1. Read `frontend/README.md`
-2. Explore component structure
-3. Check API service layer
-4. Review state management
-
-### Day 3: Customize
-1. Change theme colors
-2. Modify a component
-3. Add a new metric
-4. Customize charts
-
-### Day 4: Extend
-1. Create a new page
-2. Add a new API endpoint
-3. Build a custom component
-4. Add new Git features
-
-## ✅ Success Criteria
-
-Your setup is complete when:
-
-1. ✅ Frontend runs on http://localhost:3000
-2. ✅ Backend API accessible on http://localhost:8000
-3. ✅ Dashboard shows charts and metrics
-4. ✅ Git History displays commits
-5. ✅ Can click datasets to view details
-6. ✅ Can navigate between pages
-7. ✅ All animations work smoothly
-8. ✅ Repository status shows data
-
-**All criteria met? You're ready to go!** 🚀
-
-## 🎯 Next Steps
-
-1. **Explore**: Click through all pages
-2. **Import**: Register more datasets via backend
-3. **Review**: Check Git commits and history
-4. **Customize**: Change colors and styles
-5. **Extend**: Add your own features
-6. **Deploy**: Push to production when ready
-
-## ✨ Key Achievements
-
-### What You Have Now
-
-✅ Professional, production-ready frontend
-✅ Complete Git integration with visual timeline
-✅ Real-time data visualization
-✅ Responsive design (desktop, tablet, mobile)
-✅ Smooth animations and interactions
-✅ Comprehensive API integration
-✅ State management with Zustand
-✅ Beautiful dark theme with purple accent
-✅ Full audit trail capabilities
-✅ Repository status dashboard
-
-### What Makes It Special
-
-1. **Distinctive Design**: Not generic AI aesthetics
-2. **Git Integration**: Full version control UI
-3. **Professional Polish**: Refined spacing, typography, colors
-4. **Performance**: Fast, optimized, smooth
-5. **Extensible**: Easy to add features
-6. **Production Ready**: Can deploy immediately
+Update `api.js` to use:
+```javascript
+const BASE_URL = import.meta.env.VITE_API_URL || '';
+```
 
 ---
 
-**Ready to govern your data with style!** 🎨🚀
-
-**Questions?** Check the documentation:
-- `frontend/README.md` - Complete frontend guide
-- `README.md` - Overall project documentation
-- `QUICKSTART.md` - 5-minute setup guide
+**Frontend Access URL**: http://localhost:5173/select-role
+**Backend API**: http://localhost:8000
+**API Documentation**: http://localhost:8000/api/docs
+**More Details**: See the [main README](./README.md) for complete platform documentation.
