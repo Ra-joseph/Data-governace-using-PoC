@@ -78,3 +78,6 @@ coverage/
 *.tmp
 *.temp
 .cache/
+
+# Test artifacts
+data-governance-platform/backend/backend/
