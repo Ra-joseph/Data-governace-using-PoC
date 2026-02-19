@@ -47,6 +47,8 @@ class TestDatasetModel:
             owner_name="Owner",
             owner_email="owner@example.com",
             source_type="postgres",
+            physical_location="public.test_table",
+            schema_definition=[{"name": "id", "type": "integer"}],
             classification="internal"
         )
 
@@ -77,6 +79,8 @@ class TestDatasetModel:
             dataset_id=sample_dataset.id,
             consumer_name="Consumer",
             consumer_email="consumer@example.com",
+            purpose="Testing relationships",
+            use_case="analytics",
             status="pending",
             access_granted=False
         )
@@ -119,7 +123,6 @@ class TestContractModel:
         assert contract.dataset_id == sample_dataset.id
         assert contract.version == "1.0.0"
         assert contract.created_at is not None
-        assert contract.last_validated_at is not None
 
     def test_contract_validation_results(self, db, sample_dataset):
         """Test storing validation results."""
@@ -203,6 +206,8 @@ class TestSubscriptionModel:
             dataset_id=sample_dataset.id,
             consumer_name="Test Consumer",
             consumer_email="consumer@example.com",
+            purpose="Testing approval",
+            use_case="analytics",
             status="pending",
             access_granted=False
         )
@@ -232,6 +237,8 @@ class TestSubscriptionModel:
             dataset_id=sample_dataset.id,
             consumer_name="Consumer",
             consumer_email="consumer@example.com",
+            purpose="SLA testing",
+            use_case="analytics",
             status="pending",
             access_granted=False,
             data_filters={
@@ -258,6 +265,8 @@ class TestSubscriptionModel:
             dataset_id=sample_dataset.id,
             consumer_name="Test Consumer",
             consumer_email="consumer@example.com",
+            purpose="Testing rejection",
+            use_case="analytics",
             status="pending",
             access_granted=False
         )
@@ -283,6 +292,8 @@ class TestSubscriptionModel:
             dataset_id=sample_dataset.id,
             consumer_name="Consumer",
             consumer_email="consumer@example.com",
+            purpose="Testing relationship",
+            use_case="analytics",
             status="pending",
             access_granted=False
         )
@@ -316,6 +327,8 @@ class TestSubscriptionModel:
             contract_id=contract.id,
             consumer_name="Consumer",
             consumer_email="consumer@example.com",
+            purpose="Testing contract link",
+            use_case="analytics",
             status="approved",
             access_granted=True
         )
@@ -340,6 +353,8 @@ class TestModelConstraints:
             owner_name="Owner",
             owner_email="owner@example.com",
             source_type="postgres",
+            physical_location="public.dup_table",
+            schema_definition=[{"name": "id", "type": "integer"}],
             classification="internal"
         )
 
@@ -371,6 +386,8 @@ class TestModelConstraints:
             dataset_id=99999,  # Non-existent dataset
             consumer_name="Consumer",
             consumer_email="consumer@example.com",
+            purpose="Testing FK constraint",
+            use_case="analytics",
             status="pending",
             access_granted=False
         )

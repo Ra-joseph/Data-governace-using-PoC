@@ -110,6 +110,7 @@ class ValidationResult(BaseModel):
     failures: int = 0
     violations: List[Violation] = []
     timestamp: datetime = datetime.now()
+    metadata: Optional[Dict[str, Any]] = None
 
 
 class ContractCreate(BaseModel):

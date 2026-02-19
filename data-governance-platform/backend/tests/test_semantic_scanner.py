@@ -37,7 +37,8 @@ class TestOllamaClient:
     @patch('requests.get')
     def test_is_available_failure(self, mock_get):
         """Test Ollama availability check when not running."""
-        mock_get.side_effect = Exception("Connection refused")
+        import requests as req
+        mock_get.side_effect = req.exceptions.ConnectionError("Connection refused")
 
         client = OllamaClient()
         assert client.is_available() is False

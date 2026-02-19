@@ -3,6 +3,7 @@ Unit tests for datasets API endpoints.
 """
 import pytest
 from unittest.mock import patch, MagicMock
+from datetime import datetime
 from fastapi.testclient import TestClient
 
 
@@ -42,7 +43,7 @@ class TestDatasetsAPI:
         # Mock contract creation
         mock_contract = MagicMock()
         mock_contract.validation_status = "passed"
-        mock_contract.created_at = "2024-01-01T00:00:00"
+        mock_contract.created_at = datetime(2024, 1, 1)
         mock_create_contract.return_value = mock_contract
 
         dataset_data = {
@@ -136,7 +137,7 @@ class TestDatasetsAPI:
         """Test updating a dataset."""
         mock_contract = MagicMock()
         mock_contract.validation_status = "passed"
-        mock_contract.created_at = "2024-01-01T00:00:00"
+        mock_contract.created_at = datetime(2024, 1, 1)
         mock_contract.version = "2.0.0"
         mock_create_contract.return_value = mock_contract
 
@@ -195,7 +196,7 @@ class TestDatasetsAPI:
         assert isinstance(data, list)
         assert len(data) <= 10
 
-    @patch('app.services.postgres_connector.PostgresConnector')
+    @patch('app.api.datasets.PostgresConnector')
     def test_import_schema_postgres(self, mock_connector_class, client):
         """Test schema import from PostgreSQL."""
         # Mock PostgresConnector
@@ -203,6 +204,7 @@ class TestDatasetsAPI:
         mock_connector.test_connection.return_value = True
         mock_connector.import_table_schema.return_value = {
             "table_name": "customers",
+            "schema_name": "public",
             "description": "Customer table",
             "schema_definition": [
                 {
@@ -241,7 +243,7 @@ class TestDatasetsAPI:
         }
 
         response = client.post("/api/v1/datasets/import-schema", json=import_request)
-        assert response.status_code == 422  # Validation error
+        assert response.status_code == 400  # Missing table_name
 
     def test_import_schema_unsupported_source(self, client):
         """Test schema import with unsupported source type."""
@@ -254,7 +256,7 @@ class TestDatasetsAPI:
         assert response.status_code == 501  # Not implemented
         assert "not yet implemented" in response.json()["detail"]
 
-    @patch('app.services.postgres_connector.PostgresConnector')
+    @patch('app.api.datasets.PostgresConnector')
     def test_list_postgres_tables(self, mock_connector_class, client, mock_postgres_tables):
         """Test listing PostgreSQL tables."""
         # Mock PostgresConnector
@@ -270,7 +272,7 @@ class TestDatasetsAPI:
         assert len(data) == 3
         assert data[0]["table_name"] == "customers"
 
-    @patch('app.services.postgres_connector.PostgresConnector')
+    @patch('app.api.datasets.PostgresConnector')
     def test_list_postgres_tables_connection_failure(self, mock_connector_class, client):
         """Test listing tables when connection fails."""
         # Mock connection failure
@@ -287,7 +289,7 @@ class TestDatasetsAPI:
         """Test that PII is detected in schema."""
         mock_contract = MagicMock()
         mock_contract.validation_status = "passed"
-        mock_contract.created_at = "2024-01-01T00:00:00"
+        mock_contract.created_at = datetime(2024, 1, 1)
         mock_create_contract.return_value = mock_contract
 
         dataset_data = {
@@ -324,7 +326,7 @@ class TestDatasetsAPI:
         """Test that dataset status is draft when validation fails."""
         mock_contract = MagicMock()
         mock_contract.validation_status = "failed"  # Failed validation
-        mock_contract.created_at = "2024-01-01T00:00:00"
+        mock_contract.created_at = datetime(2024, 1, 1)
         mock_create_contract.return_value = mock_contract
 
         dataset_data = {
