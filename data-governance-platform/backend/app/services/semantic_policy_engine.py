@@ -34,7 +34,14 @@ class SemanticPolicyEngine:
             ollama_client: Optional OllamaClient instance
             enabled: Whether semantic scanning is enabled
         """
-        self.policies_path = Path(policies_path or settings.POLICIES_PATH)
+        if policies_path:
+            self.policies_path = Path(policies_path)
+        else:
+            configured_path = Path(settings.POLICIES_PATH)
+            if configured_path.exists():
+                self.policies_path = configured_path
+            else:
+                self.policies_path = Path(__file__).parent.parent.parent / "policies"
         self.enabled = enabled
         self.config = None
         self.policies = self._load_semantic_policies()

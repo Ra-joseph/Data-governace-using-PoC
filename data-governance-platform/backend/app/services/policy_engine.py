@@ -42,7 +42,16 @@ class PolicyEngine:
             policies_path: Optional custom path to policies directory.
                           Defaults to settings.POLICIES_PATH.
         """
-        self.policies_path = Path(policies_path or settings.POLICIES_PATH)
+        if policies_path:
+            self.policies_path = Path(policies_path)
+        else:
+            # Try configured path first, fall back to path relative to this file
+            configured_path = Path(settings.POLICIES_PATH)
+            if configured_path.exists():
+                self.policies_path = configured_path
+            else:
+                # Resolve relative to app package (backend/app -> backend/policies)
+                self.policies_path = Path(__file__).parent.parent.parent / "policies"
         self.policies = self._load_policies()
     
     def _load_policies(self) -> Dict[str, Any]:

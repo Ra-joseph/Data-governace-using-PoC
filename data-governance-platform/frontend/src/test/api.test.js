@@ -2,51 +2,72 @@
  * Unit tests for API service
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import axios from 'axios'
-import { api } from '../services/api'
 
-// Mock axios
-vi.mock('axios')
+// Mock axios before importing modules that use it
+const mockGet = vi.fn()
+const mockPost = vi.fn()
+const mockPut = vi.fn()
+const mockDelete = vi.fn()
+
+const mockAxiosInstance = {
+  get: mockGet,
+  post: mockPost,
+  put: mockPut,
+  delete: mockDelete,
+  interceptors: {
+    request: { use: vi.fn() },
+    response: { use: vi.fn() },
+  },
+}
+
+vi.mock('axios', () => ({
+  default: {
+    create: vi.fn(() => mockAxiosInstance),
+  },
+}))
+
+// Import after mocking
+const { datasetAPI, subscriptionAPI, gitAPI } = await import('../services/api')
 
 describe('API Service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  describe('getDatasets', () => {
+  describe('datasetAPI.list', () => {
     it('should fetch datasets successfully', async () => {
       const mockDatasets = [
         { id: 1, name: 'test_dataset', status: 'published' }
       ]
-      axios.get.mockResolvedValue({ data: mockDatasets })
+      mockGet.mockResolvedValue({ data: mockDatasets })
 
-      const result = await api.getDatasets()
+      const result = await datasetAPI.list()
 
-      expect(axios.get).toHaveBeenCalledWith('/datasets/')
-      expect(result).toEqual(mockDatasets)
+      expect(mockGet).toHaveBeenCalledWith('/api/v1/datasets/', { params: undefined })
+      expect(result.data).toEqual(mockDatasets)
     })
 
     it('should handle errors when fetching datasets', async () => {
       const mockError = new Error('Network error')
-      axios.get.mockRejectedValue(mockError)
+      mockGet.mockRejectedValue(mockError)
 
-      await expect(api.getDatasets()).rejects.toThrow('Network error')
+      await expect(datasetAPI.list()).rejects.toThrow('Network error')
     })
   })
 
-  describe('getDataset', () => {
+  describe('datasetAPI.get', () => {
     it('should fetch a single dataset by ID', async () => {
       const mockDataset = { id: 1, name: 'test_dataset' }
-      axios.get.mockResolvedValue({ data: mockDataset })
+      mockGet.mockResolvedValue({ data: mockDataset })
 
-      const result = await api.getDataset(1)
+      const result = await datasetAPI.get(1)
 
-      expect(axios.get).toHaveBeenCalledWith('/datasets/1')
-      expect(result).toEqual(mockDataset)
+      expect(mockGet).toHaveBeenCalledWith('/api/v1/datasets/1')
+      expect(result.data).toEqual(mockDataset)
     })
   })
 
-  describe('createDataset', () => {
+  describe('datasetAPI.create', () => {
     it('should create a new dataset', async () => {
       const newDataset = {
         name: 'new_dataset',
@@ -55,46 +76,46 @@ describe('API Service', () => {
         owner_email: 'test@example.com'
       }
       const mockResponse = { id: 1, ...newDataset }
-      axios.post.mockResolvedValue({ data: mockResponse })
+      mockPost.mockResolvedValue({ data: mockResponse })
 
-      const result = await api.createDataset(newDataset)
+      const result = await datasetAPI.create(newDataset)
 
-      expect(axios.post).toHaveBeenCalledWith('/datasets/', newDataset)
-      expect(result).toEqual(mockResponse)
+      expect(mockPost).toHaveBeenCalledWith('/api/v1/datasets/', newDataset)
+      expect(result.data).toEqual(mockResponse)
     })
   })
 
-  describe('getSubscriptions', () => {
+  describe('subscriptionAPI.list', () => {
     it('should fetch subscriptions', async () => {
       const mockSubscriptions = [
         { id: 1, consumer_name: 'Analytics Team', status: 'pending' }
       ]
-      axios.get.mockResolvedValue({ data: mockSubscriptions })
+      mockGet.mockResolvedValue({ data: mockSubscriptions })
 
-      const result = await api.getSubscriptions()
+      const result = await subscriptionAPI.list()
 
-      expect(axios.get).toHaveBeenCalledWith('/subscriptions/')
-      expect(result).toEqual(mockSubscriptions)
+      expect(mockGet).toHaveBeenCalledWith('/api/v1/subscriptions/', { params: undefined })
+      expect(result.data).toEqual(mockSubscriptions)
     })
   })
 
-  describe('approveSubscription', () => {
+  describe('subscriptionAPI.approve', () => {
     it('should approve a subscription', async () => {
       const approvalData = {
         status: 'approved',
         approved_fields: ['id', 'name']
       }
       const mockResponse = { id: 1, status: 'approved' }
-      axios.post.mockResolvedValue({ data: mockResponse })
+      mockPost.mockResolvedValue({ data: mockResponse })
 
-      const result = await api.approveSubscription(1, approvalData)
+      const result = await subscriptionAPI.approve(1, approvalData)
 
-      expect(axios.post).toHaveBeenCalledWith('/subscriptions/1/approve', approvalData)
-      expect(result).toEqual(mockResponse)
+      expect(mockPost).toHaveBeenCalledWith('/api/v1/subscriptions/1/approve', approvalData)
+      expect(result.data).toEqual(mockResponse)
     })
   })
 
-  describe('getGitHistory', () => {
+  describe('gitAPI.history', () => {
     it('should fetch git commit history', async () => {
       const mockHistory = {
         history: [
@@ -102,12 +123,12 @@ describe('API Service', () => {
         ],
         count: 1
       }
-      axios.get.mockResolvedValue({ data: mockHistory })
+      mockGet.mockResolvedValue({ data: mockHistory })
 
-      const result = await api.getGitHistory()
+      const result = await gitAPI.history()
 
-      expect(axios.get).toHaveBeenCalledWith('/git/history')
-      expect(result).toEqual(mockHistory)
+      expect(mockGet).toHaveBeenCalledWith('/api/v1/git/history', { params: { filename: undefined } })
+      expect(result.data).toEqual(mockHistory)
     })
   })
 })

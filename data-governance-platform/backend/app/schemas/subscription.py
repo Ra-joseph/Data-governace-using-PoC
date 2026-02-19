@@ -233,6 +233,9 @@ class SubscriptionResponse(BaseModel):
     status: str
     access_granted: bool
     access_endpoint: Optional[str]
+    access_credentials: Optional[str] = None
+    approved_at: Optional[datetime] = None
+    rejection_reason: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime]
     expires_at: Optional[datetime]

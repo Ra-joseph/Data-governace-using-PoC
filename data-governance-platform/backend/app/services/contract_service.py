@@ -156,7 +156,7 @@ class ContractService:
             governance_rules=contract_data['governance'],
             quality_rules=contract_data.get('quality_rules'),
             validation_status=validation_result.status.value,
-            validation_results=validation_result.dict(),
+            validation_results=json.loads(validation_result.model_dump_json()),
             last_validated_at=datetime.now(),
             git_commit_hash=git_info['commit_hash'],
             git_file_path=git_info['file_path']
@@ -225,7 +225,7 @@ class ContractService:
             quality_rules=contract_data.get('quality_rules'),
             sla_requirements=sla_data,
             validation_status=validation_result.status.value,
-            validation_results=validation_result.dict(),
+            validation_results=json.loads(validation_result.model_dump_json()),
             last_validated_at=datetime.now(),
             git_commit_hash=git_info['commit_hash'],
             git_file_path=git_info['file_path']
@@ -467,7 +467,7 @@ class ContractService:
             quality_rules=contract_data.get('quality_rules'),
             sla_requirements=subscription_data.get('sla_requirements'),
             validation_status=validation_result.status.value,
-            validation_results=validation_result.dict(),
+            validation_results=json.loads(validation_result.model_dump_json()),
             last_validated_at=datetime.now(),
             git_commit_hash=git_info['commit_hash'],
             git_file_path=git_info['file_path']
