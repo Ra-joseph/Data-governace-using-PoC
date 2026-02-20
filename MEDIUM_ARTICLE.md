@@ -45,11 +45,11 @@ This model gave us a critical design principle: **prevent violations at the poin
 
 ## Architecture: What We Built
 
-The platform is a full-stack application with a FastAPI backend, React frontend, and a YAML-based policy engine at its core.
+The platform is a full-stack application with a FastAPI backend, React frontend, and a multi-layered policy engine at its core.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                    Frontend Layer (React 18)                  │
+│                Frontend Layer (React 18 + Vite)               │
 ├──────────────┬──────────────┬──────────────┬─────────────────┤
 │  Data Owner  │ Data Consumer│ Data Steward │ Platform Admin   │
 │  • Register  │  • Browse    │  • Approve   │  • Metrics       │
@@ -57,7 +57,7 @@ The platform is a full-stack application with a FastAPI backend, React frontend,
 │  • Remediate │  • Request   │  • Credential│  • Analytics     │
 └──────────────┴──────────────┴──────────────┴─────────────────┘
                                ▲
-                               │ REST API
+                               │ REST API (30+ endpoints)
                                ▼
 ┌──────────────────────────────────────────────────────────────┐
 │              FastAPI Backend + Policy Engine                   │
@@ -67,10 +67,17 @@ The platform is a full-stack application with a FastAPI backend, React frontend,
 │  └──────┬───────┘ └──────┬───────┘ └──────┬───────┘         │
 │         └────────────────┼────────────────┘                  │
 │                    ┌─────▼─────┐                              │
-│                    │  Policy   │   17 YAML Policies           │
-│                    │  Engine   │   3 Categories                │
-│                    └─────┬─────┘                              │
-│                    ┌─────▼─────┐                              │
+│                    │ Policy    │   Intelligent Routing         │
+│                    │Orchestratr│   4 Strategies                │
+│                    └──┬────┬──┘                               │
+│              ┌────────┘    └────────┐                         │
+│        ┌─────▼─────┐         ┌─────▼─────┐                   │
+│        │ Rule-Based│         │ Semantic  │                    │
+│        │  Engine   │         │  Engine   │                    │
+│        │ 17 YAML   │         │ 8 LLM    │                    │
+│        │ Policies  │         │ Policies  │                    │
+│        └───────────┘         └───────────┘                    │
+│                    ┌───────────┐                              │
 │                    │    Git    │   Version Control             │
 │                    │  Service  │   Full Audit Trail            │
 │                    └───────────┘                              │
@@ -79,7 +86,7 @@ The platform is a full-stack application with a FastAPI backend, React frontend,
 
 ### The Policy Engine: Heart of the System
 
-The policy engine loads 17 governance policies from three YAML files at startup. When a data contract is submitted, the engine validates it against every applicable policy and returns a detailed report.
+The platform uses **25 governance policies** across two validation engines. The **rule-based engine** loads 17 policies from three YAML files for fast, deterministic validation (<100ms). The **semantic engine** adds 8 LLM-powered policies via local Ollama for context-aware analysis that catches what pattern matching cannot. An **orchestration layer** intelligently routes contracts to the right engine based on risk level and data characteristics, using one of four strategies: FAST (rule-based only), BALANCED (rules + targeted semantic), THOROUGH (all policies), or ADAPTIVE (auto-selects based on risk).
 
 Here's what a policy definition looks like:
 
@@ -121,7 +128,7 @@ Both are committed to Git with semantic versioning. A SHA-256 hash of the schema
 
 Rather than a one-size-fits-all dashboard, we built dedicated UIs for each persona in the data governance lifecycle:
 
-**Data Owners** register datasets through a guided wizard. The system imports schemas directly from PostgreSQL (with automatic PII detection based on field naming patterns), validates against all 17 policies, and displays violations with remediation steps inline.
+**Data Owners** register datasets through a guided wizard. The system imports schemas directly from PostgreSQL (with automatic PII detection based on field naming patterns), validates against all 25 policies (rule-based and semantic), and displays violations with remediation steps inline.
 
 **Data Consumers** browse a catalog, filter by classification and domain, and submit subscription requests with SLA requirements — freshness targets, availability needs, quality thresholds.
 
@@ -136,7 +143,7 @@ The most impactful architectural decision was validating contracts at creation t
 1. A data owner registers a dataset and provides metadata
 2. The system imports the schema from the source database
 3. A data contract is generated automatically (v1.0.0)
-4. The policy engine validates against all 17 policies **immediately**
+4. The policy orchestrator validates against applicable policies **immediately** (up to 25 policies based on risk level)
 5. Violations are returned with severity, description, and remediation steps
 6. The contract is committed to Git regardless of status — but only compliant datasets are marked "published"
 
@@ -170,9 +177,9 @@ We deliberately chose plain YAML files over a specialized rules engine (like OPA
 - **Lower barrier to entry**: Anyone who can read YAML can understand the policies
 - **No vendor lock-in**: Policies are portable text files
 - **Code-review friendly**: YAML diffs are readable in pull requests
-- **Good enough**: For 17 policies, a simple Python validation loop outperforms the complexity of deploying and maintaining a rules engine
+- **Good enough**: For 17 rule-based policies, a simple Python validation loop outperforms the complexity of deploying and maintaining a rules engine
 
-That said, if you're scaling to hundreds of policies with complex cross-cutting conditions, a dedicated engine like Open Policy Agent would be the right next step.
+We later added a **semantic policy engine** (8 LLM-powered policies via Ollama) for context-aware validation that catches issues pattern matching cannot — like detecting PII based on business context, validating that compliance tags actually apply, or identifying security vulnerabilities in schema design. An **orchestration layer** routes contracts to the right engine based on risk, keeping validation fast for low-risk data while ensuring critical datasets get thorough analysis.
 
 ### Semantic Versioning for Contracts
 
@@ -218,12 +225,13 @@ Visit `http://localhost:5173` to see the role-selection screen, then explore eac
 
 ## Where This Is Heading
 
-The platform is designed as a foundation. The roadmap includes:
+The platform has evolved significantly from its initial backend-only design. The multi-role frontend, complete subscription workflow, semantic scanning, and intelligent orchestration are all production-ready. The roadmap now focuses on:
 
+- **Authentication & authorization** — replacing the demo role-selector with proper OAuth2/JWT and RBAC
 - **Data lineage tracking** — understanding how governed datasets flow through transformation pipelines
 - **Real-time monitoring** — alerting when a published dataset's actual behavior drifts from its contract (freshness violations, quality degradation)
 - **CI/CD integration** — running policy validation as a step in data pipeline deployments, blocking merges that introduce violations
-- **ML-powered classification** — moving beyond heuristic PII detection to model-based field classification
+- **Additional connectors** — extending beyond PostgreSQL to support Snowflake, S3, Azure Data Lake, and more
 
 ## The Bigger Picture
 
@@ -245,4 +253,4 @@ If your organization is struggling with data governance that feels like overhead
 
 ---
 
-**Tags:** Data Governance, Policy-as-Code, Data Engineering, Data Contracts, FastAPI, React, Open Source
+**Tags:** Data Governance, Policy-as-Code, Data Engineering, Data Contracts, FastAPI, React, LLM, Semantic Scanning, Open Source

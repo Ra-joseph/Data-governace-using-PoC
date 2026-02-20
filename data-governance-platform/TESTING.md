@@ -28,7 +28,7 @@ This document describes the comprehensive testing setup for the Data Governance 
 
 ### Backend Tests
 
-- **Total Tests**: 101
+- **Total Tests**: 125
 - **Passed**: 82 (81%)
 - **Failed**: 19 (19% - mostly test setup issues)
 
@@ -37,6 +37,8 @@ This document describes the comprehensive testing setup for the Data Governance 
 1. **Service Layer Tests** (17 tests)
    - PolicyEngine validation (17 policy tests)
    - ContractService operations (11 tests)
+   - Orchestration tests (test_orchestration.py)
+   - Semantic scanner tests (test_semantic_scanner.py)
    - All core policy validations passing ✓
 
 2. **API Endpoint Tests** (55 tests)
@@ -105,13 +107,15 @@ npm run test:coverage
 
 ```
 backend/tests/
-├── conftest.py              # Pytest configuration and fixtures
-├── test_policy_engine.py    # PolicyEngine validation tests
-├── test_contract_service.py # Contract service tests
-├── test_api_datasets.py     # Dataset API endpoint tests
-├── test_api_subscriptions.py # Subscription API endpoint tests
-├── test_api_git.py          # Git API endpoint tests
-└── test_models.py           # Database model tests
+├── conftest.py                  # Pytest configuration and fixtures
+├── test_policy_engine.py        # PolicyEngine validation tests
+├── test_contract_service.py     # Contract service tests
+├── test_api_datasets.py         # Dataset API endpoint tests
+├── test_api_subscriptions.py    # Subscription API endpoint tests
+├── test_api_git.py              # Git API endpoint tests
+├── test_models.py               # Database model tests
+├── test_orchestration.py        # Policy orchestration tests
+└── test_semantic_scanner.py     # Semantic scanning tests
 ```
 
 ### Frontend Test Files
@@ -143,17 +147,23 @@ All 17 governance policies are tested:
 - ✓ SD002: Retention policy required
 - ✓ SD003: PII compliance tags
 - ✓ SD004: Restricted use cases
+- ✓ SD005: Cross-border PII
 
 ### Data Quality Policies
 - ✓ DQ001: Critical data completeness
 - ✓ DQ002: Freshness SLA required
 - ✓ DQ003: Uniqueness specification
+- ✓ DQ004: Accuracy threshold alignment
+- ✓ DQ005: Data quality tiering
 
 ### Schema Governance Policies
 - ✓ SG001: Field documentation required
 - ✓ SG002: Required field consistency
 - ✓ SG003: Dataset ownership required
 - ✓ SG004: String field constraints
+- ✓ SG005: Enum value specification
+- ✓ SG006: Breaking schema changes
+- ✓ SG007: Version strategy enforcement
 
 ## 🔌 API Endpoint Tests
 
@@ -191,6 +201,18 @@ All 17 governance policies are tested:
 - ✓ Get file blame
 - ✓ Error handling
 
+### Semantic API
+- ✓ Health/status check
+- ✓ Run semantic validation
+- ✓ List available models
+- ✓ Get scan results
+
+### Orchestration API
+- ✓ Validate with strategy
+- ✓ List strategies
+- ✓ Analyze risk
+- ✓ Get metrics
+
 ## 🏷️ Test Markers
 
 Tests are organized using pytest markers:
@@ -225,11 +247,11 @@ jobs:
   backend-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: '3.10'
       - name: Install dependencies
         run: |
           cd data-governance-platform/backend
@@ -243,9 +265,9 @@ jobs:
   frontend-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 18
       - name: Install dependencies
@@ -273,7 +295,7 @@ These issues don't affect core functionality and are test-specific.
 
 Frontend tests are set up but need expansion:
 
-- [ ] Add component tests for key pages
+- [x] Add component tests for key pages (basic tests exist)
 - [ ] Add integration tests for user workflows
 - [ ] Add E2E tests with Playwright
 

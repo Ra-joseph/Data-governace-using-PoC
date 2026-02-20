@@ -9,20 +9,20 @@ A production-ready proof-of-concept demonstrating federated data governance usin
 ## ✨ Key Features
 
 ### Backend
-- **17 Governance Policies**: Sensitive data, data quality, and schema governance
-- **8 Semantic Policies**: LLM-powered context-aware validation with local Ollama
-- **Intelligent Orchestration (NEW!)**: Auto-decides between rule-based & LLM validation based on risk
-- **Automated Schema Import**: PostgreSQL with PII detection
+- **25 Governance Policies**: 17 rule-based (sensitive data, data quality, schema governance) + 8 semantic (LLM-powered)
+- **Semantic Policy Scanning**: AI-powered context-aware validation via local Ollama LLMs
+- **Intelligent Policy Orchestration**: Auto-decides between rule-based & LLM validation based on risk level
+- **Automated Schema Import**: PostgreSQL with heuristic PII detection
 - **Dual Contracts**: Human-readable YAML + Machine-readable JSON
-- **Git Version Control**: Full audit trail for all contracts
-- **Policy Validation**: Real-time validation with actionable remediation
+- **Git Version Control**: Full audit trail for all contracts with semantic versioning
+- **Policy Validation**: Real-time validation with actionable remediation guidance
 
-### Frontend (NEW!)
-- **Data Owner UI**: Dataset registration wizard with multi-step form
-- **Data Consumer UI**: Catalog browser with subscription requests
-- **Data Steward UI**: Approval queue with contract review
-- **Platform Admin UI**: Compliance dashboard with analytics
-- **End-to-End Workflows**: Complete subscription lifecycle
+### Frontend
+- **Data Owner UI**: Dataset registration wizard with multi-step form and violation dashboard
+- **Data Consumer UI**: Catalog browser with subscription requests and SLA negotiation
+- **Data Steward UI**: Approval queue with contract review and credential management
+- **Platform Admin UI**: Compliance dashboard with interactive analytics and trend charts
+- **End-to-End Workflows**: Complete subscription lifecycle with automatic contract versioning
 
 ## 🚀 Quick Start
 
@@ -115,47 +115,73 @@ Data-governace-using-PoC/
 └── data-governance-platform/
     ├── backend/              # FastAPI backend
     │   ├── app/
-    │   │   ├── api/          # REST endpoints
-    │   │   ├── models/       # Database models
-    │   │   ├── services/     # Business logic
+    │   │   ├── api/          # REST endpoints (5 routers, 30+ endpoints)
+    │   │   │   ├── datasets.py
+    │   │   │   ├── subscriptions.py
+    │   │   │   ├── git.py
+    │   │   │   ├── semantic.py
+    │   │   │   └── orchestration.py
+    │   │   ├── models/       # SQLAlchemy models (4 models, 71 fields)
+    │   │   ├── schemas/      # Pydantic validation (24+ schemas)
+    │   │   ├── services/     # Business logic (7 services)
+    │   │   │   ├── policy_engine.py
+    │   │   │   ├── contract_service.py
+    │   │   │   ├── postgres_connector.py
+    │   │   │   ├── git_service.py
+    │   │   │   ├── semantic_policy_engine.py
+    │   │   │   ├── policy_orchestrator.py
+    │   │   │   └── ollama_client.py
     │   │   └── main.py       # FastAPI app
-    │   ├── policies/         # YAML policy definitions
-    │   └── contracts/        # Git repository
-    ├── frontend/             # React frontend
+    │   ├── policies/         # YAML policy definitions (4 files, 25 policies)
+    │   ├── contracts/        # Git repository for versioned contracts
+    │   └── tests/            # Comprehensive test suite
+    ├── frontend/             # React 18 + Vite frontend
     │   ├── src/
-    │   │   ├── pages/        # Role-based UIs
+    │   │   ├── pages/        # Role-based UIs (Owner, Consumer, Steward, Admin)
+    │   │   ├── components/   # Shared components
     │   │   ├── contexts/     # Auth context
-    │   │   └── services/     # API client
+    │   │   ├── services/     # API client (Axios)
+    │   │   └── stores/       # State management (Zustand)
     │   └── package.json
-    ├── demo/                 # Demo database
-    └── README.md            # Detailed documentation
+    ├── demo/                 # Demo database (PostgreSQL)
+    └── README.md             # Detailed documentation
 ```
 
 ## 📚 Documentation
 
-See [data-governance-platform/README.md](./data-governance-platform/README.md) for detailed documentation including:
-- Architecture diagrams
-- Policy definitions
-- API documentation
-- Troubleshooting guide
-- Development roadmap
+| Document | Description |
+|----------|-------------|
+| [Platform README](./data-governance-platform/README.md) | Architecture, API docs, workflows, troubleshooting |
+| [Quick Start](./data-governance-platform/QUICKSTART.md) | 5-minute setup guide |
+| [Project Summary](./data-governance-platform/PROJECT_SUMMARY.md) | Technical deep-dive and design decisions |
+| [Deployment Guide](./data-governance-platform/DEPLOYMENT.md) | Production deployment instructions |
+| [Frontend Guide](./data-governance-platform/FRONTEND_GUIDE.md) | Frontend developer guide |
+| [Semantic Scanning](./data-governance-platform/SEMANTIC_SCANNING.md) | LLM-powered policy validation guide |
+| [Policy Orchestration](./data-governance-platform/POLICY_ORCHESTRATION.md) | Intelligent validation routing |
+| [Testing Guide](./data-governance-platform/TESTING.md) | Test suite documentation |
+| [Contributing](./CONTRIBUTING.md) | Contribution guidelines and standards |
+| [Manifest](./data-governance-platform/MANIFEST.md) | Complete file listing and statistics |
 
 ## 🛠️ Technology Stack
 
 **Backend:**
-- FastAPI (Python 3.10+)
-- SQLAlchemy 2.0
-- PostgreSQL
-- Pydantic v2
-- GitPython
+- FastAPI 0.109 (Python 3.10+)
+- SQLAlchemy 2.0 (ORM)
+- PostgreSQL 15 + SQLite (metadata)
+- Pydantic v2 (validation)
+- GitPython (contract versioning)
+- Ollama (local LLM for semantic scanning)
+- PyYAML (policy definitions)
 
 **Frontend:**
 - React 18.2
-- Vite
-- Zustand (state management)
-- Recharts (analytics)
-- React Router 6
-- Axios
+- Vite 5.0 (build tool)
+- Zustand 4.4 (state management)
+- Recharts 2.10 (interactive analytics)
+- React Router 6 (client-side routing)
+- Axios 1.6 (HTTP client)
+- Framer Motion (animations)
+- Lucide React (icons)
 
 ## 🎯 Demo Scenario
 
@@ -168,21 +194,24 @@ Use these tables to test the full workflow from registration to subscription app
 
 ## ✅ Current Status
 
-- ✅ Backend API (FastAPI)
-- ✅ Policy Engine (17 policies)
-- ✅ Schema Import (PostgreSQL)
-- ✅ Contract Management
-- ✅ Git Integration
-- ✅ Multi-Role Frontend
-- ✅ Subscription Workflow
-- ✅ Compliance Dashboard
-- ✅ Violation Tracking
-- ✅ **Semantic Policy Scanning (LLM-powered)**
-- ✅ **Intelligent Policy Orchestration**
+All planned features are implemented and functional:
 
-## 🆕 Semantic Scanning (NEW!)
+- ✅ Backend API (FastAPI with 30+ endpoints)
+- ✅ Policy Engine (25 policies: 17 rule-based + 8 semantic)
+- ✅ Semantic Policy Scanning (LLM-powered via Ollama)
+- ✅ Intelligent Policy Orchestration (4 strategies: FAST, BALANCED, THOROUGH, ADAPTIVE)
+- ✅ Schema Import (PostgreSQL with PII detection)
+- ✅ Contract Management (dual-format YAML + JSON)
+- ✅ Git Integration (full audit trail with semantic versioning)
+- ✅ Multi-Role Frontend (Owner, Consumer, Steward, Admin)
+- ✅ Subscription Workflow (end-to-end with SLA negotiation)
+- ✅ Compliance Dashboard (interactive charts and trend analytics)
+- ✅ Violation Tracking (actionable remediation guidance)
+- ✅ Comprehensive Test Suite (backend + frontend)
 
-The platform now supports AI-powered semantic policy validation using local LLMs via **Ollama**:
+## 🧠 Semantic Policy Scanning
+
+AI-powered semantic policy validation using local LLMs via **Ollama**:
 
 - **8 Semantic Policies**: Context-aware validation beyond rule-based patterns
 - **Local LLM Execution**: Privacy-first with Ollama (no data leaves your infrastructure)
@@ -192,9 +221,9 @@ The platform now supports AI-powered semantic policy validation using local LLMs
 
 📖 **See [SEMANTIC_SCANNING.md](./data-governance-platform/SEMANTIC_SCANNING.md) for complete guide**
 
-## 🧠 Policy Orchestration (NEW!)
+## 🎯 Policy Orchestration
 
-The platform now features an **intelligent orchestration layer** that automatically decides when to use rule-based vs LLM-based validation:
+An **intelligent orchestration layer** that automatically decides when to use rule-based vs LLM-based validation:
 
 - **4 Validation Strategies**: FAST, BALANCED, THOROUGH, ADAPTIVE
 - **Risk Assessment**: Analyzes contracts to determine risk level (LOW → CRITICAL)

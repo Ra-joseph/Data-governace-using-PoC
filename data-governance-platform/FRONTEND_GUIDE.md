@@ -30,12 +30,15 @@ You now have a **complete, production-ready React frontend** with comprehensive 
 ## 📦 Complete Package
 
 ### Frontend (30+ Files)
-- ✅ **Dashboard** with live metrics and charts
+- ✅ **Role Selector** for role-based navigation
+- ✅ **Data Owner Dashboard** with violation tracking
+- ✅ **Dataset Registration Wizard** with multi-step form
+- ✅ **Data Catalog Browser** with subscription requests
+- ✅ **Approval Queue** for data stewards
+- ✅ **Compliance Dashboard** with analytics charts
 - ✅ **Dataset Catalog** with search and filtering
 - ✅ **Dataset Detail** views
-- ✅ **Git History Viewer** with commit timeline ⭐ NEW
-- ✅ **Repository Status Dashboard** ⭐ NEW
-- ✅ **Contract File Browser** ⭐ NEW
+- ✅ **Git History Viewer** with commit timeline
 - ✅ Responsive navigation and layout
 - ✅ State management (Zustand)
 - ✅ API integration (Axios)
@@ -49,6 +52,11 @@ You now have a **complete, production-ready React frontend** with comprehensive 
 - ✅ `/api/v1/git/diff` - Compare commits
 - ✅ `/api/v1/git/file-history/{filename}` - File-specific history
 - ✅ `/api/v1/git/blame/{filename}` - Line-by-line authorship
+- ✅ `/api/v1/semantic/validate` - Semantic policy validation
+- ✅ `/api/v1/semantic/status` - Ollama status check
+- ✅ `/api/v1/orchestration/validate` - Orchestrated validation
+- ✅ `/api/v1/orchestration/strategies` - List strategies
+- ✅ `/api/v1/subscriptions/` - Subscription management
 
 ## 🚀 Quick Start
 
@@ -75,16 +83,16 @@ uvicorn app.main:app --reload
 npm run dev
 ```
 
-Frontend runs on: **http://localhost:3000**
+Frontend runs on: **http://localhost:5173**
 Backend API on: **http://localhost:8000**
 
 ### Step 4: Explore the Platform
 
-Open http://localhost:3000 and explore:
+Open http://localhost:5173 and explore:
 
 1. **Dashboard** - See metrics, charts, and activity
 2. **Dataset Catalog** - Browse registered datasets
-3. **Git History** ⭐ - View complete commit timeline
+3. **Git History** - View complete commit timeline
 4. Click any dataset to see details
 5. Check Git commits and repository status
 
@@ -120,7 +128,7 @@ Open http://localhost:3000 and explore:
 
 ## 🎯 Git Integration Features
 
-### 1. Repository Status Dashboard ⭐
+### 1. Repository Status Dashboard
 
 Displays at-a-glance:
 ```
@@ -130,7 +138,7 @@ Displays at-a-glance:
 🌿 Active Branch: main
 ```
 
-### 2. Commit Timeline ⭐
+### 2. Commit Timeline
 
 Beautiful visual timeline showing:
 - Commit dots connected by lines
@@ -139,7 +147,7 @@ Beautiful visual timeline showing:
 - Time ago ("2 hours ago")
 - Clickable for details
 
-### 3. Contract File Browser ⭐
+### 3. Contract File Browser
 
 Sidebar showing all contracts:
 - File names
@@ -147,7 +155,7 @@ Sidebar showing all contracts:
 - Quick access to history
 - Sticky positioning
 
-### 4. Commit Details Modal ⭐
+### 4. Commit Details Modal
 
 Click any commit to see:
 - Full commit hash
@@ -210,11 +218,20 @@ datasetAPI.get(id)
 datasetAPI.create(data)
 datasetAPI.importSchema(data)
 
-// Git Integration ⭐ NEW
+// Git Integration
 gitAPI.history(filename)
 gitAPI.contracts()
 gitAPI.status()
 gitAPI.diff(commit1, commit2)
+
+// Subscriptions
+subscriptionAPI.list()
+subscriptionAPI.create(data)
+subscriptionAPI.approve(id, data)
+
+// Semantic
+semanticAPI.validate(data)
+semanticAPI.status()
 ```
 
 ### Automatic Proxy
@@ -289,14 +306,14 @@ curl http://localhost:8000/api/v1/git/status
 
 ### 3. Frontend Health
 
-Visit http://localhost:3000
+Visit http://localhost:5173
 - Page should load instantly
 - Dashboard shows charts
 - Navigation works smoothly
 
 ### 4. Git Integration Test
 
-1. Go to http://localhost:3000/git
+1. Go to http://localhost:5173/git
 2. Should see repository status
 3. Should see commit timeline
 4. Should see contract files
@@ -324,6 +341,8 @@ Visit http://localhost:3000
 2. **Custom Components**: Easy to extend
 3. **State Management**: Zustand for simplicity
 4. **Styling System**: CSS variables for themes
+5. **Semantic Scanning**: Validate contracts with LLM-powered analysis
+6. **Policy Orchestration**: Choose validation strategies based on risk
 
 ## 🔧 Customization
 
@@ -460,19 +479,23 @@ VITE_API_URL=https://your-api-domain.com
 - Dashboard
 - Dataset Catalog
 - Dataset Details
-- Git History ⭐
+- Git History
 - Navigation
 - API Integration
 - State Management
 - Animations
 
-**Phase 2 (Planned)**:
-- Schema Import Wizard
+**Phase 2 (Complete ✅)**:
+- ✅ Schema Import Wizard
+- ✅ Subscription Management
+- ✅ Compliance Dashboard
+- ✅ User Role Selection
+
+**Phase 3 (Planned)**:
+- Policy Editor UI
 - Contract Diff Viewer
-- Subscription Management
-- Policy Editor
-- Compliance Dashboard
-- User Authentication
+- User Authentication (OAuth2)
+- Notification system
 
 ## 📚 Learning Path
 
@@ -504,7 +527,7 @@ VITE_API_URL=https://your-api-domain.com
 
 Your setup is complete when:
 
-1. ✅ Frontend runs on http://localhost:3000
+1. ✅ Frontend runs on http://localhost:5173
 2. ✅ Backend API accessible on http://localhost:8000
 3. ✅ Dashboard shows charts and metrics
 4. ✅ Git History displays commits
