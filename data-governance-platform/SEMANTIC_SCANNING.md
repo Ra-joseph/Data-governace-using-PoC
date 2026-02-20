@@ -20,7 +20,7 @@
 
 ## 🎯 Overview
 
-The Data Governance Platform now supports **semantic policy scanning** powered by local LLM models via [Ollama](https://ollama.ai/). This feature enables advanced policy validation that goes beyond rule-based pattern matching to understand the **semantic meaning and context** of your data.
+The Data Governance Platform supports **semantic policy scanning** powered by local LLM models via [Ollama](https://ollama.ai/). This feature enables advanced policy validation that goes beyond rule-based pattern matching to understand the **semantic meaning and context** of your data.
 
 ### Why Semantic Scanning?
 

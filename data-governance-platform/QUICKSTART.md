@@ -22,6 +22,7 @@ Get the Data Governance Platform running in 5 easy steps.
 
 Before starting, make sure you have:
 - [ ] Python 3.10 or higher (`python --version`)
+- [ ] Node.js 18 or higher (`node --version`)
 - [ ] Docker installed and running (`docker --version`)
 - [ ] Git installed (`git --version`)
 
@@ -64,6 +65,17 @@ The API will start at http://localhost:8000
 
 Keep this terminal open - you'll see API logs here.
 
+## Step 3.5: Start Frontend
+
+```bash
+# In a new terminal
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend will start at http://localhost:5173
+
 ## Step 4: Test
 
 Open a **new terminal** and run:
@@ -90,6 +102,14 @@ You should see 5 green checkmarks:
 Open in your browser:
 - Swagger UI: http://localhost:8000/api/docs
 - ReDoc: http://localhost:8000/api/redoc
+
+### Explore the Frontend
+
+Open http://localhost:5173/select-role and try each role:
+- **Data Owner**: Register datasets, view violations
+- **Data Consumer**: Browse catalog, request access
+- **Data Steward**: Review and approve subscriptions
+- **Platform Admin**: View compliance dashboard
 
 ### Try Some Commands
 
@@ -198,6 +218,12 @@ When you register `customer_accounts`, the platform checks:
 - Are required fields consistent?
 - Is ownership specified?
 
+✓ **Semantic Policies** (with Ollama)
+- Context-aware PII detection
+- Business logic validation
+- Security pattern recognition
+- Compliance verification
+
 ### The Validation Report
 
 You'll see output like:
@@ -277,8 +303,10 @@ curl http://localhost:8000/api/v1/datasets/
 # 2. View a specific dataset
 curl http://localhost:8000/api/v1/datasets/1
 
-# 3. Request subscription (Phase 2)
-# Coming soon: subscription workflow with SLA negotiation
+# 3. Request subscription
+curl -X POST http://localhost:8000/api/v1/subscriptions/ \
+  -H "Content-Type: application/json" \
+  -d '{"dataset_id": 1, "consumer_name": "Jane Smith", "consumer_email": "jane@company.com", "business_justification": "Analytics", "use_case": "reporting"}'
 ```
 
 ### As a Data Steward
@@ -300,11 +328,17 @@ git log --all --graph --oneline
 ```
 User Request
     ↓
-FastAPI Endpoint
+FastAPI Endpoint (30+ endpoints)
     ↓
-Service Layer ← Policy Engine (validates)
-    ↓           ↓
-Database    Git Repo (contracts)
+Service Layer
+    ↓
+Policy Orchestrator ← Chooses strategy
+    ├── Rule Engine (17 policies)
+    └── Semantic Engine (8 policies, via Ollama)
+    ↓
+Contract Service → Git Repo (contracts)
+    ↓
+Database (SQLite metadata)
     ↓
 PostgreSQL Connector → Source Database
 ```
@@ -315,6 +349,8 @@ PostgreSQL Connector → Source Database
 - **API Docs**: http://localhost:8000/api/docs
 - **Policy Files**: Explore `backend/policies/*.yaml`
 - **Demo Data**: Check `demo/*.sql` files
+- **Semantic Scanning**: See `SEMANTIC_SCANNING.md` for LLM setup
+- **Policy Orchestration**: See `POLICY_ORCHESTRATION.md` for strategies
 
 ---
 

@@ -200,19 +200,23 @@ Use Google-style docstrings with Args, Returns, Raises sections:
 def validate_contract(
     self,
     contract_data: Dict[str, any],
+    strategy: Optional[ValidationStrategy] = None,
     selected_policies: Optional[List[str]] = None
 ) -> ValidationResult:
     """
     Validate a contract against governance policies.
 
-    Runs validation against all loaded policies unless specific policies
-    are selected. Combines rule-based and semantic validation when enabled.
+    Runs validation via the policy orchestrator which routes to the
+    appropriate engine(s) based on risk level and strategy. Supports
+    rule-based (17 policies) and semantic (8 LLM-powered policies).
 
     Args:
         contract_data: Contract data in dictionary format with dataset,
                       schema, and governance sections.
+        strategy: Optional validation strategy (FAST, BALANCED, THOROUGH,
+                 ADAPTIVE). Defaults to ADAPTIVE.
         selected_policies: Optional list of policy IDs to validate against.
-                          If None, validates against all policies.
+                          If None, validates against all applicable policies.
 
     Returns:
         ValidationResult containing status, violation counts, and detailed
