@@ -9,7 +9,8 @@ import {
   CheckCircle,
   Upload,
   PenTool,
-  ClipboardCheck
+  ClipboardCheck,
+  BarChart3
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import './Layout.css';
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Policy Manager', path: '/policies', icon: Shield },
   { name: 'Policy Authoring', path: '/policy-authoring', icon: PenTool },
   { name: 'Policy Review', path: '/policy-review', icon: ClipboardCheck },
+  { name: 'Policy Dashboard', path: '/policy-dashboard', icon: BarChart3 },
   { name: 'Git History', path: '/git', icon: GitBranch },
   { name: 'Subscriptions', path: '/subscriptions', icon: Bell },
   { name: 'Compliance', path: '/compliance', icon: CheckCircle },

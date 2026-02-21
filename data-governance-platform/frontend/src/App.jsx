@@ -27,7 +27,7 @@ import { ContractViewer } from './pages/ContractViewer';
 import { SubscriptionQueue } from './pages/SubscriptionQueue';
 import { ComplianceDashboard } from './pages/ComplianceDashboard';
 import { GitHistory } from './pages/GitHistory';
-import { PolicyList, PolicyForm, PolicyDetail, PolicyReview } from './components/PolicyAuthoring';
+import { PolicyList, PolicyForm, PolicyDetail, PolicyReview, PolicyDashboard } from './components/PolicyAuthoring';
 import './App.css';
 
 function App() {
@@ -106,6 +106,7 @@ function App() {
             <Route path="policy-authoring/new" element={<PolicyForm />} />
             <Route path="policy-authoring/:id" element={<PolicyDetail />} />
             <Route path="policy-review" element={<PolicyReview />} />
+            <Route path="policy-dashboard" element={<PolicyDashboard />} />
           </Route>
 
           {/* Default redirect */}
