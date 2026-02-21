@@ -61,4 +61,5 @@ def init_db():
         SQLAlchemy before creating tables.
     """
     from app.models import dataset, contract, subscription, user
+    from app.models import policy_draft, policy_version, policy_artifact, policy_approval_log
     Base.metadata.create_all(bind=engine)

@@ -83,6 +83,19 @@ export const gitAPI = {
   tags: () => api.get('/api/v1/git/tags'),
 };
 
+// Policy Authoring APIs
+export const policyAuthoringAPI = {
+  list: (params) => api.get('/api/v1/policies/authored/', { params }),
+  get: (id) => api.get(`/api/v1/policies/authored/${id}`),
+  create: (data) => api.post('/api/v1/policies/authored/', data),
+  update: (id, data) => api.patch(`/api/v1/policies/authored/${id}`, data),
+  submit: (id) => api.post(`/api/v1/policies/authored/${id}/submit`),
+  approve: (id, data) => api.post(`/api/v1/policies/authored/${id}/approve`, data),
+  reject: (id, data) => api.post(`/api/v1/policies/authored/${id}/reject`, data),
+  getYaml: (id) => api.get(`/api/v1/policies/authored/${id}/yaml`),
+  getByDomain: (domain) => api.get(`/api/v1/policies/authored/domains/${domain}/policies`),
+};
+
 // Health check
 export const healthCheck = () => api.get('/health');
 
