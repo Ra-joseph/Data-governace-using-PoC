@@ -1,13 +1,15 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Database, 
-  FileText, 
-  Shield, 
+import {
+  LayoutDashboard,
+  Database,
+  FileText,
+  Shield,
   GitBranch,
   Bell,
   CheckCircle,
-  Upload
+  Upload,
+  PenTool,
+  ClipboardCheck
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import './Layout.css';
@@ -17,6 +19,8 @@ const navigation = [
   { name: 'Dataset Catalog', path: '/catalog', icon: Database },
   { name: 'Import Schema', path: '/import', icon: Upload },
   { name: 'Policy Manager', path: '/policies', icon: Shield },
+  { name: 'Policy Authoring', path: '/policy-authoring', icon: PenTool },
+  { name: 'Policy Review', path: '/policy-review', icon: ClipboardCheck },
   { name: 'Git History', path: '/git', icon: GitBranch },
   { name: 'Subscriptions', path: '/subscriptions', icon: Bell },
   { name: 'Compliance', path: '/compliance', icon: CheckCircle },
