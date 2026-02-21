@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import init_db
-from app.api import datasets, git, subscriptions, semantic, orchestration, policy_authoring, policy_dashboard, policy_reports
+from app.api import datasets, git, subscriptions, semantic, orchestration, policy_authoring, policy_dashboard, policy_reports, policy_exchange
 
 # Create FastAPI application
 app = FastAPI(
@@ -53,6 +53,7 @@ app.include_router(orchestration.router, prefix=settings.API_V1_PREFIX)
 app.include_router(policy_authoring.router, prefix=settings.API_V1_PREFIX)
 app.include_router(policy_dashboard.router, prefix=settings.API_V1_PREFIX)
 app.include_router(policy_reports.router, prefix=settings.API_V1_PREFIX)
+app.include_router(policy_exchange.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/")

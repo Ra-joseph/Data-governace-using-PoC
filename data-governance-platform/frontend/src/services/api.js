@@ -117,6 +117,16 @@ export const policyReportsAPI = {
   policyCompliance: (policyId) => api.get(`/api/v1/policy-reports/policy-compliance/${policyId}`),
 };
 
+// Policy Exchange APIs
+export const policyExchangeAPI = {
+  exportPolicy: (id, format = 'json') => api.get(`/api/v1/policy-exchange/export/${id}`, { params: { format } }),
+  exportBundle: (params) => api.get('/api/v1/policy-exchange/export-bundle', { params: { ...params, format: 'json' } }),
+  importBundle: (data) => api.post('/api/v1/policy-exchange/import', data),
+  listTemplates: (params) => api.get('/api/v1/policy-exchange/templates', { params }),
+  getTemplate: (id) => api.get(`/api/v1/policy-exchange/templates/${id}`),
+  instantiateTemplate: (id, authoredBy) => api.post(`/api/v1/policy-exchange/templates/${id}/instantiate`, null, { params: { authored_by: authoredBy } }),
+};
+
 // Health check
 export const healthCheck = () => api.get('/health');
 
