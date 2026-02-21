@@ -97,6 +97,13 @@ export const policyAuthoringAPI = {
   getByDomain: (domain) => api.get(`/api/v1/policies/authored/domains/${domain}/policies`),
 };
 
+// Policy Dashboard APIs
+export const policyDashboardAPI = {
+  stats: () => api.get('/api/v1/policy-dashboard/stats'),
+  activePolicies: (domain) => api.get('/api/v1/policy-dashboard/active-policies', { params: domain ? { domain } : {} }),
+  validateCombined: (data) => api.post('/api/v1/policy-dashboard/validate-combined', data),
+};
+
 // Health check
 export const healthCheck = () => api.get('/health');
 
