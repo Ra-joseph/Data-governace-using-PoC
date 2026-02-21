@@ -341,6 +341,263 @@ def preview_policy_yaml(policy_id: int, db: Session = Depends(get_db)):
     }
 
 
+@router.get("/{policy_id}/versions")
+def get_version_history(policy_id: int, db: Session = Depends(get_db)):
+    """
+    Get the full version history for a policy, including snapshots and artifacts.
+
+    Returns an ordered list of versions with their approval metadata,
+    artifact summaries, and diff availability flags.
+    """
+    policy = db.query(PolicyDraft).filter(PolicyDraft.id == policy_id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    versions = (
+        db.query(PolicyVersion)
+        .filter(PolicyVersion.policy_id == policy_id)
+        .order_by(PolicyVersion.version.desc())
+        .all()
+    )
+
+    artifacts_by_version = {}
+    for art in db.query(PolicyArtifact).filter(PolicyArtifact.policy_id == policy_id).all():
+        artifacts_by_version[art.version] = {
+            "artifact_id": art.id,
+            "scanner_type": art.scanner_type,
+            "git_commit_hash": art.git_commit_hash,
+            "generated_at": art.generated_at.isoformat() if art.generated_at else None,
+        }
+
+    result = []
+    for v in versions:
+        result.append({
+            "version": v.version,
+            "title": v.title,
+            "description": v.description,
+            "severity": v.severity,
+            "status": v.status,
+            "authored_by": v.authored_by,
+            "approved_by": v.approved_by,
+            "created_at": v.created_at.isoformat() if v.created_at else None,
+            "has_artifact": v.version in artifacts_by_version,
+            "artifact": artifacts_by_version.get(v.version),
+        })
+
+    return {
+        "policy_id": policy.id,
+        "policy_uid": policy.policy_uid,
+        "current_version": policy.version,
+        "current_status": policy.status,
+        "total_versions": len(result),
+        "versions": result,
+    }
+
+
+@router.get("/{policy_id}/versions/{version_number}/diff")
+def get_version_diff(policy_id: int, version_number: int, db: Session = Depends(get_db)):
+    """
+    Compare two consecutive versions of a policy.
+
+    Returns a field-by-field diff between `version_number` and the previous version.
+    If version_number is 1, compares against an empty baseline.
+    """
+    policy = db.query(PolicyDraft).filter(PolicyDraft.id == policy_id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    current = (
+        db.query(PolicyVersion)
+        .filter(PolicyVersion.policy_id == policy_id, PolicyVersion.version == version_number)
+        .first()
+    )
+    if not current:
+        raise HTTPException(status_code=404, detail=f"Version {version_number} not found")
+
+    previous = None
+    if version_number > 1:
+        previous = (
+            db.query(PolicyVersion)
+            .filter(PolicyVersion.policy_id == policy_id, PolicyVersion.version == version_number - 1)
+            .first()
+        )
+
+    diff_fields = _compute_version_diff(previous, current)
+
+    # Also diff YAML artifacts if both exist
+    yaml_diff = None
+    curr_art = db.query(PolicyArtifact).filter(
+        PolicyArtifact.policy_id == policy_id, PolicyArtifact.version == version_number
+    ).first()
+    prev_art = None
+    if version_number > 1:
+        prev_art = db.query(PolicyArtifact).filter(
+            PolicyArtifact.policy_id == policy_id, PolicyArtifact.version == version_number - 1
+        ).first()
+
+    if curr_art:
+        yaml_diff = {
+            "current_yaml": curr_art.yaml_content,
+            "previous_yaml": prev_art.yaml_content if prev_art else None,
+        }
+
+    return {
+        "policy_id": policy_id,
+        "version": version_number,
+        "compared_to": version_number - 1 if version_number > 1 else None,
+        "changes": diff_fields,
+        "yaml_diff": yaml_diff,
+    }
+
+
+def _compute_version_diff(previous, current):
+    """Compute field-level diff between two PolicyVersion snapshots."""
+    fields = ["title", "description", "severity", "policy_category", "scanner_hint",
+              "remediation_guide", "affected_domains", "effective_date", "authored_by"]
+    changes = []
+    for f in fields:
+        old_val = getattr(previous, f, None) if previous else None
+        new_val = getattr(current, f, None)
+        # Normalize for comparison
+        if isinstance(old_val, list) and isinstance(new_val, list):
+            old_str, new_str = sorted(old_val), sorted(new_val)
+        else:
+            old_str, new_str = old_val, new_val
+        if old_str != new_str:
+            changes.append({
+                "field": f,
+                "old_value": _serialize(old_val),
+                "new_value": _serialize(new_val),
+            })
+    # Always include status change
+    old_status = previous.status if previous else None
+    new_status = current.status
+    if old_status != new_status:
+        changes.append({"field": "status", "old_value": old_status, "new_value": new_status})
+    return changes
+
+
+def _serialize(val):
+    """Serialize a value for JSON output."""
+    if val is None:
+        return None
+    if hasattr(val, "isoformat"):
+        return val.isoformat()
+    return val
+
+
+@router.post("/{policy_id}/revise", response_model=PolicyResponse)
+def revise_policy(policy_id: int, db: Session = Depends(get_db)):
+    """
+    Create a new draft revision of an approved or rejected policy.
+
+    Bumps the version number and resets status to 'draft', allowing
+    the author to edit and re-submit. The previous version snapshot
+    is preserved in the version history.
+    """
+    policy = db.query(PolicyDraft).filter(PolicyDraft.id == policy_id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    if policy.status not in ("approved", "rejected"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot revise policy in '{policy.status}' status. Only 'approved' or 'rejected' policies can be revised."
+        )
+
+    policy.version += 1
+    policy.status = "draft"
+
+    log = PolicyApprovalLog(
+        policy_id=policy.id,
+        action="revised",
+        actor_name=policy.authored_by,
+        comment=f"Opened revision v{policy.version}",
+    )
+    db.add(log)
+    db.commit()
+    db.refresh(policy)
+    return policy
+
+
+@router.post("/{policy_id}/deprecate", response_model=PolicyResponse)
+def deprecate_policy(policy_id: int, body: PolicyApprove, db: Session = Depends(get_db)):
+    """
+    Deprecate an approved policy. Marks it as no longer enforced.
+
+    Only approved policies can be deprecated. Creates an audit trail entry.
+    """
+    policy = db.query(PolicyDraft).filter(PolicyDraft.id == policy_id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+    if policy.status != "approved":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot deprecate policy in '{policy.status}' status. Only 'approved' policies can be deprecated."
+        )
+
+    policy.status = "deprecated"
+
+    log = PolicyApprovalLog(
+        policy_id=policy.id,
+        action="deprecated",
+        actor_name=body.approver_name,
+        comment="Policy deprecated",
+    )
+    db.add(log)
+    db.commit()
+    db.refresh(policy)
+    return policy
+
+
+@router.get("/{policy_id}/timeline")
+def get_policy_timeline(policy_id: int, db: Session = Depends(get_db)):
+    """
+    Get a unified chronological timeline of all events for a policy.
+
+    Merges approval logs (submitted, approved, rejected, deprecated, revised)
+    with version snapshots into a single ordered timeline.
+    """
+    policy = db.query(PolicyDraft).filter(PolicyDraft.id == policy_id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    logs = (
+        db.query(PolicyApprovalLog)
+        .filter(PolicyApprovalLog.policy_id == policy_id)
+        .order_by(PolicyApprovalLog.timestamp.asc())
+        .all()
+    )
+
+    events = [
+        {
+            "type": "created",
+            "timestamp": policy.created_at.isoformat() if policy.created_at else None,
+            "actor": policy.authored_by,
+            "detail": f"Policy draft created: \"{policy.title}\"",
+            "version": 1,
+        }
+    ]
+
+    for log_entry in logs:
+        events.append({
+            "type": log_entry.action,
+            "timestamp": log_entry.timestamp.isoformat() if log_entry.timestamp else None,
+            "actor": log_entry.actor_name,
+            "detail": log_entry.comment or f"Policy {log_entry.action}",
+            "version": policy.version,
+        })
+
+    return {
+        "policy_id": policy.id,
+        "policy_uid": policy.policy_uid,
+        "title": policy.title,
+        "current_status": policy.status,
+        "current_version": policy.version,
+        "total_events": len(events),
+        "events": events,
+    }
+
+
 @router.get("/domains/{domain}/policies", response_model=PolicyListResponse)
 def get_domain_policies(domain: str, db: Session = Depends(get_db)):
     """Get all active (approved) policies for a specific domain."""

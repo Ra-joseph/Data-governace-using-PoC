@@ -95,6 +95,11 @@ export const policyAuthoringAPI = {
   getYaml: (id) => api.get(`/api/v1/policies/authored/${id}/yaml`),
   previewYaml: (id) => api.get(`/api/v1/policies/authored/${id}/preview-yaml`),
   getByDomain: (domain) => api.get(`/api/v1/policies/authored/domains/${domain}/policies`),
+  getVersions: (id) => api.get(`/api/v1/policies/authored/${id}/versions`),
+  getVersionDiff: (id, version) => api.get(`/api/v1/policies/authored/${id}/versions/${version}/diff`),
+  revise: (id) => api.post(`/api/v1/policies/authored/${id}/revise`),
+  deprecate: (id, data) => api.post(`/api/v1/policies/authored/${id}/deprecate`, data),
+  getTimeline: (id) => api.get(`/api/v1/policies/authored/${id}/timeline`),
 };
 
 // Policy Dashboard APIs
