@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, Send, CheckCircle, XCircle, FileText,
-  Clock, User, Shield, Code, History
+  Clock, User, Shield, Code, History, Eye, GitBranch
 } from 'lucide-react';
 import { policyAuthoringAPI } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -44,6 +44,11 @@ export const PolicyDetail = () => {
       setLoading(true);
       const response = await policyAuthoringAPI.get(id);
       setPolicy(response.data);
+      // Auto-load YAML artifact if policy is approved and has artifacts
+      if (response.data.status === 'approved' && response.data.artifacts?.length > 0) {
+        const latest = response.data.artifacts[response.data.artifacts.length - 1];
+        setYamlContent(latest);
+      }
     } catch (error) {
       toast.error('Failed to load policy');
       navigate('/policy-authoring');
@@ -74,6 +79,16 @@ export const PolicyDetail = () => {
       setTab('yaml');
     } catch (error) {
       toast.error('No YAML artifact available. Policy must be approved first.');
+    }
+  };
+
+  const handlePreviewYaml = async () => {
+    try {
+      const response = await policyAuthoringAPI.previewYaml(id);
+      setYamlContent({ ...response.data, is_preview: true });
+      setTab('yaml');
+    } catch (error) {
+      toast.error('Failed to generate YAML preview');
     }
   };
 
@@ -129,6 +144,18 @@ export const PolicyDetail = () => {
 
         {/* Action buttons */}
         <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+          {/* Preview YAML is available on any status */}
+          <button
+            onClick={handlePreviewYaml}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 'var(--space-xs)',
+              padding: 'var(--space-sm) var(--space-lg)',
+              background: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)',
+              borderRadius: 'var(--radius-md)', fontWeight: 500, fontSize: '0.8125rem',
+            }}
+          >
+            <Eye size={16} /> Preview YAML
+          </button>
           {policy.status === 'draft' && (
             <button
               onClick={handleSubmit}
@@ -148,11 +175,11 @@ export const PolicyDetail = () => {
               style={{
                 display: 'flex', alignItems: 'center', gap: 'var(--space-xs)',
                 padding: 'var(--space-sm) var(--space-lg)',
-                background: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)',
-                borderRadius: 'var(--radius-md)', fontWeight: 600,
+                background: 'linear-gradient(135deg, #0070AD, #12ABDB)',
+                color: 'white', borderRadius: 'var(--radius-md)', fontWeight: 600,
               }}
             >
-              <Code size={16} /> View YAML
+              <Code size={16} /> View Committed YAML
             </button>
           )}
         </div>
@@ -307,18 +334,59 @@ export const PolicyDetail = () => {
         )}
 
         {tab === 'yaml' && yamlContent && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
-            <div className="card">
-              <h4 style={{ marginBottom: 'var(--space-md)' }}>YAML</h4>
-              <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.8125rem', lineHeight: 1.6, maxHeight: 600, overflowY: 'auto' }}>
-                {yamlContent.yaml_content}
-              </pre>
+          <div>
+            {/* Preview / committed indicator + Git metadata */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'center' }}>
+                {yamlContent.is_preview ? (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                    padding: '4px 12px', borderRadius: 9999, fontSize: '0.75rem', fontWeight: 600,
+                    background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.2)',
+                  }}>
+                    <Eye size={12} /> Preview — not yet committed
+                  </span>
+                ) : (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                    padding: '4px 12px', borderRadius: 9999, fontSize: '0.75rem', fontWeight: 600,
+                    background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)',
+                  }}>
+                    <CheckCircle size={12} /> Committed artifact
+                  </span>
+                )}
+                {yamlContent.scanner_type && (
+                  <span style={{
+                    padding: '4px 12px', borderRadius: 9999, fontSize: '0.75rem', fontWeight: 600,
+                    background: 'rgba(0,112,173,0.1)', color: '#0070AD', border: '1px solid rgba(0,112,173,0.2)',
+                  }}>Scanner: {yamlContent.scanner_type}</span>
+                )}
+              </div>
+              {yamlContent.git_commit_hash && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', fontSize: '0.75rem', color: 'var(--color-text-tertiary)' }}>
+                  <GitBranch size={12} />
+                  <code style={{ fontSize: '0.7rem' }}>{yamlContent.git_commit_hash?.slice(0, 8)}</code>
+                  {yamlContent.git_file_path && (
+                    <span style={{ marginLeft: 4 }}>{yamlContent.git_file_path}</span>
+                  )}
+                </div>
+              )}
             </div>
-            <div className="card">
-              <h4 style={{ marginBottom: 'var(--space-md)' }}>JSON</h4>
-              <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.8125rem', lineHeight: 1.6, maxHeight: 600, overflowY: 'auto' }}>
-                {yamlContent.json_content}
-              </pre>
+
+            {/* Side-by-side YAML / JSON */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
+              <div className="card">
+                <h4 style={{ marginBottom: 'var(--space-md)' }}>YAML</h4>
+                <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.8125rem', lineHeight: 1.6, maxHeight: 600, overflowY: 'auto' }}>
+                  {yamlContent.yaml_content}
+                </pre>
+              </div>
+              <div className="card">
+                <h4 style={{ marginBottom: 'var(--space-md)' }}>JSON</h4>
+                <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.8125rem', lineHeight: 1.6, maxHeight: 600, overflowY: 'auto' }}>
+                  {yamlContent.json_content}
+                </pre>
+              </div>
             </div>
           </div>
         )}

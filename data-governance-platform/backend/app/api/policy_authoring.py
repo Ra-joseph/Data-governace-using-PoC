@@ -7,8 +7,10 @@ workflow before YAML/JSON artifacts are generated.
 """
 
 import uuid
+import logging
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -21,6 +23,9 @@ from app.schemas.policy import (
     PolicyResponse, PolicyDetailResponse, PolicyListResponse,
     PolicyArtifactResponse,
 )
+from app.services.policy_converter import convert_policy_to_yaml
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/policies/authored", tags=["policy-authoring"])
 
@@ -149,7 +154,7 @@ def submit_policy(policy_id: int, db: Session = Depends(get_db)):
 
 @router.post("/{policy_id}/approve", response_model=PolicyResponse)
 def approve_policy(policy_id: int, body: PolicyApprove, db: Session = Depends(get_db)):
-    """Approve a pending policy. Creates a version snapshot and generates artifacts."""
+    """Approve a pending policy. Creates a version snapshot, generates YAML/JSON artifacts, and commits to Git."""
     policy = db.query(PolicyDraft).filter(PolicyDraft.id == policy_id).first()
     if not policy:
         raise HTTPException(status_code=404, detail="Policy not found")
@@ -178,6 +183,49 @@ def approve_policy(policy_id: int, body: PolicyApprove, db: Session = Depends(ge
         status="approved",
     )
     db.add(version_snapshot)
+
+    # --- Stage 2: Generate YAML/JSON artifact ---
+    conversion = convert_policy_to_yaml(
+        policy_uid=policy.policy_uid,
+        title=policy.title,
+        description=policy.description,
+        policy_category=policy.policy_category,
+        affected_domains=policy.affected_domains or ["ALL"],
+        severity=policy.severity,
+        scanner_hint=policy.scanner_hint,
+        remediation_guide=policy.remediation_guide or "",
+        effective_date=policy.effective_date,
+        authored_by=policy.authored_by,
+        version=policy.version,
+    )
+
+    # Try to commit YAML to Git (graceful degradation if Git is unavailable)
+    git_commit_hash = None
+    git_file_path = None
+    try:
+        from app.services.git_service import GitService
+        git_service = GitService()
+        git_info = git_service.commit_contract(
+            contract_yaml=conversion["yaml_content"],
+            dataset_name=f"policy_{policy.policy_uid[:8]}",
+            version=f"{policy.version}.0.0",
+            commit_message=f"Add policy: {policy.title} (v{policy.version})",
+        )
+        git_commit_hash = git_info.get("commit_hash")
+        git_file_path = git_info.get("file_path")
+    except Exception as e:
+        logger.warning(f"Git commit failed for policy {policy.id}: {e}")
+
+    artifact = PolicyArtifact(
+        policy_id=policy.id,
+        version=policy.version,
+        yaml_content=conversion["yaml_content"],
+        json_content=conversion["json_content"],
+        scanner_type=conversion["scanner_type"],
+        git_commit_hash=git_commit_hash,
+        git_file_path=git_file_path,
+    )
+    db.add(artifact)
 
     # Create audit log
     log = PolicyApprovalLog(
@@ -258,6 +306,39 @@ def get_policy_yaml(policy_id: int, db: Session = Depends(get_db)):
             detail="No YAML artifact found for this policy. The policy must be approved first."
         )
     return artifact
+
+
+@router.get("/{policy_id}/preview-yaml")
+def preview_policy_yaml(policy_id: int, db: Session = Depends(get_db)):
+    """
+    Preview the YAML/JSON that would be generated for a policy, without
+    committing to Git or creating an artifact record. Works on any status.
+    """
+    policy = db.query(PolicyDraft).filter(PolicyDraft.id == policy_id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    conversion = convert_policy_to_yaml(
+        policy_uid=policy.policy_uid,
+        title=policy.title,
+        description=policy.description,
+        policy_category=policy.policy_category,
+        affected_domains=policy.affected_domains or ["ALL"],
+        severity=policy.severity,
+        scanner_hint=policy.scanner_hint,
+        remediation_guide=policy.remediation_guide or "",
+        effective_date=policy.effective_date,
+        authored_by=policy.authored_by,
+        version=policy.version,
+    )
+
+    return {
+        "yaml_content": conversion["yaml_content"],
+        "json_content": conversion["json_content"],
+        "scanner_type": conversion["scanner_type"],
+        "policy_id_generated": conversion["policy_id"],
+        "is_preview": True,
+    }
 
 
 @router.get("/domains/{domain}/policies", response_model=PolicyListResponse)

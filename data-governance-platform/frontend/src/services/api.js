@@ -93,6 +93,7 @@ export const policyAuthoringAPI = {
   approve: (id, data) => api.post(`/api/v1/policies/authored/${id}/approve`, data),
   reject: (id, data) => api.post(`/api/v1/policies/authored/${id}/reject`, data),
   getYaml: (id) => api.get(`/api/v1/policies/authored/${id}/yaml`),
+  previewYaml: (id) => api.get(`/api/v1/policies/authored/${id}/preview-yaml`),
   getByDomain: (domain) => api.get(`/api/v1/policies/authored/domains/${domain}/policies`),
 };
 
