@@ -109,6 +109,14 @@ export const policyDashboardAPI = {
   validateCombined: (data) => api.post('/api/v1/policy-dashboard/validate-combined', data),
 };
 
+// Policy Reports APIs
+export const policyReportsAPI = {
+  impact: (policyId) => api.get(`/api/v1/policy-reports/impact/${policyId}`),
+  compliance: () => api.get('/api/v1/policy-reports/compliance'),
+  bulkValidate: (includeAuthored = true) => api.post(`/api/v1/policy-reports/bulk-validate?include_authored=${includeAuthored}`),
+  policyCompliance: (policyId) => api.get(`/api/v1/policy-reports/policy-compliance/${policyId}`),
+};
+
 // Health check
 export const healthCheck = () => api.get('/health');
 
