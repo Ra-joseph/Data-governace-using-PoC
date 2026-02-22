@@ -127,6 +127,15 @@ export const policyExchangeAPI = {
   instantiateTemplate: (id, authoredBy) => api.post(`/api/v1/policy-exchange/templates/${id}/instantiate`, null, { params: { authored_by: authoredBy } }),
 };
 
+// Domain Governance APIs
+export const domainGovernanceAPI = {
+  listDomains: () => api.get('/api/v1/domain-governance/domains'),
+  getDomain: (domain) => api.get(`/api/v1/domain-governance/domains/${domain}`),
+  getMatrix: () => api.get('/api/v1/domain-governance/matrix'),
+  getAnalytics: () => api.get('/api/v1/domain-governance/analytics'),
+  getEffectiveness: () => api.get('/api/v1/domain-governance/effectiveness'),
+};
+
 // Health check
 export const healthCheck = () => api.get('/health');
 

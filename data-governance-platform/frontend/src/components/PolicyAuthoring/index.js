@@ -6,3 +6,4 @@ export { PolicyDashboard } from './PolicyDashboard';
 export { PolicyTimeline } from './PolicyTimeline';
 export { ComplianceReport } from './ComplianceReport';
 export { PolicyExchange } from './PolicyExchange';
+export { DomainGovernance } from './DomainGovernance';

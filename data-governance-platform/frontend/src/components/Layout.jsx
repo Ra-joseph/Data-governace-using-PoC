@@ -12,7 +12,8 @@ import {
   ClipboardCheck,
   BarChart3,
   FileCheck,
-  Package
+  Package,
+  Globe
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import './Layout.css';
@@ -27,6 +28,7 @@ const navigation = [
   { name: 'Policy Dashboard', path: '/policy-dashboard', icon: BarChart3 },
   { name: 'Compliance Report', path: '/compliance-report', icon: FileCheck },
   { name: 'Policy Exchange', path: '/policy-exchange', icon: Package },
+  { name: 'Domain Governance', path: '/domain-governance', icon: Globe },
   { name: 'Git History', path: '/git', icon: GitBranch },
   { name: 'Subscriptions', path: '/subscriptions', icon: Bell },
   { name: 'Compliance', path: '/compliance', icon: CheckCircle },
