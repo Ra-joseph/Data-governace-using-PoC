@@ -13,7 +13,8 @@ import {
   BarChart3,
   FileCheck,
   Package,
-  Globe
+  Globe,
+  AlertTriangle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import './Layout.css';
@@ -29,6 +30,7 @@ const navigation = [
   { name: 'Compliance Report', path: '/compliance-report', icon: FileCheck },
   { name: 'Policy Exchange', path: '/policy-exchange', icon: Package },
   { name: 'Domain Governance', path: '/domain-governance', icon: Globe },
+  { name: 'Policy Conflicts', path: '/policy-conflicts', icon: AlertTriangle },
   { name: 'Git History', path: '/git', icon: GitBranch },
   { name: 'Subscriptions', path: '/subscriptions', icon: Bell },
   { name: 'Compliance', path: '/compliance', icon: CheckCircle },

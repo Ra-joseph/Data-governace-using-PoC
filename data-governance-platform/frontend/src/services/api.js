@@ -136,6 +136,16 @@ export const domainGovernanceAPI = {
   getEffectiveness: () => api.get('/api/v1/domain-governance/effectiveness'),
 };
 
+// Policy Conflicts APIs
+export const policyConflictsAPI = {
+  detect: (params) => api.post('/api/v1/policy-conflicts/detect', null, { params }),
+  list: (params) => api.get('/api/v1/policy-conflicts/', { params }),
+  stats: () => api.get('/api/v1/policy-conflicts/stats'),
+  get: (id) => api.get(`/api/v1/policy-conflicts/${id}`),
+  resolve: (id, data) => api.post(`/api/v1/policy-conflicts/${id}/resolve`, data),
+  reset: () => api.post('/api/v1/policy-conflicts/reset'),
+};
+
 // Health check
 export const healthCheck = () => api.get('/health');
 

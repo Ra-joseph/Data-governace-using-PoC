@@ -27,7 +27,7 @@ import { ContractViewer } from './pages/ContractViewer';
 import { SubscriptionQueue } from './pages/SubscriptionQueue';
 import { ComplianceDashboard } from './pages/ComplianceDashboard';
 import { GitHistory } from './pages/GitHistory';
-import { PolicyList, PolicyForm, PolicyDetail, PolicyReview, PolicyDashboard, PolicyTimeline, ComplianceReport, PolicyExchange, DomainGovernance } from './components/PolicyAuthoring';
+import { PolicyList, PolicyForm, PolicyDetail, PolicyReview, PolicyDashboard, PolicyTimeline, ComplianceReport, PolicyExchange, DomainGovernance, PolicyConflicts } from './components/PolicyAuthoring';
 import './App.css';
 
 function App() {
@@ -111,6 +111,7 @@ function App() {
             <Route path="compliance-report" element={<ComplianceReport />} />
             <Route path="policy-exchange" element={<PolicyExchange />} />
             <Route path="domain-governance" element={<DomainGovernance />} />
+            <Route path="policy-conflicts" element={<PolicyConflicts />} />
           </Route>
 
           {/* Default redirect */}
