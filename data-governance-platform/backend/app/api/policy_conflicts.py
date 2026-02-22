@@ -1,14 +1,27 @@
 """
-Policy Conflict Detection & Resolution API.
+Policy Exception Management API.
 
-Provides endpoints for:
-  - Automatic detection of overlapping or contradictory policies
-  - Conflict listing, detail, and resolution workflow
-  - Conflict statistics and recommendations
+When policy enforcement runs and a data domain fails validation, the domain
+owner can raise a **policy exception request** to allow deployment despite
+the failure.  An advisory board reviews the request and either approves or
+rejects it.  The deployment gate checks whether every failure in a domain
+either has an approved exception or has been fixed.
+
+Endpoints:
+  POST /detect-failures         – scan approved policies for enforcement failures
+  GET  /failures                – list current policy failures per domain
+  POST /                        – raise an exception request for a specific failure
+  GET  /                        – list all exception requests
+  GET  /{id}                    – get exception request detail
+  POST /{id}/approve            – board approves the exception
+  POST /{id}/reject             – board rejects the exception
+  GET  /deployment-gate/{domain} – check if a domain may deploy
+  GET  /stats                   – summary statistics
+  POST /reset                   – clear stores (testing)
 """
 
 import logging
-from typing import Optional, List
+from typing import Optional
 from collections import defaultdict
 from datetime import datetime
 
@@ -19,388 +32,465 @@ from sqlalchemy import func
 
 from app.database import get_db
 from app.models.policy_draft import PolicyDraft
+from app.models.policy_artifact import PolicyArtifact
+from app.models.contract import Contract
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/policy-conflicts", tags=["policy-conflicts"])
-
-# Conflict types
-CONFLICT_TYPES = {
-    "overlap": "Two policies cover the same domain and category with different rules",
-    "contradiction": "Policies impose contradictory requirements",
-    "severity_mismatch": "Same concern addressed at different severity levels",
-    "domain_gap": "A domain is only partially covered by related policies",
-    "redundancy": "Policies are functionally equivalent (duplicate effort)",
-}
-
-# Severity hierarchy for comparison
-SEVERITY_RANK = {"CRITICAL": 3, "WARNING": 2, "INFO": 1}
+router = APIRouter(prefix="/policy-exceptions", tags=["policy-exceptions"])
 
 
 # ── Pydantic Schemas ────────────────────────────────────────────────────
 
-class ConflictResolution(BaseModel):
-    strategy: str  # "keep_both", "merge", "deprecate_one", "escalate"
-    resolution_notes: str
-    resolved_by: str = "governance-admin"
+class ExceptionRequest(BaseModel):
+    failure_id: str
+    domain: str
+    policy_id: int
+    policy_title: str
+    justification: str
+    business_impact: str
+    requested_by: str = "domain-owner"
+    requested_duration_days: int = 90
 
 
-# ── In-Memory Conflict Store ────────────────────────────────────────────
-# Conflicts are computed on-the-fly and optionally stored for resolution tracking.
-# In production this would be a DB table; here we use a lightweight dict.
-
-_conflict_store: dict = {}  # conflict_id -> conflict record
-_next_conflict_id = 1
+class BoardDecision(BaseModel):
+    decided_by: str
+    comments: str
 
 
-def _reset_store():
-    """Reset conflict store (for testing)."""
-    global _conflict_store, _next_conflict_id
-    _conflict_store = {}
-    _next_conflict_id = 1
+# ── In-Memory Stores ────────────────────────────────────────────────────
+# In production these would be DB tables.
+
+_failure_store: dict = {}     # failure_id -> failure record
+_exception_store: dict = {}   # exception_id -> exception request record
+_next_exception_id = 1
 
 
-# ── Detection Logic ─────────────────────────────────────────────────────
+def _reset_stores():
+    global _next_exception_id
+    _failure_store.clear()
+    _exception_store.clear()
+    _next_exception_id = 1
 
-def _detect_overlaps(policies: List[PolicyDraft]) -> list:
-    """Detect policies that cover the same domain+category pair."""
-    conflicts = []
-    # Group by (domain, category)
-    domain_cat_map = defaultdict(list)
-    for p in policies:
-        domains = p.affected_domains or ["ALL"]
-        for d in domains:
-            domain_cat_map[(d, p.policy_category)].append(p)
 
-    for (domain, category), group in domain_cat_map.items():
-        if len(group) < 2:
+# ── Failure Detection ───────────────────────────────────────────────────
+
+def _build_failure_id(policy_id: int, domain: str) -> str:
+    return f"FAIL-{policy_id}-{domain}"
+
+
+def _detect_domain_failures(policies, db: Session) -> list:
+    """
+    For every approved policy, run it against contracts that belong to
+    the policy's affected domains.  Record each (policy, domain) pair
+    where at least one contract fails.
+    """
+    from app.services.authored_policy_loader import (
+        validate_contract_with_authored_policies,
+    )
+    import yaml as _yaml
+    import json
+
+    failures = []
+
+    for policy in policies:
+        artifact = (
+            db.query(PolicyArtifact)
+            .filter(PolicyArtifact.policy_id == policy.id)
+            .order_by(PolicyArtifact.version.desc())
+            .first()
+        )
+        if not artifact:
             continue
-        # Check pairs for overlap
-        for i in range(len(group)):
-            for j in range(i + 1, len(group)):
-                a, b = group[i], group[j]
-                conflict = {
-                    "type": "overlap",
-                    "description": f"Both policies cover {category} in {domain} domain",
-                    "domain": domain,
-                    "category": category,
-                    "policy_a": {"id": a.id, "title": a.title, "severity": a.severity, "status": a.status},
-                    "policy_b": {"id": b.id, "title": b.title, "severity": b.severity, "status": b.status},
-                }
-                # Check for severity mismatch
-                if a.severity != b.severity:
-                    conflict["type"] = "severity_mismatch"
-                    conflict["description"] = (
-                        f"Policies address {category} in {domain} at different severity "
-                        f"levels: {a.severity} vs {b.severity}"
-                    )
-                # Check for potential contradiction via keyword heuristic
-                if _descriptions_contradict(a.description, b.description):
-                    conflict["type"] = "contradiction"
-                    conflict["description"] = (
-                        f"Policies may impose contradictory {category} requirements in {domain}"
-                    )
-                conflicts.append(conflict)
 
-    return conflicts
+        try:
+            parsed_yaml = _yaml.safe_load(artifact.yaml_content)
+        except Exception:
+            continue
 
+        authored_list = [{
+            "draft_id": policy.id,
+            "policy_uid": policy.policy_uid,
+            "title": policy.title,
+            "category": policy.policy_category,
+            "severity": policy.severity,
+            "scanner_type": artifact.scanner_type,
+            "version": policy.version,
+            "parsed_yaml": parsed_yaml,
+            "artifact_id": artifact.id,
+        }]
 
-def _detect_redundancies(policies: List[PolicyDraft]) -> list:
-    """Detect policies that are functionally equivalent."""
-    conflicts = []
-    seen = set()
+        domains = policy.affected_domains or ["ALL"]
 
-    for i in range(len(policies)):
-        for j in range(i + 1, len(policies)):
-            a, b = policies[i], policies[j]
-            pair_key = tuple(sorted([a.id, b.id]))
-            if pair_key in seen:
-                continue
+        contracts = db.query(Contract).all()
 
-            if _is_redundant(a, b):
-                seen.add(pair_key)
-                domains_a = set(a.affected_domains or ["ALL"])
-                domains_b = set(b.affected_domains or ["ALL"])
-                shared = domains_a & domains_b
-                if shared:
-                    conflicts.append({
-                        "type": "redundancy",
-                        "description": f"Policies appear functionally equivalent in domains: {', '.join(sorted(shared))}",
-                        "domain": sorted(shared)[0],
-                        "category": a.policy_category,
-                        "policy_a": {"id": a.id, "title": a.title, "severity": a.severity, "status": a.status},
-                        "policy_b": {"id": b.id, "title": b.title, "severity": b.severity, "status": b.status},
+        for domain in domains:
+            failing_contracts = []
+            for contract in contracts:
+                contract_data = _extract_contract_data(contract)
+                if not contract_data:
+                    continue
+
+                violations = validate_contract_with_authored_policies(
+                    contract_data, authored_list,
+                )
+                if violations:
+                    failing_contracts.append({
+                        "contract_id": contract.id,
+                        "dataset_id": contract.dataset_id,
+                        "violation_count": len(violations),
+                        "violations": [
+                            {"field": v.field, "message": v.message, "severity": v.type.value}
+                            for v in violations
+                        ],
                     })
 
-    return conflicts
+            if failing_contracts:
+                fid = _build_failure_id(policy.id, domain)
+                failures.append({
+                    "failure_id": fid,
+                    "policy_id": policy.id,
+                    "policy_title": policy.title,
+                    "policy_category": policy.policy_category,
+                    "severity": policy.severity,
+                    "domain": domain,
+                    "failing_contracts": failing_contracts,
+                    "total_failing": len(failing_contracts),
+                    "detected_at": datetime.utcnow().isoformat(),
+                })
+
+    return failures
 
 
-def _descriptions_contradict(desc_a: str, desc_b: str) -> bool:
-    """
-    Heuristic: detect potential contradictions between two policy descriptions.
-    Looks for opposing keywords (require vs prohibit, allow vs deny, etc.).
-    """
-    neg_pairs = [
-        ({"require", "must", "mandatory", "enforce", "always"}, {"prohibit", "never", "forbid", "deny", "disallow"}),
-        ({"encrypt", "encrypted"}, {"unencrypted", "plaintext", "no encryption"}),
-        ({"retain",}, {"delete", "purge", "remove"}),
-    ]
-    a_lower = (desc_a or "").lower()
-    b_lower = (desc_b or "").lower()
-
-    for positive, negative in neg_pairs:
-        a_has_pos = any(w in a_lower for w in positive)
-        a_has_neg = any(w in a_lower for w in negative)
-        b_has_pos = any(w in b_lower for w in positive)
-        b_has_neg = any(w in b_lower for w in negative)
-
-        if (a_has_pos and b_has_neg) or (a_has_neg and b_has_pos):
-            return True
-
-    return False
-
-
-def _is_redundant(a: PolicyDraft, b: PolicyDraft) -> bool:
-    """Check if two policies are functionally redundant."""
-    if a.policy_category != b.policy_category:
-        return False
-    if a.severity != b.severity:
-        return False
-    if a.scanner_hint != b.scanner_hint:
-        return False
-    # Similar descriptions (basic similarity)
-    a_words = set((a.description or "").lower().split())
-    b_words = set((b.description or "").lower().split())
-    if not a_words or not b_words:
-        return False
-    overlap = len(a_words & b_words)
-    union = len(a_words | b_words)
-    jaccard = overlap / union if union > 0 else 0
-    return jaccard > 0.7
+def _extract_contract_data(contract: Contract):
+    import json as _json
+    data = contract.machine_readable
+    if not data:
+        return None
+    if isinstance(data, str):
+        try:
+            data = _json.loads(data)
+        except Exception:
+            return None
+    return data if isinstance(data, dict) else None
 
 
 # ── Endpoints ───────────────────────────────────────────────────────────
 
-@router.post("/detect")
-def detect_conflicts(
-    scope: Optional[str] = Query(None, description="Limit detection to a specific domain"),
-    status_filter: Optional[str] = Query("approved", description="Filter policies by status"),
+@router.post("/detect-failures")
+def detect_failures(
+    domain: Optional[str] = Query(None, description="Limit scan to one domain"),
     db: Session = Depends(get_db),
 ):
     """
-    Run conflict detection across all policies.
+    Scan all approved policies and detect enforcement failures.
 
-    Scans for overlaps, contradictions, severity mismatches, and redundancies.
-    Results are stored for later resolution.
+    Records each (policy, domain) pair where at least one contract fails.
     """
-    global _next_conflict_id
-
-    query = db.query(PolicyDraft)
-    if status_filter:
-        query = query.filter(PolicyDraft.status == status_filter)
+    query = db.query(PolicyDraft).filter(PolicyDraft.status == "approved")
     policies = query.all()
 
-    if scope:
+    if domain:
         policies = [
             p for p in policies
-            if scope in (p.affected_domains or ["ALL"]) or "ALL" in (p.affected_domains or [])
+            if domain in (p.affected_domains or ["ALL"])
+            or "ALL" in (p.affected_domains or [])
         ]
 
-    # Run detectors
-    all_conflicts = []
-    all_conflicts.extend(_detect_overlaps(policies))
-    all_conflicts.extend(_detect_redundancies(policies))
+    failures = _detect_domain_failures(policies, db)
 
-    # Store results
-    new_ids = []
-    for conflict in all_conflicts:
-        # Dedup: check if same pair already in store
-        pair_key = tuple(sorted([conflict["policy_a"]["id"], conflict["policy_b"]["id"]]))
-        existing = [
-            cid for cid, c in _conflict_store.items()
-            if tuple(sorted([c["policy_a"]["id"], c["policy_b"]["id"]])) == pair_key
-            and c["type"] == conflict["type"]
-        ]
-        if existing:
-            new_ids.append(existing[0])
-            continue
-
-        conflict_id = _next_conflict_id
-        _next_conflict_id += 1
-        conflict["id"] = conflict_id
-        conflict["status"] = "open"
-        conflict["detected_at"] = datetime.utcnow().isoformat()
-        conflict["resolution"] = None
-        _conflict_store[conflict_id] = conflict
-        new_ids.append(conflict_id)
+    for f in failures:
+        _failure_store[f["failure_id"]] = f
 
     return {
-        "total_policies_scanned": len(policies),
-        "total_conflicts_found": len(all_conflicts),
-        "new_conflicts": sum(1 for c in _conflict_store.values() if c["id"] in new_ids and c.get("resolution") is None),
-        "conflict_ids": new_ids,
-        "by_type": _count_by_type(all_conflicts),
+        "policies_scanned": len(policies),
+        "total_failures": len(failures),
+        "failures": failures,
     }
 
 
-@router.get("/")
-def list_conflicts(
-    status: Optional[str] = Query(None, description="Filter by status: open, resolved"),
-    conflict_type: Optional[str] = Query(None, description="Filter by conflict type"),
+@router.get("/failures")
+def list_failures(
+    domain: Optional[str] = Query(None),
 ):
-    """List all detected conflicts with optional filtering."""
-    conflicts = list(_conflict_store.values())
+    """List current policy enforcement failures, optionally filtered by domain."""
+    failures = list(_failure_store.values())
+    if domain:
+        failures = [f for f in failures if f["domain"] == domain]
 
-    if status:
-        conflicts = [c for c in conflicts if c["status"] == status]
-    if conflict_type:
-        conflicts = [c for c in conflicts if c["type"] == conflict_type]
-
-    # Sort: open first, then by detected_at desc
-    conflicts.sort(key=lambda c: (c["status"] != "open", c.get("detected_at", "")), reverse=False)
+    # Annotate each failure with its exception status
+    annotated = []
+    for f in failures:
+        exception = _find_exception_for_failure(f["failure_id"])
+        annotated.append({
+            **f,
+            "exception_status": exception["status"] if exception else None,
+            "exception_id": exception["id"] if exception else None,
+        })
 
     return {
-        "total": len(conflicts),
-        "open": sum(1 for c in conflicts if c["status"] == "open"),
-        "resolved": sum(1 for c in conflicts if c["status"] == "resolved"),
-        "conflicts": conflicts,
+        "total": len(annotated),
+        "failures": annotated,
+    }
+
+
+@router.post("/")
+def create_exception_request(req: ExceptionRequest):
+    """
+    Raise an exception request so the domain can deploy despite a policy failure.
+    The advisory board must approve before the deployment gate opens.
+    """
+    global _next_exception_id
+
+    # Verify the failure exists
+    if req.failure_id not in _failure_store:
+        raise HTTPException(status_code=404, detail="Failure not found – run detect-failures first")
+
+    # Check for existing open/approved exception
+    existing = _find_exception_for_failure(req.failure_id)
+    if existing and existing["status"] in ("pending_review", "approved"):
+        raise HTTPException(
+            status_code=409,
+            detail=f"An exception request already exists (id={existing['id']}, status={existing['status']})",
+        )
+
+    eid = _next_exception_id
+    _next_exception_id += 1
+
+    record = {
+        "id": eid,
+        "failure_id": req.failure_id,
+        "domain": req.domain,
+        "policy_id": req.policy_id,
+        "policy_title": req.policy_title,
+        "justification": req.justification,
+        "business_impact": req.business_impact,
+        "requested_by": req.requested_by,
+        "requested_duration_days": req.requested_duration_days,
+        "status": "pending_review",
+        "created_at": datetime.utcnow().isoformat(),
+        "decision": None,
+    }
+    _exception_store[eid] = record
+
+    return record
+
+
+@router.get("/requests")
+def list_exception_requests(
+    status: Optional[str] = Query(None, description="pending_review | approved | rejected"),
+    domain: Optional[str] = Query(None),
+):
+    """List all exception requests with optional filters."""
+    records = list(_exception_store.values())
+    if status:
+        records = [r for r in records if r["status"] == status]
+    if domain:
+        records = [r for r in records if r["domain"] == domain]
+
+    records.sort(key=lambda r: r["created_at"], reverse=True)
+
+    return {
+        "total": len(records),
+        "pending": sum(1 for r in records if r["status"] == "pending_review"),
+        "approved": sum(1 for r in records if r["status"] == "approved"),
+        "rejected": sum(1 for r in records if r["status"] == "rejected"),
+        "requests": records,
+    }
+
+
+@router.get("/requests/{exception_id}")
+def get_exception_request(exception_id: int):
+    """Get details of a specific exception request."""
+    record = _exception_store.get(exception_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Exception request not found")
+    return record
+
+
+@router.post("/requests/{exception_id}/approve")
+def approve_exception(exception_id: int, decision: BoardDecision):
+    """
+    Advisory board approves the exception request.
+    The domain may now deploy despite the policy failure.
+    """
+    record = _exception_store.get(exception_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Exception request not found")
+    if record["status"] != "pending_review":
+        raise HTTPException(status_code=409, detail=f"Cannot approve – current status is '{record['status']}'")
+
+    record["status"] = "approved"
+    record["decision"] = {
+        "action": "approved",
+        "decided_by": decision.decided_by,
+        "comments": decision.comments,
+        "decided_at": datetime.utcnow().isoformat(),
+    }
+
+    return record
+
+
+@router.post("/requests/{exception_id}/reject")
+def reject_exception(exception_id: int, decision: BoardDecision):
+    """
+    Advisory board rejects the exception request.
+    The domain must fix the policy failure before deploying.
+    """
+    record = _exception_store.get(exception_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Exception request not found")
+    if record["status"] != "pending_review":
+        raise HTTPException(status_code=409, detail=f"Cannot reject – current status is '{record['status']}'")
+
+    record["status"] = "rejected"
+    record["decision"] = {
+        "action": "rejected",
+        "decided_by": decision.decided_by,
+        "comments": decision.comments,
+        "decided_at": datetime.utcnow().isoformat(),
+    }
+
+    return record
+
+
+@router.get("/deployment-gate/{domain}")
+def check_deployment_gate(domain: str):
+    """
+    Deployment gate for a domain.
+
+    Returns **allowed=True** only when every policy failure in the domain
+    either:
+      - has an **approved** exception, or
+      - has been resolved (no longer in the failure store).
+
+    This is the check a CI/CD pipeline or merge-request hook would call.
+    """
+    domain_failures = [f for f in _failure_store.values() if f["domain"] == domain]
+
+    if not domain_failures:
+        return {
+            "domain": domain,
+            "allowed": True,
+            "reason": "No policy failures detected for this domain",
+            "total_failures": 0,
+            "unresolved": 0,
+            "approved_exceptions": 0,
+            "pending_exceptions": 0,
+            "rejected_exceptions": 0,
+            "blockers": [],
+        }
+
+    unresolved = []
+    approved = 0
+    pending = 0
+    rejected = 0
+    blockers = []
+
+    for f in domain_failures:
+        exc = _find_exception_for_failure(f["failure_id"])
+        if exc and exc["status"] == "approved":
+            approved += 1
+        elif exc and exc["status"] == "pending_review":
+            pending += 1
+            blockers.append({
+                "failure_id": f["failure_id"],
+                "policy_title": f["policy_title"],
+                "severity": f["severity"],
+                "reason": "Exception pending board review",
+                "exception_id": exc["id"],
+            })
+        elif exc and exc["status"] == "rejected":
+            rejected += 1
+            blockers.append({
+                "failure_id": f["failure_id"],
+                "policy_title": f["policy_title"],
+                "severity": f["severity"],
+                "reason": "Exception rejected – must fix the violation",
+                "exception_id": exc["id"],
+            })
+        else:
+            unresolved.append(f["failure_id"])
+            blockers.append({
+                "failure_id": f["failure_id"],
+                "policy_title": f["policy_title"],
+                "severity": f["severity"],
+                "reason": "No exception raised – raise one or fix the violation",
+            })
+
+    allowed = len(blockers) == 0
+
+    return {
+        "domain": domain,
+        "allowed": allowed,
+        "reason": "All failures have approved exceptions" if allowed else "Unresolved policy failures block deployment",
+        "total_failures": len(domain_failures),
+        "unresolved": len(unresolved),
+        "approved_exceptions": approved,
+        "pending_exceptions": pending,
+        "rejected_exceptions": rejected,
+        "blockers": blockers,
     }
 
 
 @router.get("/stats")
-def conflict_stats():
-    """Get summary statistics about policy conflicts."""
-    conflicts = list(_conflict_store.values())
-    open_conflicts = [c for c in conflicts if c["status"] == "open"]
-    resolved_conflicts = [c for c in conflicts if c["status"] == "resolved"]
+def exception_stats():
+    """Summary statistics for policy exceptions."""
+    failures = list(_failure_store.values())
+    exceptions = list(_exception_store.values())
 
-    type_dist = defaultdict(int)
-    domain_dist = defaultdict(int)
-    severity_pairs = []
+    domain_failures = defaultdict(int)
+    category_failures = defaultdict(int)
+    for f in failures:
+        domain_failures[f["domain"]] += 1
+        category_failures[f["policy_category"]] += 1
 
-    for c in conflicts:
-        type_dist[c["type"]] += 1
-        domain_dist[c.get("domain", "unknown")] += 1
-        if c["type"] == "severity_mismatch":
-            severity_pairs.append({
-                "policy_a": c["policy_a"]["title"],
-                "severity_a": c["policy_a"]["severity"],
-                "policy_b": c["policy_b"]["title"],
-                "severity_b": c["policy_b"]["severity"],
-            })
+    pending = [e for e in exceptions if e["status"] == "pending_review"]
+    approved = [e for e in exceptions if e["status"] == "approved"]
+    rejected = [e for e in exceptions if e["status"] == "rejected"]
 
-    # Resolution strategies used
-    strategy_dist = defaultdict(int)
-    for c in resolved_conflicts:
-        if c.get("resolution"):
-            strategy_dist[c["resolution"]["strategy"]] += 1
+    # Domains that can deploy vs. blocked
+    all_domains = list(set(f["domain"] for f in failures))
+    deployable = []
+    blocked = []
+    for d in all_domains:
+        df = [f for f in failures if f["domain"] == d]
+        all_covered = all(
+            (_find_exception_for_failure(f["failure_id"]) or {}).get("status") == "approved"
+            for f in df
+        )
+        if all_covered:
+            deployable.append(d)
+        else:
+            blocked.append(d)
 
     return {
-        "total_conflicts": len(conflicts),
-        "open": len(open_conflicts),
-        "resolved": len(resolved_conflicts),
-        "resolution_rate_pct": round(len(resolved_conflicts) / len(conflicts) * 100, 1) if conflicts else 0,
-        "by_type": dict(type_dist),
-        "by_domain": dict(domain_dist),
-        "severity_mismatches": severity_pairs,
-        "resolution_strategies": dict(strategy_dist),
+        "total_failures": len(failures),
+        "total_exceptions": len(exceptions),
+        "pending_review": len(pending),
+        "approved": len(approved),
+        "rejected": len(rejected),
+        "approval_rate_pct": round(len(approved) / len(exceptions) * 100, 1) if exceptions else 0,
+        "failures_by_domain": dict(domain_failures),
+        "failures_by_category": dict(category_failures),
+        "domains_deployable": deployable,
+        "domains_blocked": blocked,
     }
-
-
-@router.get("/{conflict_id}")
-def get_conflict(conflict_id: int):
-    """Get detailed information about a specific conflict."""
-    conflict = _conflict_store.get(conflict_id)
-    if not conflict:
-        raise HTTPException(status_code=404, detail="Conflict not found")
-
-    # Add recommendation
-    conflict_copy = dict(conflict)
-    conflict_copy["recommendation"] = _get_recommendation(conflict)
-
-    return conflict_copy
-
-
-@router.post("/{conflict_id}/resolve")
-def resolve_conflict(conflict_id: int, resolution: ConflictResolution):
-    """
-    Resolve a conflict with a chosen strategy.
-
-    Strategies:
-    - keep_both: Accept both policies as valid (document reasoning)
-    - merge: Combine policies into one (manual follow-up)
-    - deprecate_one: Mark one policy for deprecation
-    - escalate: Flag for senior governance review
-    """
-    conflict = _conflict_store.get(conflict_id)
-    if not conflict:
-        raise HTTPException(status_code=404, detail="Conflict not found")
-
-    if conflict["status"] == "resolved":
-        raise HTTPException(status_code=409, detail="Conflict already resolved")
-
-    valid_strategies = ["keep_both", "merge", "deprecate_one", "escalate"]
-    if resolution.strategy not in valid_strategies:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid strategy. Must be one of: {', '.join(valid_strategies)}"
-        )
-
-    conflict["status"] = "resolved"
-    conflict["resolution"] = {
-        "strategy": resolution.strategy,
-        "notes": resolution.resolution_notes,
-        "resolved_by": resolution.resolved_by,
-        "resolved_at": datetime.utcnow().isoformat(),
-    }
-
-    return conflict
 
 
 @router.post("/reset")
-def reset_conflicts():
-    """Reset all conflict data (for testing/admin purposes)."""
-    _reset_store()
-    return {"message": "Conflict store reset", "total": 0}
+def reset_stores():
+    """Reset all failure and exception data (testing/admin)."""
+    _reset_stores()
+    return {"message": "Stores reset", "failures": 0, "exceptions": 0}
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────
 
-def _count_by_type(conflicts: list) -> dict:
-    counts = defaultdict(int)
-    for c in conflicts:
-        counts[c["type"]] += 1
-    return dict(counts)
-
-
-def _get_recommendation(conflict: dict) -> dict:
-    """Generate a resolution recommendation based on conflict type."""
-    ctype = conflict["type"]
-
-    if ctype == "severity_mismatch":
-        sev_a = SEVERITY_RANK.get(conflict["policy_a"]["severity"], 0)
-        sev_b = SEVERITY_RANK.get(conflict["policy_b"]["severity"], 0)
-        higher = conflict["policy_a"] if sev_a >= sev_b else conflict["policy_b"]
-        return {
-            "strategy": "merge",
-            "reason": f"Align both policies to the higher severity ({higher['severity']}) for consistent enforcement",
-            "action": f"Consider updating the lower-severity policy to match '{higher['title']}'",
-        }
-    elif ctype == "contradiction":
-        return {
-            "strategy": "escalate",
-            "reason": "Contradictory policies require governance board review to determine the correct rule",
-            "action": "Escalate to the governance committee for a binding decision",
-        }
-    elif ctype == "redundancy":
-        return {
-            "strategy": "deprecate_one",
-            "reason": "Redundant policies add maintenance burden without additional protection",
-            "action": "Deprecate the older or less comprehensive policy and consolidate into one",
-        }
-    else:  # overlap
-        return {
-            "strategy": "keep_both",
-            "reason": "Overlapping policies may serve different aspects of the same concern",
-            "action": "Review both policies to confirm they complement rather than duplicate each other",
-        }
+def _find_exception_for_failure(failure_id: str):
+    """Find the most recent exception request for a given failure."""
+    matches = [e for e in _exception_store.values() if e["failure_id"] == failure_id]
+    if not matches:
+        return None
+    matches.sort(key=lambda e: e["created_at"], reverse=True)
+    return matches[0]

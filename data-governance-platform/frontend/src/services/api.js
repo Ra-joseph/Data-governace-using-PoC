@@ -136,14 +136,17 @@ export const domainGovernanceAPI = {
   getEffectiveness: () => api.get('/api/v1/domain-governance/effectiveness'),
 };
 
-// Policy Conflicts APIs
-export const policyConflictsAPI = {
-  detect: (params) => api.post('/api/v1/policy-conflicts/detect', null, { params }),
-  list: (params) => api.get('/api/v1/policy-conflicts/', { params }),
-  stats: () => api.get('/api/v1/policy-conflicts/stats'),
-  get: (id) => api.get(`/api/v1/policy-conflicts/${id}`),
-  resolve: (id, data) => api.post(`/api/v1/policy-conflicts/${id}/resolve`, data),
-  reset: () => api.post('/api/v1/policy-conflicts/reset'),
+// Policy Exceptions APIs
+export const policyExceptionsAPI = {
+  detectFailures: (params) => api.post('/api/v1/policy-exceptions/detect-failures', null, { params }),
+  listFailures: (params) => api.get('/api/v1/policy-exceptions/failures', { params }),
+  createException: (data) => api.post('/api/v1/policy-exceptions/', data),
+  listRequests: (params) => api.get('/api/v1/policy-exceptions/requests', { params }),
+  getRequest: (id) => api.get(`/api/v1/policy-exceptions/requests/${id}`),
+  approve: (id, data) => api.post(`/api/v1/policy-exceptions/requests/${id}/approve`, data),
+  reject: (id, data) => api.post(`/api/v1/policy-exceptions/requests/${id}/reject`, data),
+  deploymentGate: (domain) => api.get(`/api/v1/policy-exceptions/deployment-gate/${domain}`),
+  stats: () => api.get('/api/v1/policy-exceptions/stats'),
 };
 
 // Health check

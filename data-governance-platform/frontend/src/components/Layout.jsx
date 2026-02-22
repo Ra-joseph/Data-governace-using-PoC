@@ -30,7 +30,7 @@ const navigation = [
   { name: 'Compliance Report', path: '/compliance-report', icon: FileCheck },
   { name: 'Policy Exchange', path: '/policy-exchange', icon: Package },
   { name: 'Domain Governance', path: '/domain-governance', icon: Globe },
-  { name: 'Policy Conflicts', path: '/policy-conflicts', icon: AlertTriangle },
+  { name: 'Policy Exceptions', path: '/policy-conflicts', icon: AlertTriangle },
   { name: 'Git History', path: '/git', icon: GitBranch },
   { name: 'Subscriptions', path: '/subscriptions', icon: Bell },
   { name: 'Compliance', path: '/compliance', icon: CheckCircle },
