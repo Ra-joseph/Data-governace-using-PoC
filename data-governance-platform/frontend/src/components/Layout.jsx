@@ -1,4 +1,5 @@
-import { Outlet, NavLink } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Database,
@@ -14,9 +15,11 @@ import {
   FileCheck,
   Package,
   Globe,
-  AlertTriangle
+  AlertTriangle,
+  Menu,
+  X
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import './Layout.css';
 
 const navigation = [
@@ -37,9 +40,64 @@ const navigation = [
 ];
 
 export const Layout = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+
+  // Close drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.classList.add('drawer-open');
+    } else {
+      document.body.classList.remove('drawer-open');
+    }
+    return () => document.body.classList.remove('drawer-open');
+  }, [mobileOpen]);
+
+  // Get current page title for the mobile header
+  const currentPage = navigation.find(
+    (item) => item.path === '/'
+      ? location.pathname === '/'
+      : location.pathname.startsWith(item.path)
+  );
+
   return (
     <div className="layout">
-      <aside className="sidebar">
+      {/* Mobile top header bar */}
+      <header className="mobile-header">
+        <button
+          className="mobile-menu-btn"
+          onClick={() => setMobileOpen((o) => !o)}
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileOpen}
+        >
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+        <span className="mobile-header-title">
+          {currentPage?.name ?? 'Data Governance'}
+        </span>
+      </header>
+
+      {/* Overlay backdrop */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            className="sidebar-overlay visible"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+
+      <aside className={`sidebar${mobileOpen ? ' mobile-open' : ''}`}>
         <div className="sidebar-header">
           <div className="logo-container">
             <motion.div
@@ -72,7 +130,7 @@ export const Layout = () => {
               key={item.path}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: index * 0.05 }}
             >
               <NavLink
                 to={item.path}

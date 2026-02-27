@@ -355,8 +355,54 @@
   .git-content {
     grid-template-columns: 1fr;
   }
-  
+
   .contracts-sidebar {
     position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .history-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .toolbar-left {
+    flex-wrap: wrap;
+  }
+
+  .commit-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+
+  .commit-meta {
+    gap: var(--space-md);
+  }
+
+  .commit-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .status-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .commit-content {
+    padding: var(--space-md);
+  }
+
+  .modal-overlay {
+    padding: var(--space-md);
+    align-items: flex-end;
+  }
+
+  .modal-content {
+    max-height: 90vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 }
