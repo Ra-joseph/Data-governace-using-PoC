@@ -36,7 +36,7 @@ A production-ready proof-of-concept demonstrating federated data governance usin
 
 ```bash
 # 1. Clone repository
-git clone <repository-url>
+git clone https://github.com/Ra-joseph/Data-governace-using-PoC.git
 cd Data-governace-using-PoC/data-governance-platform
 
 # 2. Start PostgreSQL
@@ -115,26 +115,33 @@ Data-governace-using-PoC/
 └── data-governance-platform/
     ├── backend/              # FastAPI backend
     │   ├── app/
-    │   │   ├── api/          # REST endpoints (5 routers, 30+ endpoints)
+    │   │   ├── api/          # REST endpoints (10 routers, 30+ endpoints)
     │   │   │   ├── datasets.py
     │   │   │   ├── subscriptions.py
     │   │   │   ├── git.py
     │   │   │   ├── semantic.py
-    │   │   │   └── orchestration.py
-    │   │   ├── models/       # SQLAlchemy models (4 models, 71 fields)
+    │   │   │   ├── orchestration.py
+    │   │   │   ├── policy_authoring.py
+    │   │   │   ├── policy_dashboard.py
+    │   │   │   ├── policy_reports.py
+    │   │   │   ├── policy_exchange.py
+    │   │   │   └── domain_governance.py
+    │   │   ├── models/       # SQLAlchemy models (8 models)
     │   │   ├── schemas/      # Pydantic validation (24+ schemas)
-    │   │   ├── services/     # Business logic (7 services)
+    │   │   ├── services/     # Business logic (9 services)
     │   │   │   ├── policy_engine.py
     │   │   │   ├── contract_service.py
     │   │   │   ├── postgres_connector.py
     │   │   │   ├── git_service.py
     │   │   │   ├── semantic_policy_engine.py
     │   │   │   ├── policy_orchestrator.py
-    │   │   │   └── ollama_client.py
+    │   │   │   ├── ollama_client.py
+    │   │   │   ├── policy_converter.py
+    │   │   │   └── authored_policy_loader.py
     │   │   └── main.py       # FastAPI app
     │   ├── policies/         # YAML policy definitions (4 files, 25 policies)
     │   ├── contracts/        # Git repository for versioned contracts
-    │   └── tests/            # Comprehensive test suite
+    │   └── tests/            # Comprehensive test suite (16 test files)
     ├── frontend/             # React 18 + Vite frontend
     │   ├── src/
     │   │   ├── pages/        # Role-based UIs (Owner, Consumer, Steward, Admin)
@@ -151,6 +158,7 @@ Data-governace-using-PoC/
 
 | Document | Description |
 |----------|-------------|
+| [Usage Guide](./data-governance-platform/USAGE_GUIDE.md) | **Start here** — MacBook setup, dependency layers, role demo flows |
 | [Platform README](./data-governance-platform/README.md) | Architecture, API docs, workflows, troubleshooting |
 | [Quick Start](./data-governance-platform/QUICKSTART.md) | 5-minute setup guide |
 | [Project Summary](./data-governance-platform/PROJECT_SUMMARY.md) | Technical deep-dive and design decisions |
