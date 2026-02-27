@@ -81,3 +81,6 @@ coverage/
 
 # Test artifacts
 data-governance-platform/backend/backend/
+
+# Runtime-generated policy artifact store
+data-governance-platform/backend/contracts/
