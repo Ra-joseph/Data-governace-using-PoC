@@ -59,21 +59,21 @@ export const Dashboard = () => {
   const loadData = async () => {
     try {
       const response = await datasetAPI.list();
-      setDatasets(response.data);
-      
-      // Calculate stats
-      const total = response.data.length;
-      const published = response.data.filter(d => d.status === 'published').length;
-      const draft = response.data.filter(d => d.status === 'draft').length;
-      const withPII = response.data.filter(d => d.contains_pii).length;
-      
-      setStats({
-        total,
-        published,
-        draft,
-        violations: draft, // Simplified: draft status indicates violations
-        pii: withPII,
-      });
+      const data = response.data;
+      setDatasets(data);
+
+      // Calculate stats from real data
+      const total = data.length;
+      const published = data.filter(d => d.status === 'published').length;
+      const draft = data.filter(d => d.status === 'draft').length;
+      const withPII = data.filter(d => d.contains_pii).length;
+
+      // Count datasets that have contract violations (failed or warning status)
+      const violations = data.filter(d =>
+        d.contract && ['failed', 'warning'].includes(d.contract.validation_result?.status)
+      ).length;
+
+      setStats({ total, published, draft, violations, pii: withPII });
     } catch (error) {
       console.error('Failed to load datasets:', error);
     } finally {
@@ -81,29 +81,64 @@ export const Dashboard = () => {
     }
   };
 
-  // Mock data for charts
-  const trendData = [
-    { month: 'Jan', datasets: 12, violations: 5 },
-    { month: 'Feb', datasets: 19, violations: 3 },
-    { month: 'Mar', datasets: 25, violations: 8 },
-    { month: 'Apr', datasets: 32, violations: 4 },
-    { month: 'May', datasets: 41, violations: 6 },
-    { month: 'Jun', datasets: 48, violations: 2 },
-  ];
+  // Derive classification distribution from real dataset data
+  const classificationColors = {
+    public: '#3b82f6',
+    internal: '#8b5cf6',
+    confidential: '#f59e0b',
+    restricted: '#ef4444',
+  };
 
-  const classificationData = [
-    { name: 'Public', value: 15, color: '#3b82f6' },
-    { name: 'Internal', value: 32, color: '#8b5cf6' },
-    { name: 'Confidential', value: 28, color: '#f59e0b' },
-    { name: 'Restricted', value: 8, color: '#ef4444' },
-  ];
+  const classificationData = Object.entries(
+    datasets.reduce((acc, d) => {
+      const cls = d.classification || 'internal';
+      acc[cls] = (acc[cls] || 0) + 1;
+      return acc;
+    }, {})
+  ).map(([name, value]) => ({
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    value,
+    color: classificationColors[name] || '#6b7280',
+  }));
 
-  const policyData = [
-    { policy: 'PII Encryption', violations: 8, passed: 42 },
-    { policy: 'Retention', violations: 5, passed: 45 },
-    { policy: 'Completeness', violations: 12, passed: 38 },
-    { policy: 'Documentation', violations: 15, passed: 35 },
-  ];
+  // Derive policy compliance counts from contract validation results
+  const policyViolationMap = {};
+  datasets.forEach(d => {
+    const violations = d.contract?.validation_result?.violations || [];
+    violations.forEach(v => {
+      const key = v.policy ? v.policy.split(':')[0].trim() : 'Unknown';
+      policyViolationMap[key] = (policyViolationMap[key] || 0) + 1;
+    });
+  });
+
+  const policyData = Object.entries(policyViolationMap)
+    .slice(0, 5)
+    .map(([policy, count]) => ({
+      policy,
+      violations: count,
+      passed: Math.max(0, datasets.length - count),
+    }));
+
+  // Build monthly registration trend from real dataset created_at dates
+  const now = new Date();
+  const trendData = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    const label = d.toLocaleString('default', { month: 'short' });
+    const count = datasets.filter(ds => {
+      const created = new Date(ds.created_at);
+      return created.getFullYear() === d.getFullYear() && created.getMonth() === d.getMonth();
+    }).length;
+    const viol = datasets.filter(ds => {
+      const created = new Date(ds.created_at);
+      return (
+        created.getFullYear() === d.getFullYear() &&
+        created.getMonth() === d.getMonth() &&
+        ds.contract &&
+        ['failed', 'warning'].includes(ds.contract.validation_result?.status)
+      );
+    }).length;
+    return { month: label, datasets: count, violations: viol };
+  });
 
   const metricCards = [
     {

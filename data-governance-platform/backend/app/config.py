@@ -73,13 +73,14 @@ class Settings(BaseSettings):
     AZURE_CLIENT_ID: str = ""
     AZURE_CLIENT_SECRET: str = ""
     
-    # Git
-    GIT_CONTRACTS_REPO_PATH: str = "./backend/contracts"
+    # Git — use absolute path anchored to the backend directory so the app works
+    # regardless of which working directory uvicorn is launched from.
+    GIT_CONTRACTS_REPO_PATH: str = str(_BACKEND_DIR / "contracts")
     GIT_USER_NAME: str = "Data Governance Platform"
     GIT_USER_EMAIL: str = "governance@company.com"
-    
-    # Policies
-    POLICIES_PATH: str = "./backend/policies"
+
+    # Policies — absolute path anchored to the backend directory
+    POLICIES_PATH: str = str(_BACKEND_DIR / "policies")
     
     # CORS
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]

@@ -8,6 +8,7 @@ PolicyEngine for rule-based validation and optionally with SemanticPolicyEngine
 for LLM-powered semantic validation.
 """
 
+import copy
 import json
 import yaml
 import hashlib
@@ -189,9 +190,9 @@ class ContractService:
         # Get dataset
         dataset = db.query(Dataset).filter(Dataset.id == old_contract.dataset_id).first()
         
-        # Load existing contract data
-        contract_data = old_contract.machine_readable.copy()
-        
+        # Load existing contract data (deepcopy to avoid mutating the stored record)
+        contract_data = copy.deepcopy(old_contract.machine_readable)
+
         # Add SLA requirements
         contract_data['sla_requirements'] = sla_data
         
@@ -422,8 +423,8 @@ class ContractService:
         # Get dataset
         dataset = self.db.query(Dataset).filter(Dataset.id == old_contract.dataset_id).first()
 
-        # Load existing contract data
-        contract_data = old_contract.machine_readable.copy()
+        # Load existing contract data (deepcopy to avoid mutating the stored record)
+        contract_data = copy.deepcopy(old_contract.machine_readable)
 
         # Add subscription information
         if 'subscriptions' not in contract_data:

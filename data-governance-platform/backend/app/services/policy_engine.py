@@ -43,15 +43,17 @@ class PolicyEngine:
                           Defaults to settings.POLICIES_PATH.
         """
         if policies_path:
-            self.policies_path = Path(policies_path)
+            self.policies_path = Path(policies_path).resolve()
         else:
-            # Try configured path first, fall back to path relative to this file
+            # Try configured path first (now an absolute path set in config.py).
+            # Fall back to a path anchored relative to this file so the engine
+            # works even if the config is not yet initialised.
             configured_path = Path(settings.POLICIES_PATH)
             if configured_path.exists():
                 self.policies_path = configured_path
             else:
-                # Resolve relative to app package (backend/app -> backend/policies)
-                self.policies_path = Path(__file__).parent.parent.parent / "policies"
+                # backend/app/services/policy_engine.py → three levels up → backend/policies
+                self.policies_path = Path(__file__).resolve().parent.parent.parent / "policies"
         self.policies = self._load_policies()
     
     def _load_policies(self) -> Dict[str, Any]:

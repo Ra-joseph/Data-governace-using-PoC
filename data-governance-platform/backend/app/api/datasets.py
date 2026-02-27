@@ -8,6 +8,7 @@ validation, and supports schema discovery from PostgreSQL databases.
 """
 
 from typing import List, Optional
+from urllib.parse import urlparse
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
@@ -163,10 +164,8 @@ def list_datasets(
             'owner_name': dataset.owner_name,
             'owner_email': dataset.owner_email,
             'source_type': dataset.source_type,
-            'source_system': dataset.source_type,
             'physical_location': dataset.physical_location,
             'schema_definition': dataset.schema_definition,
-            'schema': dataset.schema_definition,
             'classification': dataset.classification,
             'contains_pii': dataset.contains_pii,
             'compliance_tags': dataset.compliance_tags,
@@ -231,10 +230,8 @@ def get_dataset(dataset_id: int, db: Session = Depends(get_db)):
         'owner_name': dataset.owner_name,
         'owner_email': dataset.owner_email,
         'source_type': dataset.source_type,
-        'source_system': dataset.source_type,
         'physical_location': dataset.physical_location,
         'schema_definition': dataset.schema_definition,
-        'schema': dataset.schema_definition,
         'classification': dataset.classification,
         'contains_pii': dataset.contains_pii,
         'compliance_tags': dataset.compliance_tags,
@@ -428,9 +425,15 @@ def import_schema(request: SchemaImportRequest):
         try:
             # Initialize connector with optional connection string override
             if request.connection_string:
-                # Parse connection string (simplified)
-                connector = PostgresConnector()
-                connector.connection = None  # Will use provided connection
+                # Parse the connection string and pass individual components
+                parsed = urlparse(request.connection_string)
+                connector = PostgresConnector(
+                    host=parsed.hostname,
+                    port=parsed.port,
+                    database=parsed.path.lstrip("/"),
+                    user=parsed.username,
+                    password=parsed.password,
+                )
             else:
                 connector = PostgresConnector()
             

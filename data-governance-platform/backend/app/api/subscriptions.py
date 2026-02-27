@@ -20,6 +20,7 @@ from app.models.contract import Contract
 from app.schemas.subscription import (
     SubscriptionCreate,
     SubscriptionUpdate,
+    SubscriptionApproval,
     SubscriptionResponse,
     SubscriptionStatus,
 )
@@ -30,7 +31,7 @@ router = APIRouter(prefix="/api/v1/subscriptions", tags=["subscriptions"])
 
 @router.post("/", response_model=SubscriptionResponse, status_code=status.HTTP_201_CREATED)
 def create_subscription(
-    subscription_data: dict,
+    subscription_data: SubscriptionCreate,
     db: Session = Depends(get_db)
 ):
     """
@@ -41,15 +42,17 @@ def create_subscription(
     use case, SLA requirements, and quality expectations.
 
     Args:
-        subscription_data: Subscription request dictionary containing:
+        subscription_data: SubscriptionCreate request containing:
             - dataset_id: ID of dataset to subscribe to
             - consumer_name: Name of requesting consumer
             - consumer_email: Contact email
-            - business_justification: Purpose for data access
+            - consumer_team: Optional team or department
+            - purpose: Business justification for data access
             - use_case: Type of use (analytics, ml, reporting, etc.)
-            - sla_requirements: Optional SLA specifications
-            - required_fields: Optional list of needed fields
-            - access_duration_days: Optional duration (default: 365)
+            - sla_freshness: Optional freshness SLA (e.g. "24h")
+            - sla_availability: Optional availability SLA (e.g. "99.9%")
+            - sla_query_performance: Optional query performance SLA
+            - data_filters: Optional dict with required_fields, access_duration_days
         db: Database session (injected dependency).
 
     Returns:
@@ -64,37 +67,46 @@ def create_subscription(
           "dataset_id": 1,
           "consumer_name": "Jane Smith",
           "consumer_email": "jane@example.com",
-          "business_justification": "Q1 analytics reporting",
+          "purpose": "Q1 analytics reporting",
           "use_case": "analytics"
         }
     """
     # Verify dataset exists
-    dataset = db.query(Dataset).filter(Dataset.id == subscription_data.get("dataset_id")).first()
+    dataset = db.query(Dataset).filter(Dataset.id == subscription_data.dataset_id).first()
     if not dataset:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Dataset with ID {subscription_data.get('dataset_id')} not found"
+            detail=f"Dataset with ID {subscription_data.dataset_id} not found"
         )
 
     # Create subscription
     subscription = Subscription(
-        dataset_id=subscription_data.get("dataset_id"),
-        consumer_name=subscription_data.get("consumer_name"),
-        consumer_email=subscription_data.get("consumer_email"),
-        consumer_team=subscription_data.get("consumer_organization", ""),
-        purpose=subscription_data.get("business_justification", ""),
-        use_case=subscription_data.get("use_case", "analytics"),
+        dataset_id=subscription_data.dataset_id,
+        consumer_name=subscription_data.consumer_name,
+        consumer_email=subscription_data.consumer_email,
+        consumer_team=subscription_data.consumer_team or "",
+        purpose=subscription_data.purpose,
+        use_case=subscription_data.use_case.value,
         status="pending",
         access_granted=False,
     )
 
-    # Store SLA requirements as JSON in data_filters for now
-    if subscription_data.get("sla_requirements"):
-        subscription.data_filters = {
-            "sla_requirements": subscription_data.get("sla_requirements"),
-            "required_fields": subscription_data.get("required_fields", []),
-            "access_duration_days": subscription_data.get("access_duration_days", 365),
-        }
+    # Build SLA requirements dict from individual SLA fields
+    sla_requirements = {}
+    if subscription_data.sla_freshness:
+        sla_requirements["freshness"] = subscription_data.sla_freshness.value
+    if subscription_data.sla_availability:
+        sla_requirements["availability"] = subscription_data.sla_availability.value
+    if subscription_data.sla_query_performance:
+        sla_requirements["query_performance"] = subscription_data.sla_query_performance.value
+
+    # Store SLA requirements and access duration in data_filters
+    extra_filters = subscription_data.data_filters or {}
+    subscription.data_filters = {
+        "sla_requirements": sla_requirements,
+        "required_fields": extra_filters.get("required_fields", []),
+        "access_duration_days": extra_filters.get("access_duration_days", 365),
+    }
 
     db.add(subscription)
     db.commit()
@@ -184,7 +196,7 @@ def get_subscription(subscription_id: int, db: Session = Depends(get_db)):
 @router.post("/{subscription_id}/approve", response_model=SubscriptionResponse)
 def approve_subscription(
     subscription_id: int,
-    approval_data: dict,
+    approval_data: SubscriptionApproval,
     db: Session = Depends(get_db)
 ):
     """
@@ -207,11 +219,11 @@ def approve_subscription(
 
     Args:
         subscription_id: Unique identifier of the subscription to approve/reject.
-        approval_data: Approval decision dictionary containing:
-            - status: "approved" or "rejected"
-            - access_credentials: Dict with username, api_key, connection_string (if approved)
-            - approved_fields: List of approved field names (if approved)
-            - reviewer_notes: Rejection reason (if rejected)
+        approval_data: SubscriptionApproval containing:
+            - approved: True to approve, False to reject
+            - access_endpoint: Connection endpoint (required if approved)
+            - access_credentials: Credentials string (required if approved)
+            - rejection_reason: Rejection reason (required if not approved)
         db: Database session (injected dependency).
 
     Returns:
@@ -224,13 +236,9 @@ def approve_subscription(
     Example:
         POST /api/v1/subscriptions/42/approve
         {
-          "status": "approved",
-          "access_credentials": {
-            "username": "jane_analytics",
-            "api_key": "abc123...",
-            "connection_string": "postgresql://..."
-          },
-          "approved_fields": ["customer_id", "email", "created_at"]
+          "approved": true,
+          "access_endpoint": "postgresql://analytics-db:5432/dw",
+          "access_credentials": "username: jane_analytics, api_key: abc123"
         }
     """
     subscription = db.query(Subscription).filter(Subscription.id == subscription_id).first()
@@ -248,24 +256,18 @@ def approve_subscription(
         )
 
     # Update subscription based on decision
-    if approval_data.get("status") == "approved":
+    if approval_data.approved:
         subscription.status = "approved"
         subscription.access_granted = True
         subscription.approved_at = datetime.utcnow()
 
-        # Set access credentials
-        if approval_data.get("access_credentials"):
-            creds = approval_data["access_credentials"]
-            subscription.access_credentials = f"username: {creds.get('username')}, api_key: {creds.get('api_key')}"
-            subscription.access_endpoint = creds.get("connection_string", "")
+        # Set access credentials and endpoint
+        if approval_data.access_credentials:
+            subscription.access_credentials = approval_data.access_credentials
+        if approval_data.access_endpoint:
+            subscription.access_endpoint = approval_data.access_endpoint
 
-        # Update data filters with approved fields
-        if subscription.data_filters:
-            subscription.data_filters["approved_fields"] = approval_data.get("approved_fields", [])
-        else:
-            subscription.data_filters = {"approved_fields": approval_data.get("approved_fields", [])}
-
-        # Set expiration date
+        # Set expiration date from previously stored access_duration_days
         if subscription.data_filters and subscription.data_filters.get("access_duration_days"):
             days = subscription.data_filters["access_duration_days"]
             subscription.expires_at = datetime.utcnow() + timedelta(days=days)
@@ -281,14 +283,13 @@ def approve_subscription(
                 contract_service = ContractService(db)
 
                 # Add SLA requirements to contract
-                sla_data = subscription.data_filters.get("sla_requirements", {})
+                sla_data = subscription.data_filters.get("sla_requirements", {}) if subscription.data_filters else {}
                 updated_contract = contract_service.add_subscription_to_contract(
                     latest_contract.id,
                     subscription.id,
                     {
                         "consumer": subscription.consumer_name,
                         "sla_requirements": sla_data,
-                        "approved_fields": approval_data.get("approved_fields", []),
                     }
                 )
 
@@ -301,7 +302,7 @@ def approve_subscription(
 
     else:
         subscription.status = "rejected"
-        subscription.rejection_reason = approval_data.get("reviewer_notes", "")
+        subscription.rejection_reason = approval_data.rejection_reason or ""
 
     subscription.updated_at = datetime.utcnow()
 
@@ -314,7 +315,7 @@ def approve_subscription(
 @router.put("/{subscription_id}", response_model=SubscriptionResponse)
 def update_subscription(
     subscription_id: int,
-    update_data: dict,
+    update_data: SubscriptionUpdate,
     db: Session = Depends(get_db)
 ):
     """
@@ -325,7 +326,9 @@ def update_subscription(
 
     Args:
         subscription_id: Unique identifier of the subscription to update.
-        update_data: Dictionary of fields to update (purpose, use_case, SLA, etc.).
+        update_data: SubscriptionUpdate with optional fields to modify
+                     (purpose, use_case, sla_freshness, sla_availability,
+                      sla_query_performance, quality_completeness, data_filters).
         db: Database session (injected dependency).
 
     Returns:
@@ -356,8 +359,8 @@ def update_subscription(
             detail="Can only update pending subscriptions"
         )
 
-    # Update fields
-    for field, value in update_data.items():
+    # Update only the fields explicitly provided in the request
+    for field, value in update_data.model_dump(exclude_unset=True).items():
         if hasattr(subscription, field) and value is not None:
             setattr(subscription, field, value)
 
