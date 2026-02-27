@@ -25,15 +25,15 @@ class TestSubscriptionsAPI:
             "dataset_id": sample_dataset.id,
             "consumer_name": "Analytics Team",
             "consumer_email": "analytics@example.com",
-            "consumer_organization": "Data Science Dept",
-            "business_justification": "For monthly reporting",
+            "consumer_team": "Data Science Dept",
+            "purpose": "For monthly reporting",
             "use_case": "analytics",
-            "sla_requirements": {
-                "availability": "99.9%",
-                "latency": "< 100ms"
-            },
-            "required_fields": ["customer_id", "email"],
-            "access_duration_days": 365
+            "sla_freshness": "24h",
+            "sla_availability": "99.9%",
+            "data_filters": {
+                "required_fields": ["customer_id", "email"],
+                "access_duration_days": 365
+            }
         }
 
         response = client.post("/api/v1/subscriptions/", json=subscription_data)
@@ -49,8 +49,9 @@ class TestSubscriptionsAPI:
             "dataset_id": 99999,
             "consumer_name": "Test",
             "consumer_email": "test@example.com",
-            "consumer_organization": "Test Org",
-            "business_justification": "Testing"
+            "consumer_team": "Test Org",
+            "purpose": "Testing",
+            "use_case": "analytics"
         }
 
         response = client.post("/api/v1/subscriptions/", json=subscription_data)
@@ -64,8 +65,9 @@ class TestSubscriptionsAPI:
             "dataset_id": sample_dataset.id,
             "consumer_name": "Test Consumer",
             "consumer_email": "consumer@example.com",
-            "consumer_organization": "Test Org",
-            "business_justification": "Testing"
+            "consumer_team": "Test Org",
+            "purpose": "Testing",
+            "use_case": "analytics"
         }
         create_response = client.post("/api/v1/subscriptions/", json=subscription_data)
         subscription_id = create_response.json()["id"]
@@ -89,8 +91,9 @@ class TestSubscriptionsAPI:
             "dataset_id": sample_dataset.id,
             "consumer_name": "Consumer 1",
             "consumer_email": "consumer1@example.com",
-            "consumer_organization": "Org 1",
-            "business_justification": "Testing"
+            "consumer_team": "Org 1",
+            "purpose": "Testing",
+            "use_case": "analytics"
         }
         client.post("/api/v1/subscriptions/", json=subscription_data)
 
@@ -120,9 +123,10 @@ class TestSubscriptionsAPI:
             "dataset_id": sample_dataset.id,
             "consumer_name": "Test Consumer",
             "consumer_email": "consumer@example.com",
-            "consumer_organization": "Test Org",
-            "business_justification": "Testing",
-            "sla_requirements": {"availability": "99.9%"}
+            "consumer_team": "Test Org",
+            "purpose": "Testing",
+            "use_case": "analytics",
+            "sla_availability": "99.9%"
         }
         create_response = client.post("/api/v1/subscriptions/", json=subscription_data)
         subscription_id = create_response.json()["id"]
@@ -132,15 +136,11 @@ class TestSubscriptionsAPI:
         mock_service_instance.add_subscription_to_contract.return_value = MagicMock(id=1)
         mock_contract_service.return_value = mock_service_instance
 
-        # Approve subscription
+        # Approve subscription using SubscriptionApproval schema
         approval_data = {
-            "status": "approved",
-            "access_credentials": {
-                "username": "consumer1",
-                "api_key": "test-api-key-123",
-                "connection_string": "postgresql://localhost/test"
-            },
-            "approved_fields": ["customer_id", "email"]
+            "approved": True,
+            "access_endpoint": "postgresql://localhost/test",
+            "access_credentials": "username: consumer1, api_key: test-api-key-123"
         }
 
         response = client.post(
@@ -160,14 +160,15 @@ class TestSubscriptionsAPI:
             "dataset_id": sample_dataset.id,
             "consumer_name": "Test",
             "consumer_email": "test@example.com",
-            "consumer_organization": "Test Org",
-            "business_justification": "Testing"
+            "consumer_team": "Test Org",
+            "purpose": "Testing",
+            "use_case": "analytics"
         }
         create_response = client.post("/api/v1/subscriptions/", json=subscription_data)
         subscription_id = create_response.json()["id"]
 
         # Approve once
-        approval_data = {"status": "approved", "approved_fields": []}
+        approval_data = {"approved": True}
         client.post(f"/api/v1/subscriptions/{subscription_id}/approve", json=approval_data)
 
         # Try to approve again
@@ -185,16 +186,17 @@ class TestSubscriptionsAPI:
             "dataset_id": sample_dataset.id,
             "consumer_name": "Test Consumer",
             "consumer_email": "consumer@example.com",
-            "consumer_organization": "Test Org",
-            "business_justification": "Testing"
+            "consumer_team": "Test Org",
+            "purpose": "Testing",
+            "use_case": "analytics"
         }
         create_response = client.post("/api/v1/subscriptions/", json=subscription_data)
         subscription_id = create_response.json()["id"]
 
-        # Reject subscription
+        # Reject subscription using SubscriptionApproval schema
         rejection_data = {
-            "status": "rejected",
-            "reviewer_notes": "Does not meet security requirements"
+            "approved": False,
+            "rejection_reason": "Does not meet security requirements"
         }
 
         response = client.post(
@@ -214,13 +216,14 @@ class TestSubscriptionsAPI:
             "dataset_id": sample_dataset.id,
             "consumer_name": "Test Consumer",
             "consumer_email": "consumer@example.com",
-            "consumer_organization": "Test Org",
-            "business_justification": "Initial reason"
+            "consumer_team": "Test Org",
+            "purpose": "Initial reason",
+            "use_case": "analytics"
         }
         create_response = client.post("/api/v1/subscriptions/", json=subscription_data)
         subscription_id = create_response.json()["id"]
 
-        # Update subscription
+        # Update subscription using SubscriptionUpdate schema
         update_data = {
             "purpose": "Updated business justification"
         }
@@ -237,14 +240,15 @@ class TestSubscriptionsAPI:
             "dataset_id": sample_dataset.id,
             "consumer_name": "Test",
             "consumer_email": "test@example.com",
-            "consumer_organization": "Test Org",
-            "business_justification": "Testing"
+            "consumer_team": "Test Org",
+            "purpose": "Testing",
+            "use_case": "analytics"
         }
         create_response = client.post("/api/v1/subscriptions/", json=subscription_data)
         subscription_id = create_response.json()["id"]
 
         # Approve
-        approval_data = {"status": "approved", "approved_fields": []}
+        approval_data = {"approved": True}
         client.post(f"/api/v1/subscriptions/{subscription_id}/approve", json=approval_data)
 
         # Try to update
@@ -260,8 +264,9 @@ class TestSubscriptionsAPI:
             "dataset_id": sample_dataset.id,
             "consumer_name": "Test Consumer",
             "consumer_email": "consumer@example.com",
-            "consumer_organization": "Test Org",
-            "business_justification": "Testing"
+            "consumer_team": "Test Org",
+            "purpose": "Testing",
+            "use_case": "analytics"
         }
         create_response = client.post("/api/v1/subscriptions/", json=subscription_data)
         subscription_id = create_response.json()["id"]
@@ -280,52 +285,53 @@ class TestSubscriptionsAPI:
         assert response.status_code == 404
 
     def test_subscription_stores_sla_requirements(self, client, sample_dataset):
-        """Test that SLA requirements are stored correctly."""
+        """Test that SLA requirements are stored correctly from individual SLA fields."""
         subscription_data = {
             "dataset_id": sample_dataset.id,
             "consumer_name": "Test Consumer",
             "consumer_email": "consumer@example.com",
-            "consumer_organization": "Test Org",
-            "business_justification": "Testing",
-            "sla_requirements": {
-                "availability": "99.99%",
-                "latency": "< 50ms",
-                "throughput": "1000 req/s"
-            },
-            "required_fields": ["id", "name", "email"],
-            "access_duration_days": 180
+            "consumer_team": "Test Org",
+            "purpose": "Testing",
+            "use_case": "analytics",
+            "sla_availability": "99.9%",
+            "sla_freshness": "1h",
+            "sla_query_performance": "<5s",
+            "data_filters": {
+                "required_fields": ["id", "name", "email"],
+                "access_duration_days": 180
+            }
         }
 
         response = client.post("/api/v1/subscriptions/", json=subscription_data)
         assert response.status_code == 201
         data = response.json()
 
-        # Check that SLA data is stored
+        # Check that SLA data is stored in data_filters
         assert data["data_filters"] is not None
         assert "sla_requirements" in data["data_filters"]
-        assert data["data_filters"]["sla_requirements"]["availability"] == "99.99%"
+        assert data["data_filters"]["sla_requirements"]["availability"] == "99.9%"
         assert data["data_filters"]["required_fields"] == ["id", "name", "email"]
         assert data["data_filters"]["access_duration_days"] == 180
 
     def test_subscription_expiration_date(self, client, sample_dataset):
         """Test that expiration date is set correctly on approval."""
-        # Create subscription
+        # Create subscription with 90-day access duration
         subscription_data = {
             "dataset_id": sample_dataset.id,
             "consumer_name": "Test Consumer",
             "consumer_email": "consumer@example.com",
-            "consumer_organization": "Test Org",
-            "business_justification": "Testing",
-            "access_duration_days": 90
+            "consumer_team": "Test Org",
+            "purpose": "Testing",
+            "use_case": "analytics",
+            "data_filters": {
+                "access_duration_days": 90
+            }
         }
         create_response = client.post("/api/v1/subscriptions/", json=subscription_data)
         subscription_id = create_response.json()["id"]
 
         # Approve subscription
-        approval_data = {
-            "status": "approved",
-            "approved_fields": []
-        }
+        approval_data = {"approved": True}
 
         response = client.post(
             f"/api/v1/subscriptions/{subscription_id}/approve",
