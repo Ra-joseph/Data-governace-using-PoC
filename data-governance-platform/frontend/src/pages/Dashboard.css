@@ -210,7 +210,13 @@
 }
 
 .chart-container {
-  height: 280px;
+  height: clamp(200px, 32vh, 320px);
+  min-height: 200px;
+  position: relative;
+}
+
+.chart-card-large .chart-container {
+  height: clamp(240px, 38vh, 360px);
 }
 
 .activity-section {
@@ -382,13 +388,69 @@
   .page-container {
     padding: var(--space-lg);
   }
-  
+
   .page-header {
     flex-direction: column;
     gap: var(--space-md);
   }
-  
+
   .metrics-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding: var(--space-md);
+  }
+
+  .page-header {
+    margin-bottom: var(--space-lg);
+  }
+
+  .chart-container {
+    height: clamp(180px, 40vw, 240px);
+  }
+
+  .chart-card-large .chart-container {
+    height: clamp(200px, 45vw, 280px);
+  }
+
+  .metric-value {
+    font-size: 2rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+  }
+
+  .activity-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+
+  .activity-time {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 320px) {
+  .page-container {
+    padding: var(--space-sm);
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions .btn-secondary {
+    width: 100%;
+    justify-content: center;
   }
 }

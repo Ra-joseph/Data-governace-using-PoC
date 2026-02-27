@@ -152,39 +152,128 @@
   .sidebar {
     width: 240px;
   }
-  
+
   .main-content {
     margin-left: 240px;
   }
 }
 
+/* ── Mobile header bar (hamburger) ─────────────────────────── */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border-default);
+  align-items: center;
+  padding: 0 var(--space-md);
+  z-index: 99;
+  gap: var(--space-md);
+}
+
+.mobile-menu-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.mobile-menu-btn:hover {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border-strong);
+}
+
+.mobile-header-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Overlay backdrop ───────────────────────────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 150;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Mobile breakpoint: full drawer pattern ─────────────────── */
 @media (max-width: 768px) {
+  .mobile-header {
+    display: flex;
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
+
+  /* Sidebar becomes a slide-in drawer */
   .sidebar {
-    width: 72px;
+    width: 280px;
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
+    z-index: 200;
+    /* Keep top: 0 / height: 100vh from the base styles */
   }
-  
-  .logo-text,
-  .nav-link span,
-  .status-indicator span,
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  /* Restore full labels inside the drawer */
+  .logo-text {
+    display: block;
+  }
+
+  .nav-link span {
+    display: inline;
+  }
+
+  .status-indicator span {
+    display: inline;
+  }
+
   .version {
-    display: none;
+    display: block;
   }
-  
+
+  /* Restore original nav-link padding */
   .sidebar-header {
-    padding: var(--space-lg) var(--space-sm);
+    padding: var(--space-xl) var(--space-lg);
   }
-  
+
   .logo-icon {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
   }
-  
+
   .nav-link {
-    justify-content: center;
-    padding: var(--space-md) var(--space-sm);
+    justify-content: flex-start;
+    padding: var(--space-sm) var(--space-md);
   }
-  
+
+  /* Main content: no left margin, push down for top bar */
   .main-content {
-    margin-left: 72px;
+    margin-left: 0;
+    margin-top: 60px;
   }
 }
