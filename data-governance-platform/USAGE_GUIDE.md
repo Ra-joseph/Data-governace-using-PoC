@@ -180,7 +180,7 @@ When you open `http://localhost:3000`, you see the **Role Selector** — four ca
 | **Data Steward** | Reviews and approves/rejects access requests | `/steward/approvals` |
 | **Platform Admin** | Monitors compliance health and analytics | `/admin/dashboard` |
 
-Click any card to enter that role's dedicated interface. You can switch roles at any time using the sidebar navigation.
+Click any card to enter that role's dedicated interface. You can switch roles at any time by clicking the **Switch Role** button in the sidebar (role-specific pages) or in the top navigation bar (legacy tool pages).
 
 ### Data Owner View
 
@@ -320,7 +320,7 @@ The policy engine validates the dataset contract against all applicable policies
 
 ### Act 3 — Data Consumer Requests Access
 
-9. **Switch roles**: Use the sidebar or navigate back to `http://localhost:3000` and select "Data Consumer"
+9. **Switch roles**: Click the **Switch Role** button (sidebar footer) or navigate back to `http://localhost:3000` and select "Data Consumer"
 
 10. **Browse the catalog**: The Data Catalog Browser (`/consumer/catalog`) shows all registered datasets. You'll see the `customer_accounts` dataset listed with its classification badge ("Confidential") and compliance status.
 
@@ -345,7 +345,7 @@ The policy engine validates the dataset contract against all applicable policies
 
 ### Act 4 — Data Steward Reviews and Approves
 
-14. **Switch roles**: Navigate to `http://localhost:3000` and select "Data Steward"
+14. **Switch roles**: Click the **Switch Role** button or navigate to `http://localhost:3000` and select "Data Steward"
 
 15. **Open the Approval Queue** (`/steward/approvals`): You'll see the pending subscription request from the analytics team.
 
@@ -371,7 +371,7 @@ The policy engine validates the dataset contract against all applicable policies
 
 ### Act 5 — Platform Admin Reviews Compliance
 
-19. **Switch roles**: Navigate to `http://localhost:3000` and select "Platform Admin"
+19. **Switch roles**: Click the **Switch Role** button or navigate to `http://localhost:3000` and select "Platform Admin"
 
 20. **Open the Compliance Dashboard** (`/admin/dashboard`): View platform-wide analytics:
 

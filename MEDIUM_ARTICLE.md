@@ -221,7 +221,7 @@ npm run dev
 
 The backend starts with an embedded SQLite database and auto-initializes a Git repository for contracts. A Docker Compose file is included for spinning up a PostgreSQL demo database with sample financial data.
 
-Visit `http://localhost:5173` to see the role-selection screen, then explore each persona's workflow.
+Visit `http://localhost:3000` to see the role-selection screen, then explore each persona's workflow.
 
 ## Where This Is Heading
 

@@ -193,7 +193,7 @@ cd frontend
 npm run dev
 ```
 
-The frontend will be available at: http://localhost:5173
+The frontend will be available at: http://localhost:3000 (auto-redirects to the role selector)
 
 ### Step 7: Verify Installation (1 minute)
 
@@ -213,7 +213,7 @@ You should see:
 
 ### Option 1: Using the Frontend (Recommended)
 
-1. **Access the application** at http://localhost:5173/select-role
+1. **Access the application** at http://localhost:3000 (auto-redirects to role selector)
 
 2. **Select "Data Owner"** to register a dataset
    - Click on the Data Owner card
@@ -224,7 +224,7 @@ You should see:
    - View the validation results
 
 3. **Select "Data Consumer"** to browse and subscribe
-   - Return to http://localhost:5173/select-role
+   - Click **Switch Role** in the header or navigate to http://localhost:3000
    - Click on the Data Consumer card
    - Browse the catalog
    - Click "Request Access" on a dataset
@@ -232,14 +232,14 @@ You should see:
    - Submit subscription request
 
 4. **Select "Data Steward"** to approve requests
-   - Return to http://localhost:5173/select-role
+   - Click **Switch Role** in the header or navigate to http://localhost:3000
    - Click on the Data Steward card
    - View the pending subscription in the approval queue
    - Click "Review"
    - Approve with credentials or reject with notes
 
 5. **Select "Platform Admin"** to view metrics
-   - Return to http://localhost:5173/select-role
+   - Click **Switch Role** in the header or navigate to http://localhost:3000
    - Click on the Platform Admin card
    - View compliance dashboard with charts and metrics
 
@@ -334,7 +334,7 @@ The platform features a complete React-based frontend with dedicated UIs for eac
 ### Accessing the Frontend
 
 1. Start both backend and frontend (see Installation)
-2. Navigate to http://localhost:5173/select-role
+2. Navigate to http://localhost:3000 (auto-redirects to role selector)
 3. Select your role to access the corresponding UI
 
 ### Role-Based User Interfaces
@@ -815,7 +815,7 @@ lsof -i :5173
 curl http://localhost:8000/health
 
 # Check CORS configuration in backend/app/main.py
-# Should include http://localhost:5173
+# Should include http://localhost:3000
 
 # Check browser console for errors
 # Open DevTools (F12) → Console tab

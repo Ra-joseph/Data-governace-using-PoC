@@ -74,7 +74,7 @@ npm install
 npm run dev
 ```
 
-The frontend will start at http://localhost:5173
+The frontend will start at http://localhost:3000
 
 ## Step 4: Test
 
@@ -105,7 +105,7 @@ Open in your browser:
 
 ### Explore the Frontend
 
-Open http://localhost:5173/select-role and try each role:
+Open http://localhost:3000 (auto-redirects to the role selector) and try each role:
 - **Data Owner**: Register datasets, view violations
 - **Data Consumer**: Browse catalog, request access
 - **Data Steward**: Review and approve subscriptions
