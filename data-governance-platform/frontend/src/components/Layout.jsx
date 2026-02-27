@@ -1,47 +1,63 @@
 import { useState, useEffect } from 'react';
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Database,
-  FileText,
   Shield,
-  GitBranch,
   Bell,
   CheckCircle,
-  Upload,
   PenTool,
-  ClipboardCheck,
   BarChart3,
   FileCheck,
-  Package,
-  Globe,
-  AlertTriangle,
   Menu,
-  X
+  X,
+  LogOut,
+  UserCircle,
+  FilePlus,
+  ListChecks,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
 import './Layout.css';
 
-const navigation = [
-  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'Dataset Catalog', path: '/catalog', icon: Database },
-  { name: 'Import Schema', path: '/import', icon: Upload },
-  { name: 'Policy Manager', path: '/policies', icon: Shield },
-  { name: 'Policy Authoring', path: '/policy-authoring', icon: PenTool },
-  { name: 'Policy Review', path: '/policy-review', icon: ClipboardCheck },
-  { name: 'Policy Dashboard', path: '/policy-dashboard', icon: BarChart3 },
-  { name: 'Compliance Report', path: '/compliance-report', icon: FileCheck },
-  { name: 'Policy Exchange', path: '/policy-exchange', icon: Package },
-  { name: 'Domain Governance', path: '/domain-governance', icon: Globe },
-  { name: 'Policy Exceptions', path: '/policy-conflicts', icon: AlertTriangle },
-  { name: 'Git History', path: '/git', icon: GitBranch },
-  { name: 'Subscriptions', path: '/subscriptions', icon: Bell },
-  { name: 'Compliance', path: '/compliance', icon: CheckCircle },
-];
+// Role-specific navigation items
+const roleNavigation = {
+  owner: [
+    { name: 'My Dashboard', path: '/owner/dashboard', icon: LayoutDashboard },
+    { name: 'Register Dataset', path: '/owner/register', icon: FilePlus },
+  ],
+  consumer: [
+    { name: 'Data Catalog', path: '/consumer/catalog', icon: Database },
+  ],
+  steward: [
+    { name: 'Approval Queue', path: '/steward/approvals', icon: ListChecks },
+  ],
+  admin: [
+    { name: 'Compliance Dashboard', path: '/admin/dashboard', icon: BarChart3 },
+    { name: 'Compliance Report', path: '/admin/compliance', icon: FileCheck },
+  ],
+};
+
+const roleMeta = {
+  owner:    { label: 'Data Owner',     color: '#3b82f6', bg: 'rgba(59,130,246,0.15)' },
+  consumer: { label: 'Data Consumer',  color: '#22c55e', bg: 'rgba(34,197,94,0.15)'  },
+  steward:  { label: 'Data Steward',   color: '#a855f7', bg: 'rgba(168,85,247,0.15)' },
+  admin:    { label: 'Platform Admin', color: '#f97316', bg: 'rgba(249,115,22,0.15)' },
+};
 
 export const Layout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const navigation = (user && roleNavigation[user.role]) || [];
+  const meta = user ? roleMeta[user.role] : null;
+
+  const handleSwitchRole = () => {
+    logout();
+    navigate('/select-role');
+  };
 
   // Close drawer on route change
   useEffect(() => {
@@ -60,9 +76,7 @@ export const Layout = () => {
 
   // Get current page title for the mobile header
   const currentPage = navigation.find(
-    (item) => item.path === '/'
-      ? location.pathname === '/'
-      : location.pathname.startsWith(item.path)
+    (item) => location.pathname === item.path || location.pathname.startsWith(item.path + '/')
   );
 
   return (
@@ -147,7 +161,25 @@ export const Layout = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="status-indicator">
+          {user && meta && (
+            <div className="user-info">
+              <div className="user-info-row">
+                <UserCircle size={20} style={{ color: meta.color, flexShrink: 0 }} />
+                <span className="user-name">{user.name}</span>
+              </div>
+              <div
+                className="role-badge"
+                style={{ color: meta.color, background: meta.bg }}
+              >
+                {meta.label}
+              </div>
+            </div>
+          )}
+          <button className="switch-role-btn" onClick={handleSwitchRole}>
+            <LogOut size={16} />
+            <span>Switch Role</span>
+          </button>
+          <div className="status-indicator" style={{ marginTop: '0.5rem' }}>
             <div className="status-dot"></div>
             <span>System Healthy</span>
           </div>

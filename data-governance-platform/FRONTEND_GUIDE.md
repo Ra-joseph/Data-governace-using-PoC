@@ -83,12 +83,12 @@ uvicorn app.main:app --reload
 npm run dev
 ```
 
-Frontend runs on: **http://localhost:5173**
+Frontend runs on: **http://localhost:3000**
 Backend API on: **http://localhost:8000**
 
 ### Step 4: Explore the Platform
 
-Open http://localhost:5173 and explore:
+Open http://localhost:3000 and explore:
 
 1. **Dashboard** - See metrics, charts, and activity
 2. **Dataset Catalog** - Browse registered datasets
@@ -306,14 +306,14 @@ curl http://localhost:8000/api/v1/git/status
 
 ### 3. Frontend Health
 
-Visit http://localhost:5173
+Visit http://localhost:3000
 - Page should load instantly
 - Dashboard shows charts
 - Navigation works smoothly
 
 ### 4. Git Integration Test
 
-1. Go to http://localhost:5173/git
+1. Go to http://localhost:3000/git
 2. Should see repository status
 3. Should see commit timeline
 4. Should see contract files
@@ -527,7 +527,7 @@ VITE_API_URL=https://your-api-domain.com
 
 Your setup is complete when:
 
-1. ✅ Frontend runs on http://localhost:5173
+1. ✅ Frontend runs on http://localhost:3000
 2. ✅ Backend API accessible on http://localhost:8000
 3. ✅ Dashboard shows charts and metrics
 4. ✅ Git History displays commits

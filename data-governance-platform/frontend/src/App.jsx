@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { Layout } from './components/Layout';
+import { TopNavLayout } from './components/TopNavLayout';
 import { RoleSelector } from './pages/RoleSelector';
 
 // Data Owner Pages
@@ -92,8 +93,8 @@ function App() {
           </Route>
 
           {/* Legacy Routes (backward compatibility) */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Dashboard />} />
+          <Route path="/" element={<TopNavLayout />}>
+            <Route index element={<Navigate to="/select-role" replace />} />
             <Route path="catalog" element={<DatasetCatalog />} />
             <Route path="datasets/:id" element={<DatasetDetail />} />
             <Route path="import" element={<SchemaImport />} />

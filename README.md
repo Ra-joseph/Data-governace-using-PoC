@@ -57,7 +57,7 @@ npm run dev
 
 ### Access the Application
 
-- **Frontend**: http://localhost:5173/select-role
+- **Frontend**: http://localhost:3000 (auto-redirects to role selector)
 - **Backend API**: http://localhost:8000
 - **API Docs**: http://localhost:8000/api/docs
 

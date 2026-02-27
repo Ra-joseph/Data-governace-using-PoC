@@ -117,7 +117,7 @@ After deployment, verify:
 - [ ] All 5 tests pass (run test_setup.py)
 - [ ] Contracts directory initialized with Git
 - [ ] Policy files loaded (4 YAML files including semantic_policies.yaml)
-- [ ] Frontend accessible at http://localhost:5173
+- [ ] Frontend accessible at http://localhost:3000
 - [ ] Semantic scanning available (if Ollama running)
 
 ## 🔒 Security Checklist
