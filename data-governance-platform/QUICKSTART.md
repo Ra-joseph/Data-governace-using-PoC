@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Get the Data Governance Platform running in 5 easy steps.
+Get the Data Governance Platform running in 6 easy steps.
 
 ## Table of Contents
 
@@ -8,8 +8,9 @@ Get the Data Governance Platform running in 5 easy steps.
 - [Step 1: Setup](#step-1-setup)
 - [Step 2: Start PostgreSQL](#step-2-start-postgresql)
 - [Step 3: Start Backend](#step-3-start-backend)
-- [Step 4: Test](#step-4-test)
-- [Step 5: Explore](#step-5-explore)
+- [Step 4: Start Frontend](#step-4-start-frontend)
+- [Step 5: Test](#step-5-test)
+- [Step 6: Explore](#step-6-explore)
 - [What's Next](#whats-next)
 - [Troubleshooting](#troubleshooting)
 - [Understanding the Demo](#understanding-the-demo)
@@ -21,23 +22,35 @@ Get the Data Governance Platform running in 5 easy steps.
 ## Prerequisites Check
 
 Before starting, make sure you have:
-- [ ] Python 3.10 or higher (`python --version`)
+- [ ] Python 3.10 or higher (`python3 --version`)
 - [ ] Node.js 18 or higher (`node --version`)
 - [ ] Docker installed and running (`docker --version`)
 - [ ] Git installed (`git --version`)
 
+> **macOS users**: Install everything at once with Homebrew:
+> ```bash
+> brew install python@3.12 node@20 git && brew install --cask docker
+> ```
+> Open Docker.app from Applications and wait for the whale icon to appear in the menu bar before proceeding.
+> For full macOS setup instructions see [USAGE_GUIDE.md](./USAGE_GUIDE.md#macos-setup-homebrew).
+
 ## Step 1: Setup
 
-```bash
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+Run these commands from the `data-governance-platform/` directory:
 
-# Install dependencies
-cd backend
-pip install -r requirements.txt
-cd ..
+```bash
+# Create the virtual environment (one-time setup)
+python3 -m venv venv
+
+# Activate it — required in every new terminal session
+source venv/bin/activate        # macOS / Linux
+# venv\Scripts\activate         # Windows PowerShell
+
+# Install all Python backend dependencies into the venv
+pip install -r backend/requirements.txt
 ```
+
+> The virtual environment (`venv/`) keeps all Python packages isolated from your system Python. Nothing is installed globally.
 
 ## Step 2: Start PostgreSQL
 
@@ -53,38 +66,49 @@ You should see the container running on port 5432.
 
 ## Step 3: Start Backend
 
-```bash
-# Make start script executable
-chmod +x start.sh
+Open a **new terminal** in `data-governance-platform/`:
 
-# Start the API
-./start.sh
+```bash
+# Activate the virtual environment (required in each new terminal)
+source venv/bin/activate        # macOS / Linux
+# venv\Scripts\activate         # Windows PowerShell
+
+# Start the API server
+cd backend
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-The API will start at http://localhost:8000
+The API will start at http://localhost:8000. Keep this terminal open — API logs appear here.
 
-Keep this terminal open - you'll see API logs here.
-
-## Step 3.5: Start Frontend
+Alternatively, use the convenience script:
 
 ```bash
-# In a new terminal
+# From data-governance-platform/ with venv activated
+chmod +x start.sh && ./start.sh
+```
+
+## Step 4: Start Frontend
+
+Open a **new terminal** in `data-governance-platform/frontend/`:
+
+```bash
 cd frontend
-npm install
+npm install    # first-time only — installs all npm packages
 npm run dev
 ```
 
 The frontend will start at http://localhost:3000
 
-## Step 4: Test
+## Step 5: Test
 
 Open a **new terminal** and run:
 
 ```bash
-# Activate virtual environment again
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# From data-governance-platform/ — activate the virtual environment
+source venv/bin/activate        # macOS / Linux
+# venv\Scripts\activate         # Windows PowerShell
 
-# Run automated tests
+# Run the automated setup validation script
 python test_setup.py
 ```
 
@@ -95,7 +119,7 @@ You should see 5 green checkmarks:
 - ✓ Dataset Registration
 - ✓ List Datasets
 
-## Step 5: Explore
+## Step 6: Explore
 
 ### View API Documentation
 
