@@ -1,17 +1,31 @@
+# ── Web Framework ──────────────────────────────────────────────────────────────
 fastapi==0.109.0
-uvicorn[standard]==0.27.0
-sqlalchemy==2.0.25
-psycopg2-binary==2.9.9
-pydantic==2.5.3
-pydantic[email]==2.5.3
-pydantic-settings==2.1.0
-pyyaml==6.0.1
-gitpython==3.1.41
-azure-storage-blob==12.19.0
-azure-identity==1.15.0
-pandas==2.1.4
-python-dotenv==1.0.0
-colorama==0.4.6
+uvicorn[standard]==0.27.0         # ASGI server; [standard] adds uvloop + httptools
+
+# ── Database ────────────────────────────────────────────────────────────────────
+sqlalchemy==2.0.25                # ORM used across all API layers and models
+psycopg2-binary==2.9.9            # PostgreSQL driver for the demo data connector
+
+# ── Validation & Settings ───────────────────────────────────────────────────────
+pydantic[email]==2.5.3            # data validation + EmailStr support (email-validator)
+pydantic-settings==2.1.0          # settings management via .env / environment variables
+
+# ── Policy Engine & Contracts ───────────────────────────────────────────────────
+pyyaml==6.0.1                     # YAML policy file parsing (policy_engine, contracts)
+gitpython==3.1.41                 # Git operations for contract version control
+
+# ── HTTP Clients ────────────────────────────────────────────────────────────────
+requests==2.31.0                  # sync HTTP — ollama_client.py, semantic.py
+httpx==0.26.0                     # async HTTP — required by FastAPI TestClient
+
+# ── Utilities ───────────────────────────────────────────────────────────────────
+python-dotenv==1.0.0              # .env file loading (consumed by pydantic-settings)
+colorama==0.4.6                   # colored terminal output used in test_setup.py
+
+# ── Cloud Connectors (future) ───────────────────────────────────────────────────
+azure-storage-blob==12.19.0       # Azure Blob Storage connector (not yet active)
+azure-identity==1.15.0            # Azure authentication (not yet active)
+pandas==2.1.4                     # data analysis — reserved for future schema profiling
+
+# ── Testing ─────────────────────────────────────────────────────────────────────
 pytest==7.4.4
-httpx==0.26.0
-requests==2.31.0
