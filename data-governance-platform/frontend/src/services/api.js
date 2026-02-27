@@ -83,6 +83,72 @@ export const gitAPI = {
   tags: () => api.get('/api/v1/git/tags'),
 };
 
+// Policy Authoring APIs
+export const policyAuthoringAPI = {
+  list: (params) => api.get('/api/v1/policies/authored/', { params }),
+  get: (id) => api.get(`/api/v1/policies/authored/${id}`),
+  create: (data) => api.post('/api/v1/policies/authored/', data),
+  update: (id, data) => api.patch(`/api/v1/policies/authored/${id}`, data),
+  submit: (id) => api.post(`/api/v1/policies/authored/${id}/submit`),
+  approve: (id, data) => api.post(`/api/v1/policies/authored/${id}/approve`, data),
+  reject: (id, data) => api.post(`/api/v1/policies/authored/${id}/reject`, data),
+  getYaml: (id) => api.get(`/api/v1/policies/authored/${id}/yaml`),
+  previewYaml: (id) => api.get(`/api/v1/policies/authored/${id}/preview-yaml`),
+  getByDomain: (domain) => api.get(`/api/v1/policies/authored/domains/${domain}/policies`),
+  getVersions: (id) => api.get(`/api/v1/policies/authored/${id}/versions`),
+  getVersionDiff: (id, version) => api.get(`/api/v1/policies/authored/${id}/versions/${version}/diff`),
+  revise: (id) => api.post(`/api/v1/policies/authored/${id}/revise`),
+  deprecate: (id, data) => api.post(`/api/v1/policies/authored/${id}/deprecate`, data),
+  getTimeline: (id) => api.get(`/api/v1/policies/authored/${id}/timeline`),
+};
+
+// Policy Dashboard APIs
+export const policyDashboardAPI = {
+  stats: () => api.get('/api/v1/policy-dashboard/stats'),
+  activePolicies: (domain) => api.get('/api/v1/policy-dashboard/active-policies', { params: domain ? { domain } : {} }),
+  validateCombined: (data) => api.post('/api/v1/policy-dashboard/validate-combined', data),
+};
+
+// Policy Reports APIs
+export const policyReportsAPI = {
+  impact: (policyId) => api.get(`/api/v1/policy-reports/impact/${policyId}`),
+  compliance: () => api.get('/api/v1/policy-reports/compliance'),
+  bulkValidate: (includeAuthored = true) => api.post(`/api/v1/policy-reports/bulk-validate?include_authored=${includeAuthored}`),
+  policyCompliance: (policyId) => api.get(`/api/v1/policy-reports/policy-compliance/${policyId}`),
+};
+
+// Policy Exchange APIs
+export const policyExchangeAPI = {
+  exportPolicy: (id, format = 'json') => api.get(`/api/v1/policy-exchange/export/${id}`, { params: { format } }),
+  exportBundle: (params) => api.get('/api/v1/policy-exchange/export-bundle', { params: { ...params, format: 'json' } }),
+  importBundle: (data) => api.post('/api/v1/policy-exchange/import', data),
+  listTemplates: (params) => api.get('/api/v1/policy-exchange/templates', { params }),
+  getTemplate: (id) => api.get(`/api/v1/policy-exchange/templates/${id}`),
+  instantiateTemplate: (id, authoredBy) => api.post(`/api/v1/policy-exchange/templates/${id}/instantiate`, null, { params: { authored_by: authoredBy } }),
+};
+
+// Domain Governance APIs
+export const domainGovernanceAPI = {
+  listDomains: () => api.get('/api/v1/domain-governance/domains'),
+  getDomain: (domain) => api.get(`/api/v1/domain-governance/domains/${domain}`),
+  getMatrix: () => api.get('/api/v1/domain-governance/matrix'),
+  getAnalytics: () => api.get('/api/v1/domain-governance/analytics'),
+  getEffectiveness: () => api.get('/api/v1/domain-governance/effectiveness'),
+};
+
+// Policy Exceptions APIs
+export const policyExceptionsAPI = {
+  detectFailures: (params) => api.post('/api/v1/policy-exceptions/detect-failures', null, { params }),
+  listFailures: (params) => api.get('/api/v1/policy-exceptions/failures', { params }),
+  createException: (data) => api.post('/api/v1/policy-exceptions/', data),
+  listRequests: (params) => api.get('/api/v1/policy-exceptions/requests', { params }),
+  getRequest: (id) => api.get(`/api/v1/policy-exceptions/requests/${id}`),
+  approve: (id, data) => api.post(`/api/v1/policy-exceptions/requests/${id}/approve`, data),
+  reject: (id, data) => api.post(`/api/v1/policy-exceptions/requests/${id}/reject`, data),
+  deploymentGate: (domain) => api.get(`/api/v1/policy-exceptions/deployment-gate/${domain}`),
+  stats: () => api.get('/api/v1/policy-exceptions/stats'),
+};
+
 // Health check
 export const healthCheck = () => api.get('/health');
 

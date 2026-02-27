@@ -7,8 +7,15 @@ or a .env file. Includes database connections, API settings, Git configuration,
 and external service credentials.
 """
 
+import os
+from pathlib import Path
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Resolve database path relative to the backend directory so it works
+# regardless of the working directory the app is started from.
+_BACKEND_DIR = Path(__file__).resolve().parent.parent
+_DB_PATH = _BACKEND_DIR / "governance_metadata.db"
 
 
 class Settings(BaseSettings):
@@ -49,7 +56,7 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
     
     # Database - SQLite for metadata
-    SQLALCHEMY_DATABASE_URL: str = "sqlite:///./governance_metadata.db"
+    SQLALCHEMY_DATABASE_URL: str = f"sqlite:///{_DB_PATH}"
     
     # PostgreSQL - Demo Database
     POSTGRES_HOST: str = "localhost"
