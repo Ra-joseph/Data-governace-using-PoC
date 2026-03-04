@@ -305,3 +305,135 @@ quality_rules: {}
             assert contract_data['dataset']['owner_email'] == sample_dataset.owner_email
             assert contract_data['schema'] == sample_dataset.schema_definition
             assert contract_data['governance']['classification'] == sample_dataset.classification
+
+
+@pytest.mark.unit
+@pytest.mark.service
+class TestContractServiceEdgeCases:
+    """Edge case tests for ContractService."""
+
+    def test_validate_contract_both_inputs_yaml_precedence(self):
+        """Test that YAML takes precedence when both YAML and JSON provided."""
+        service = ContractService()
+        yaml_content = """
+dataset:
+  name: yaml_test
+  owner_name: YAML Owner
+  owner_email: yaml@test.com
+schema:
+  - name: id
+    type: integer
+    description: ID
+    pii: false
+governance:
+  classification: internal
+quality_rules: {}
+"""
+        json_content = {
+            "dataset": {"name": "json_test", "owner_name": "JSON", "owner_email": "j@t.com"},
+            "schema": [{"name": "id", "type": "integer", "description": "ID", "pii": False}],
+            "governance": {"classification": "internal"},
+            "quality_rules": {}
+        }
+        result = service.validate_contract(contract_yaml=yaml_content, contract_json=json_content)
+        assert result is not None
+
+    def test_calculate_schema_hash_empty(self):
+        """Test schema hash for empty list is deterministic."""
+        service = ContractService()
+        hash1 = service._calculate_schema_hash([])
+        hash2 = service._calculate_schema_hash([])
+        assert hash1 == hash2
+        assert len(hash1) == 64
+
+    def test_calculate_schema_hash_order_independent(self):
+        """Test schema hash is based on sorted keys."""
+        service = ContractService()
+        schema1 = [{"name": "a", "type": "string"}]
+        schema2 = [{"type": "string", "name": "a"}]
+        # sort_keys=True means order shouldn't matter
+        assert service._calculate_schema_hash(schema1) == service._calculate_schema_hash(schema2)
+
+    def test_get_yaml_diff_identical(self):
+        """Test YAML diff with identical content returns empty diff."""
+        service = ContractService()
+        yaml_content = "line1\nline2\nline3"
+        diff = service._get_yaml_diff(yaml_content, yaml_content)
+        assert diff == []
+
+    def test_get_yaml_diff_completely_different(self):
+        """Test YAML diff capped at 20 differences."""
+        service = ContractService()
+        old = "\n".join([f"old_line_{i}" for i in range(30)])
+        new = "\n".join([f"new_line_{i}" for i in range(30)])
+        diff = service._get_yaml_diff(old, new)
+        assert len(diff) == 20  # Capped at 20
+
+    def test_get_yaml_diff_added_lines(self):
+        """Test YAML diff detects added lines."""
+        service = ContractService()
+        old = "line1\nline2"
+        new = "line1\nline2\nline3\nline4"
+        diff = service._get_yaml_diff(old, new)
+        assert len(diff) == 2
+        assert diff[0]["old"] == ""
+        assert diff[0]["new"] == "line3"
+
+    def test_get_yaml_diff_removed_lines(self):
+        """Test YAML diff detects removed lines."""
+        service = ContractService()
+        old = "line1\nline2\nline3"
+        new = "line1"
+        diff = service._get_yaml_diff(old, new)
+        assert len(diff) == 2
+        assert diff[0]["new"] == ""
+
+    @patch('app.services.contract_service.GitService')
+    def test_version_bump_logic(self, mock_git_service, db, sample_dataset):
+        """Test that version bumps correctly: 1.0.0 -> 1.1.0."""
+        mock_git_instance = MagicMock()
+        mock_git_instance.commit_contract.return_value = {
+            'commit_hash': 'abc123',
+            'file_path': 'contracts/test.yaml'
+        }
+        mock_git_service.return_value = mock_git_instance
+
+        service = ContractService()
+        service.git_service = mock_git_instance
+
+        v1 = service.create_contract_from_dataset(db, sample_dataset.id, version="1.0.0")
+        assert v1.version == "1.0.0"
+
+        v2 = service.enrich_contract_with_slas(db, v1.id, {"availability": "99.9%"})
+        assert v2.version == "1.1.0"
+
+        v3 = service.enrich_contract_with_slas(db, v2.id, {"latency": "<100ms"})
+        assert v3.version == "1.2.0"
+
+    def test_combine_validation_results(self):
+        """Test combining rule-based and semantic validation results."""
+        from app.schemas.contract import ValidationResult, ValidationStatus, Violation, ViolationType
+        service = ContractService()
+
+        rule_result = ValidationResult(
+            status=ValidationStatus.WARNING,
+            passed=5, warnings=1, failures=0,
+            violations=[
+                Violation(type=ViolationType.WARNING, policy="SG001",
+                          message="Missing desc", remediation="Add description")
+            ]
+        )
+        semantic_result = ValidationResult(
+            status=ValidationStatus.FAILED,
+            passed=3, warnings=0, failures=1,
+            violations=[
+                Violation(type=ViolationType.CRITICAL, policy="SEM001",
+                          message="Sensitive data", remediation="Encrypt")
+            ]
+        )
+        combined = service._combine_validation_results(rule_result, semantic_result)
+        assert combined.status == ValidationStatus.FAILED
+        assert combined.passed == 8
+        assert combined.warnings == 1
+        assert combined.failures == 1
+        assert len(combined.violations) == 2

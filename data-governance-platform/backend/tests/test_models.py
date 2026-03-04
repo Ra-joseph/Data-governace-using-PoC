@@ -396,3 +396,150 @@ class TestModelConstraints:
 
         with pytest.raises(Exception):  # Will raise IntegrityError
             db.commit()
+
+
+@pytest.mark.unit
+class TestModelEdgeCases:
+    """Edge case tests for database models."""
+
+    def test_dataset_empty_schema_definition(self, db):
+        """Test creating dataset with empty schema definition."""
+        dataset = Dataset(
+            name="empty_schema_ds",
+            description="Dataset with empty schema",
+            owner_name="Owner",
+            owner_email="owner@test.com",
+            source_type="postgres",
+            physical_location="public.empty",
+            schema_definition=[],
+            classification="internal"
+        )
+        db.add(dataset)
+        db.commit()
+        db.refresh(dataset)
+
+        assert dataset.schema_definition == []
+        assert dataset.id is not None
+
+    def test_dataset_null_compliance_tags(self, db):
+        """Test creating dataset with null compliance tags."""
+        dataset = Dataset(
+            name="no_tags_ds",
+            description="Dataset without compliance tags",
+            owner_name="Owner",
+            owner_email="owner@test.com",
+            source_type="postgres",
+            physical_location="public.notags",
+            schema_definition=[{"name": "id", "type": "integer"}],
+            classification="internal",
+            compliance_tags=None
+        )
+        db.add(dataset)
+        db.commit()
+        db.refresh(dataset)
+
+        assert dataset.compliance_tags is None
+
+    def test_contract_null_approval_fields(self, db, sample_dataset):
+        """Test creating contract with null approval fields."""
+        contract = Contract(
+            dataset_id=sample_dataset.id,
+            version="1.0.0",
+            human_readable="# Contract",
+            machine_readable={},
+            schema_hash="abc",
+            governance_rules={},
+            validation_status="pending",
+            approved_by=None,
+            approved_at=None,
+            git_commit_hash=None,
+            git_file_path=None
+        )
+        db.add(contract)
+        db.commit()
+        db.refresh(contract)
+
+        assert contract.approved_by is None
+        assert contract.approved_at is None
+        assert contract.git_commit_hash is None
+
+    def test_contract_with_large_machine_readable(self, db, sample_dataset):
+        """Test contract with a large machine_readable JSON."""
+        large_schema = [
+            {"name": f"field_{i}", "type": "string", "description": f"Field {i}", "pii": False}
+            for i in range(100)
+        ]
+        contract = Contract(
+            dataset_id=sample_dataset.id,
+            version="1.0.0",
+            human_readable="# Large Contract",
+            machine_readable={
+                "dataset": {"name": "large"},
+                "schema": large_schema,
+                "governance": {"classification": "internal"}
+            },
+            schema_hash="abc",
+            governance_rules={},
+            validation_status="passed"
+        )
+        db.add(contract)
+        db.commit()
+        db.refresh(contract)
+
+        assert len(contract.machine_readable["schema"]) == 100
+
+    def test_subscription_all_fields_populated(self, db, sample_dataset):
+        """Test subscription with every field populated."""
+        contract = Contract(
+            dataset_id=sample_dataset.id,
+            version="1.0.0",
+            human_readable="# Contract",
+            machine_readable={},
+            schema_hash="abc",
+            governance_rules={},
+            validation_status="passed"
+        )
+        db.add(contract)
+        db.commit()
+
+        subscription = Subscription(
+            dataset_id=sample_dataset.id,
+            contract_id=contract.id,
+            consumer_name="Full Consumer",
+            consumer_email="consumer@full.com",
+            consumer_team="Data Analytics",
+            purpose="Full test",
+            use_case="analytics",
+            status="approved",
+            access_granted=True,
+            approved_at=datetime.utcnow(),
+            access_credentials="user: test_user",
+            access_endpoint="postgres://localhost/test",
+            data_filters={"required_fields": ["id", "name"]}
+        )
+        db.add(subscription)
+        db.commit()
+        db.refresh(subscription)
+
+        assert subscription.consumer_team == "Data Analytics"
+        assert subscription.access_endpoint == "postgres://localhost/test"
+        assert subscription.data_filters["required_fields"] == ["id", "name"]
+
+    def test_dataset_with_special_characters(self, db):
+        """Test dataset with special characters in text fields."""
+        dataset = Dataset(
+            name="special_chars_ds",
+            description="Contains 'quotes', \"doubles\", & ampersands <tags>",
+            owner_name="Tëst Ownér",
+            owner_email="test@example.com",
+            source_type="postgres",
+            physical_location="public.special",
+            schema_definition=[{"name": "id", "type": "integer"}],
+            classification="internal"
+        )
+        db.add(dataset)
+        db.commit()
+        db.refresh(dataset)
+
+        assert "quotes" in dataset.description
+        assert "Tëst" in dataset.owner_name
