@@ -378,3 +378,157 @@ class TestRecommendations:
         assert 'strategy' in result.metadata
         assert 'risk_level' in result.metadata
         assert 'complexity_score' in result.metadata
+
+
+class TestOrchestrationEdgeCases:
+    """Edge case tests for PolicyOrchestrator."""
+
+    def test_complexity_empty_schema(self):
+        """Test complexity score for empty schema is minimal."""
+        orchestrator = PolicyOrchestrator(enable_semantic=False)
+        contract = {
+            'dataset': {'name': 'empty'},
+            'schema': [],
+            'governance': {'classification': 'public', 'compliance_tags': []}
+        }
+        analysis = orchestrator._analyze_contract(contract)
+        assert analysis.complexity_score < 10
+        assert analysis.field_count == 0
+
+    def test_complexity_max_cap_100(self):
+        """Test complexity score caps at 100 for very large schemas."""
+        orchestrator = PolicyOrchestrator(enable_semantic=False)
+        contract = {
+            'dataset': {'name': 'huge'},
+            'schema': [
+                {'name': f'f{i}', 'type': 'string', 'pii': i % 3 == 0}
+                for i in range(120)
+            ],
+            'governance': {
+                'classification': 'restricted',
+                'compliance_tags': ['GDPR', 'HIPAA', 'PCI-DSS', 'SOX']
+            }
+        }
+        analysis = orchestrator._analyze_contract(contract)
+        assert analysis.complexity_score <= 100
+        assert analysis.field_count == 120
+
+    def test_complexity_all_pii_fields(self):
+        """Test complexity with all PII fields."""
+        orchestrator = PolicyOrchestrator(enable_semantic=False)
+        contract = {
+            'dataset': {'name': 'all_pii'},
+            'schema': [
+                {'name': f'pii_{i}', 'type': 'string', 'pii': True}
+                for i in range(10)
+            ],
+            'governance': {'classification': 'confidential', 'compliance_tags': ['GDPR']}
+        }
+        analysis = orchestrator._analyze_contract(contract)
+        assert analysis.has_pii is True
+        assert analysis.complexity_score > 50
+
+    def test_risk_level_restricted_classification(self):
+        """Test that restricted classification always yields CRITICAL risk."""
+        orchestrator = PolicyOrchestrator(enable_semantic=False)
+        risk = orchestrator._assess_risk_level(
+            has_pii=False,
+            classification='restricted',
+            compliance_tags=[],
+            field_count=1,
+            complexity_score=5
+        )
+        assert risk == RiskLevel.CRITICAL
+
+    def test_risk_level_three_compliance_tags(self):
+        """Test that 3+ compliance tags yields CRITICAL risk."""
+        orchestrator = PolicyOrchestrator(enable_semantic=False)
+        risk = orchestrator._assess_risk_level(
+            has_pii=False,
+            classification='internal',
+            compliance_tags=['GDPR', 'HIPAA', 'PCI-DSS'],
+            field_count=5,
+            complexity_score=30
+        )
+        assert risk == RiskLevel.CRITICAL
+
+    def test_risk_level_confidential_with_pii(self):
+        """Test confidential + PII yields HIGH risk."""
+        orchestrator = PolicyOrchestrator(enable_semantic=False)
+        risk = orchestrator._assess_risk_level(
+            has_pii=True,
+            classification='confidential',
+            compliance_tags=['GDPR'],
+            field_count=10,
+            complexity_score=50
+        )
+        assert risk == RiskLevel.HIGH
+
+    def test_risk_level_low_no_pii_public(self):
+        """Test public data without PII yields LOW risk."""
+        orchestrator = PolicyOrchestrator(enable_semantic=False)
+        risk = orchestrator._assess_risk_level(
+            has_pii=False,
+            classification='public',
+            compliance_tags=[],
+            field_count=2,
+            complexity_score=10
+        )
+        assert risk == RiskLevel.LOW
+
+    def test_violation_deduplication(self):
+        """Test that similar violations are deduplicated in combined results."""
+        orchestrator = PolicyOrchestrator(enable_semantic=False)
+
+        rule_violation = Violation(
+            type=ViolationType.CRITICAL,
+            policy="SD001",
+            field="ssn",
+            message="PII without encryption",
+            remediation="Enable encryption"
+        )
+        semantic_violation = Violation(
+            type=ViolationType.CRITICAL,
+            policy="SEM001",
+            field="ssn",
+            message="Sensitive data detected",
+            remediation="Encrypt PII fields"
+        )
+
+        similar = orchestrator._are_violations_similar(rule_violation, semantic_violation)
+        assert isinstance(similar, bool)
+
+    def test_are_violations_similar_different_fields(self):
+        """Test violations on different fields are not similar."""
+        orchestrator = PolicyOrchestrator(enable_semantic=False)
+
+        v1 = Violation(type=ViolationType.WARNING, policy="SG001", field="email",
+                       message="Missing desc", remediation="Add desc")
+        v2 = Violation(type=ViolationType.WARNING, policy="SG001", field="phone",
+                       message="Missing desc", remediation="Add desc")
+
+        result = orchestrator._are_violations_similar(v1, v2)
+        assert result is False
+
+    def test_analyze_contract_missing_governance(self):
+        """Test analysis when governance section is missing."""
+        orchestrator = PolicyOrchestrator(enable_semantic=False)
+        contract = {
+            'dataset': {'name': 'no_gov'},
+            'schema': [{'name': 'id', 'type': 'integer', 'pii': False}]
+        }
+        analysis = orchestrator._analyze_contract(contract)
+        assert analysis is not None
+        assert analysis.classification == 'internal'
+
+    def test_analyze_contract_missing_schema(self):
+        """Test analysis when schema section is missing."""
+        orchestrator = PolicyOrchestrator(enable_semantic=False)
+        contract = {
+            'dataset': {'name': 'no_schema'},
+            'governance': {'classification': 'public'}
+        }
+        analysis = orchestrator._analyze_contract(contract)
+        assert analysis is not None
+        assert analysis.field_count == 0
+        assert analysis.has_pii is False

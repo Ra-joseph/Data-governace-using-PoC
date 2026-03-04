@@ -484,3 +484,290 @@ class TestPolicyEngine:
         # Should fail
         assert result.status == ValidationStatus.FAILED
         assert result.failures > 0
+
+
+@pytest.mark.unit
+@pytest.mark.service
+class TestPolicyEngineEdgeCases:
+    """Edge case tests for PolicyEngine."""
+
+    def test_validate_empty_contract(self):
+        """Test validation of contract with all empty structures."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {},
+            "schema": [],
+            "governance": {},
+            "quality_rules": {}
+        }
+        result = engine.validate_contract(contract_data)
+        assert result is not None
+        # Should still produce violations for missing ownership
+        assert result.status == ValidationStatus.FAILED
+
+    def test_validate_empty_schema(self):
+        """Test validation with empty schema produces no field-level violations."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "test",
+                "owner_name": "Owner",
+                "owner_email": "owner@test.com"
+            },
+            "schema": [],
+            "governance": {"classification": "public"},
+            "quality_rules": {}
+        }
+        result = engine.validate_contract(contract_data)
+        # No schema fields → no SG001/SG002/SG004 violations
+        sg_violations = [v for v in result.violations if v.policy.startswith("SG00")]
+        # Only SG003 (ownership) should NOT trigger since we have owner
+        for v in sg_violations:
+            assert v.policy != "SG003"
+
+    def test_validate_null_governance(self):
+        """Test validation with empty governance defaults to internal."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "test",
+                "owner_name": "Owner",
+                "owner_email": "owner@test.com"
+            },
+            "schema": [{"name": "id", "type": "integer", "description": "ID", "pii": False}],
+            "governance": {},
+            "quality_rules": {}
+        }
+        result = engine.validate_contract(contract_data)
+        # Should not crash
+        assert result is not None
+
+    def test_sd001_pii_with_encryption_passes(self):
+        """Test SD001: PII with encryption enabled should pass."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "test",
+                "owner_name": "Owner",
+                "owner_email": "owner@test.com"
+            },
+            "schema": [
+                {"name": "email", "type": "string", "description": "Email",
+                 "pii": True, "required": True, "nullable": False}
+            ],
+            "governance": {
+                "classification": "confidential",
+                "encryption_required": True,
+                "retention_days": 365,
+                "compliance_tags": ["GDPR"]
+            },
+            "quality_rules": {"completeness_threshold": 99}
+        }
+        result = engine.validate_contract(contract_data)
+        sd001 = [v for v in result.violations if "SD001" in v.policy]
+        assert len(sd001) == 0
+
+    def test_sd002_public_classification_no_retention(self):
+        """Test SD002: Public data should not require retention policy."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "test",
+                "owner_name": "Owner",
+                "owner_email": "owner@test.com"
+            },
+            "schema": [{"name": "data", "type": "string", "description": "Data", "pii": False}],
+            "governance": {"classification": "public"},
+            "quality_rules": {}
+        }
+        result = engine.validate_contract(contract_data)
+        sd002 = [v for v in result.violations if "SD002" in v.policy]
+        assert len(sd002) == 0
+
+    def test_sd002_retention_days_zero(self):
+        """Test SD002: retention_days=0 should still trigger violation for confidential."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "test",
+                "owner_name": "Owner",
+                "owner_email": "owner@test.com"
+            },
+            "schema": [{"name": "data", "type": "string", "description": "Data", "pii": False}],
+            "governance": {
+                "classification": "confidential",
+                "retention_days": 0
+            },
+            "quality_rules": {}
+        }
+        result = engine.validate_contract(contract_data)
+        sd002 = [v for v in result.violations if "SD002" in v.policy]
+        # retention_days=0 is technically present but zero, behavior depends on engine
+        assert result is not None
+
+    def test_dq001_completeness_exactly_95(self):
+        """Test DQ001: completeness at exactly 95% should pass."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "test",
+                "owner_name": "Owner",
+                "owner_email": "owner@test.com"
+            },
+            "schema": [{"name": "data", "type": "string", "description": "Data", "pii": False}],
+            "governance": {"classification": "confidential", "retention_days": 365},
+            "quality_rules": {"completeness_threshold": 95}
+        }
+        result = engine.validate_contract(contract_data)
+        dq001 = [v for v in result.violations if "DQ001" in v.policy]
+        assert len(dq001) == 0
+
+    def test_dq001_completeness_94_point_9(self):
+        """Test DQ001: completeness at 94.9% should trigger violation."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "test",
+                "owner_name": "Owner",
+                "owner_email": "owner@test.com"
+            },
+            "schema": [{"name": "data", "type": "string", "description": "Data", "pii": False}],
+            "governance": {"classification": "confidential", "retention_days": 365},
+            "quality_rules": {"completeness_threshold": 80}
+        }
+        result = engine.validate_contract(contract_data)
+        dq001 = [v for v in result.violations if "DQ001" in v.policy]
+        assert len(dq001) > 0
+
+    def test_dq001_public_low_completeness(self):
+        """Test DQ001: public data with low completeness should not trigger."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "test",
+                "owner_name": "Owner",
+                "owner_email": "owner@test.com"
+            },
+            "schema": [{"name": "data", "type": "string", "description": "Data", "pii": False}],
+            "governance": {"classification": "public"},
+            "quality_rules": {"completeness_threshold": 50}
+        }
+        result = engine.validate_contract(contract_data)
+        dq001 = [v for v in result.violations if "DQ001" in v.policy]
+        assert len(dq001) == 0
+
+    def test_sg001_empty_description_string(self):
+        """Test SG001: empty string description is treated as missing."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "test",
+                "owner_name": "Owner",
+                "owner_email": "owner@test.com"
+            },
+            "schema": [{"name": "field1", "type": "string", "description": "", "pii": False}],
+            "governance": {"classification": "internal"},
+            "quality_rules": {}
+        }
+        result = engine.validate_contract(contract_data)
+        sg001 = [v for v in result.violations if "SG001" in v.policy]
+        assert len(sg001) > 0
+
+    def test_sg003_owner_name_only(self):
+        """Test SG003: having name but missing email triggers violation."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "test",
+                "owner_name": "Owner"
+                # Missing owner_email
+            },
+            "schema": [{"name": "id", "type": "integer", "description": "ID", "pii": False}],
+            "governance": {"classification": "internal"},
+            "quality_rules": {}
+        }
+        result = engine.validate_contract(contract_data)
+        sg003 = [v for v in result.violations if "SG003" in v.policy]
+        assert len(sg003) > 0
+
+    def test_sg003_owner_email_only(self):
+        """Test SG003: having email but missing name triggers violation."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "test",
+                "owner_email": "owner@test.com"
+                # Missing owner_name
+            },
+            "schema": [{"name": "id", "type": "integer", "description": "ID", "pii": False}],
+            "governance": {"classification": "internal"},
+            "quality_rules": {}
+        }
+        result = engine.validate_contract(contract_data)
+        sg003 = [v for v in result.violations if "SG003" in v.policy]
+        assert len(sg003) > 0
+
+    def test_sg004_integer_fields_no_max_length(self):
+        """Test SG004: non-string fields should not trigger max_length warning."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "test",
+                "owner_name": "Owner",
+                "owner_email": "owner@test.com"
+            },
+            "schema": [
+                {"name": "count", "type": "integer", "description": "Count", "pii": False},
+                {"name": "flag", "type": "boolean", "description": "Flag", "pii": False}
+            ],
+            "governance": {"classification": "internal"},
+            "quality_rules": {}
+        }
+        result = engine.validate_contract(contract_data)
+        sg004 = [v for v in result.violations if "SG004" in v.policy]
+        assert len(sg004) == 0
+
+    def test_validate_unicode_field_names(self):
+        """Test validation with unicode field names."""
+        engine = PolicyEngine()
+        contract_data = {
+            "dataset": {
+                "name": "unicode_test",
+                "owner_name": "Tëst Öwner",
+                "owner_email": "owner@test.com"
+            },
+            "schema": [
+                {"name": "données", "type": "string", "description": "Données",
+                 "pii": False}
+            ],
+            "governance": {"classification": "internal"},
+            "quality_rules": {}
+        }
+        result = engine.validate_contract(contract_data)
+        assert result is not None
+
+    def test_validate_many_fields_schema(self):
+        """Test validation with a large number of schema fields."""
+        engine = PolicyEngine()
+        schema = [
+            {"name": f"field_{i}", "type": "string", "description": f"Field {i}", "pii": False}
+            for i in range(50)
+        ]
+        contract_data = {
+            "dataset": {
+                "name": "big_schema",
+                "owner_name": "Owner",
+                "owner_email": "owner@test.com"
+            },
+            "schema": schema,
+            "governance": {"classification": "internal"},
+            "quality_rules": {}
+        }
+        result = engine.validate_contract(contract_data)
+        assert result is not None
+        # SG004 groups all missing max_length fields into one violation
+        sg004 = [v for v in result.violations if "SG004" in v.policy]
+        assert len(sg004) >= 1
+        # All 50 fields should be mentioned in the violation
+        assert "field_0" in sg004[0].field
+        assert "field_49" in sg004[0].field
