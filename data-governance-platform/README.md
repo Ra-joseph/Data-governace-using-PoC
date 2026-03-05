@@ -52,7 +52,7 @@ A comprehensive Policy-as-Code data governance platform implementing federated g
 │  • Violations│  • Request   │  • Credentials│ • Analytics        │
 └──────────────┴──────────────┴──────────────┴────────────────────┘
                                  ▲
-                                 │ REST API (30+ endpoints)
+                                 │ REST API (55+ endpoints)
                                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                     Data Governance Platform API                 │
@@ -96,22 +96,32 @@ A comprehensive Policy-as-Code data governance platform implementing federated g
 
 ### Core Components
 
-**Backend:**
-1. **Dataset Registry**: Catalog of all data assets with metadata
-2. **Contract Management**: Version-controlled data contracts (YAML + JSON)
-3. **Policy Orchestration**: Intelligent routing between rule-based and semantic validation
-4. **Rule-Based Policy Engine**: 17 YAML-defined policies across 3 categories
-5. **Semantic Policy Engine**: 8 LLM-powered context-aware policies via Ollama
-6. **PostgreSQL Connector**: Imports schemas with heuristic PII detection
-7. **Git Service**: Version control and audit trail for contracts
-8. **Subscription API**: Complete workflow with approval and access management
+**Backend (11 API routers):**
+1. **Dataset Registry**: Catalog of all data assets with metadata, schema import from PostgreSQL
+2. **Contract Management**: Version-controlled data contracts (YAML + JSON) with Git integration
+3. **Subscription Workflow**: End-to-end consumer access requests with SLA negotiation and approvals
+4. **Policy Orchestration**: Intelligent routing between rule-based and semantic validation (4 strategies)
+5. **Rule-Based Policy Engine**: 17 YAML-defined policies across 3 categories (SD, DQ, SG)
+6. **Semantic Policy Engine**: 8 LLM-powered context-aware policies via local Ollama
+7. **Policy Authoring**: Full lifecycle management — draft, review, approve, version, deprecate
+8. **Policy Dashboard**: Compliance stats, active policy listing, and combined validation
+9. **Policy Reports**: Impact analysis, compliance overviews, and bulk validation
+10. **Policy Exchange**: Import/export policies, template library, and template instantiation
+11. **Domain Governance**: Domain-based policy matrix, analytics, and effectiveness tracking
+12. **Policy Exceptions**: Conflict detection, exception requests, approval, and deployment gates
+13. **Git Service**: Contract version control and full audit trail
+14. **PostgreSQL Connector**: Schema introspection with heuristic PII detection
 
 **Frontend (React + Vite):**
-1. **Role-Based UIs**: Dedicated interfaces for each user role
-2. **Dataset Registration Wizard**: Multi-step form with schema import
+1. **Role-Based UIs**: Dedicated interfaces for Data Owner, Consumer, Steward, and Admin
+2. **Dataset Registration Wizard**: Multi-step form with PostgreSQL schema import
 3. **Catalog Browser**: Search, filter, and subscribe to datasets
-4. **Approval Queue**: Review and approve subscription requests
-5. **Compliance Dashboard**: Real-time metrics and violation analytics
+4. **Approval Queue**: Review and approve subscription requests with credential management
+5. **Compliance Dashboard**: Real-time metrics, violation trends, and interactive analytics
+6. **Policy Manager**: Full policy authoring UI with lifecycle management (`PolicyAuthoring/` components)
+7. **Git History Viewer**: Contract version history and diff comparison
+8. **Schema Import**: Direct PostgreSQL schema import interface
+9. **Contract Viewer**: YAML/JSON contract display with metadata
 
 ## 📦 Prerequisites
 
@@ -556,21 +566,18 @@ Visit http://localhost:8000/api/docs for Swagger UI with interactive API testing
 
 #### Datasets
 
-- `POST /api/v1/datasets/` - Create dataset
+- `POST /api/v1/datasets/` - Create dataset (triggers policy validation)
 - `GET /api/v1/datasets/` - List datasets (with filters)
 - `GET /api/v1/datasets/{id}` - Get dataset details
 - `PUT /api/v1/datasets/{id}` - Update dataset
 - `DELETE /api/v1/datasets/{id}` - Delete dataset (soft delete)
-
-#### Schema Import
-
 - `POST /api/v1/datasets/import-schema` - Import schema from sources
 - `GET /api/v1/datasets/postgres/tables` - List PostgreSQL tables
 
 #### Subscriptions
 
 - `POST /api/v1/subscriptions/` - Create subscription request
-- `GET /api/v1/subscriptions/` - List subscriptions (with filters: status, dataset_id, consumer_email)
+- `GET /api/v1/subscriptions/` - List subscriptions (filters: status, dataset_id, consumer_email)
 - `GET /api/v1/subscriptions/{id}` - Get subscription details
 - `POST /api/v1/subscriptions/{id}/approve` - Approve or reject subscription
 - `PUT /api/v1/subscriptions/{id}` - Update subscription
@@ -590,7 +597,7 @@ Visit http://localhost:8000/api/docs for Swagger UI with interactive API testing
 #### Semantic Scanning
 
 - `POST /api/v1/semantic/validate` - Validate using semantic policies
-- `GET /api/v1/semantic/status` - Check Ollama status
+- `GET /api/v1/semantic/status` - Check Ollama connectivity
 - `GET /api/v1/semantic/models` - List available LLM models
 - `POST /api/v1/semantic/scan` - Perform semantic scan
 - `GET /api/v1/semantic/results/{id}` - Get scan results
@@ -602,6 +609,67 @@ Visit http://localhost:8000/api/docs for Swagger UI with interactive API testing
 - `POST /api/v1/orchestration/analyze-risk` - Analyze contract risk level
 - `GET /api/v1/orchestration/metrics` - Get performance metrics
 - `POST /api/v1/orchestration/configure` - Configure orchestrator settings
+
+#### Policy Authoring (`/api/v1/policies/authored`)
+
+- `POST /api/v1/policies/authored/` - Create a new authored policy draft
+- `GET /api/v1/policies/authored/` - List authored policies
+- `GET /api/v1/policies/authored/{policy_id}` - Get policy details
+- `PATCH /api/v1/policies/authored/{policy_id}` - Update policy draft
+- `POST /api/v1/policies/authored/{policy_id}/submit` - Submit policy for review
+- `POST /api/v1/policies/authored/{policy_id}/approve` - Approve policy
+- `POST /api/v1/policies/authored/{policy_id}/reject` - Reject policy with feedback
+- `GET /api/v1/policies/authored/{policy_id}/yaml` - Get generated YAML artifact
+- `GET /api/v1/policies/authored/{policy_id}/preview-yaml` - Preview YAML before approval
+- `GET /api/v1/policies/authored/{policy_id}/versions` - List all policy versions
+- `GET /api/v1/policies/authored/{policy_id}/versions/{version}/diff` - Compare versions
+- `POST /api/v1/policies/authored/{policy_id}/revise` - Create a new revision
+- `POST /api/v1/policies/authored/{policy_id}/deprecate` - Deprecate policy
+- `GET /api/v1/policies/authored/{policy_id}/timeline` - Get policy lifecycle timeline
+- `GET /api/v1/policies/authored/domains/{domain}/policies` - Policies by domain
+
+#### Policy Dashboard (`/api/v1/policy-dashboard`)
+
+- `GET /api/v1/policy-dashboard/stats` - Compliance stats and metrics summary
+- `GET /api/v1/policy-dashboard/active-policies` - List active policies
+- `POST /api/v1/policy-dashboard/validate-combined` - Combined rule-based + semantic validation
+
+#### Policy Reports (`/api/v1/policy-reports`)
+
+- `GET /api/v1/policy-reports/impact/{policy_id}` - Impact analysis for a policy
+- `GET /api/v1/policy-reports/compliance` - Compliance overview across all datasets
+- `POST /api/v1/policy-reports/bulk-validate` - Bulk validate multiple datasets
+- `GET /api/v1/policy-reports/policy-compliance/{policy_id}` - Per-policy compliance detail
+
+#### Policy Exchange (`/api/v1/policy-exchange`)
+
+- `GET /api/v1/policy-exchange/export/{policy_id}` - Export a single policy
+- `GET /api/v1/policy-exchange/export-bundle` - Export all policies as a bundle
+- `POST /api/v1/policy-exchange/import` - Import policies from a bundle
+- `GET /api/v1/policy-exchange/templates` - List available policy templates
+- `GET /api/v1/policy-exchange/templates/{template_id}` - Get template details
+- `POST /api/v1/policy-exchange/templates/{template_id}/instantiate` - Create policy from template
+
+#### Domain Governance (`/api/v1/domain-governance`)
+
+- `GET /api/v1/domain-governance/domains` - List all governance domains
+- `GET /api/v1/domain-governance/domains/{domain}` - Get domain details and policies
+- `GET /api/v1/domain-governance/matrix` - Full domain-policy compliance matrix
+- `GET /api/v1/domain-governance/analytics` - Domain-level governance analytics
+- `GET /api/v1/domain-governance/effectiveness` - Policy effectiveness metrics by domain
+
+#### Policy Exceptions (`/api/v1/policy-exceptions`)
+
+- `POST /api/v1/policy-exceptions/detect-failures` - Detect active policy conflicts
+- `GET /api/v1/policy-exceptions/failures` - List detected policy failures
+- `POST /api/v1/policy-exceptions/` - Create exception request
+- `GET /api/v1/policy-exceptions/requests` - List exception requests
+- `GET /api/v1/policy-exceptions/requests/{exception_id}` - Get exception details
+- `POST /api/v1/policy-exceptions/requests/{exception_id}/approve` - Approve exception
+- `POST /api/v1/policy-exceptions/requests/{exception_id}/reject` - Reject exception
+- `GET /api/v1/policy-exceptions/deployment-gate/{domain}` - Check deployment gate status
+- `GET /api/v1/policy-exceptions/stats` - Exception statistics
+- `POST /api/v1/policy-exceptions/reset` - Reset exception state
 
 #### System
 
@@ -910,75 +978,127 @@ npm install recharts
 data-governance-platform/
 ├── backend/
 │   ├── app/
-│   │   ├── models/          # SQLAlchemy models (Dataset, Contract, Subscription, User)
-│   │   ├── schemas/         # Pydantic schemas for validation (24+ classes)
-│   │   ├── api/             # FastAPI endpoints (5 routers, 30+ endpoints)
-│   │   │   ├── datasets.py       # Dataset CRUD and schema import
-│   │   │   ├── subscriptions.py  # Subscription workflow
-│   │   │   ├── git.py            # Git operations
-│   │   │   ├── semantic.py       # Semantic policy endpoints
-│   │   │   └── orchestration.py  # Policy orchestration endpoints
-│   │   ├── services/        # Business logic (7 services)
-│   │   │   ├── contract_service.py      # Contract generation & versioning
-│   │   │   ├── policy_engine.py         # Rule-based policy validation
-│   │   │   ├── semantic_policy_engine.py # LLM-powered semantic validation
-│   │   │   ├── policy_orchestrator.py   # Intelligent policy routing
-│   │   │   ├── ollama_client.py         # Ollama LLM integration
-│   │   │   ├── postgres_connector.py    # Schema import with PII detection
-│   │   │   └── git_service.py           # Git integration
-│   │   ├── config.py        # Configuration
-│   │   ├── database.py      # Database setup
-│   │   └── main.py          # FastAPI app
-│   ├── policies/            # YAML policy files (25 policies)
-│   │   ├── sensitive_data_policies.yaml      # SD001-SD005
-│   │   ├── data_quality_policies.yaml        # DQ001-DQ005
-│   │   ├── schema_governance_policies.yaml   # SG001-SG007
-│   │   └── semantic_policies.yaml            # SEM001-SEM008
-│   ├── contracts/           # Git repository for contracts
-│   ├── tests/               # Comprehensive test suite
-│   │   ├── test_policy_engine.py
-│   │   ├── test_contract_service.py
-│   │   ├── test_api_datasets.py
-│   │   ├── test_api_subscriptions.py
-│   │   ├── test_api_git.py
-│   │   ├── test_models.py
-│   │   ├── test_orchestration.py
-│   │   └── test_semantic_scanner.py
+│   │   ├── models/          # SQLAlchemy ORM models
+│   │   │   ├── dataset.py
+│   │   │   ├── contract.py
+│   │   │   ├── subscription.py
+│   │   │   ├── user.py
+│   │   │   ├── policy_draft.py
+│   │   │   ├── policy_version.py
+│   │   │   ├── policy_artifact.py
+│   │   │   └── policy_approval_log.py
+│   │   ├── schemas/         # Pydantic request/response schemas
+│   │   ├── api/             # FastAPI routers (11 routers, 55+ endpoints)
+│   │   │   ├── datasets.py           # Dataset CRUD and schema import
+│   │   │   ├── subscriptions.py      # Subscription workflow
+│   │   │   ├── git.py                # Git history & contract retrieval
+│   │   │   ├── semantic.py           # LLM semantic policy endpoints
+│   │   │   ├── orchestration.py      # Intelligent policy routing
+│   │   │   ├── policy_authoring.py   # Policy lifecycle (draft → approve → publish)
+│   │   │   ├── policy_dashboard.py   # Compliance metrics & stats
+│   │   │   ├── policy_reports.py     # Impact, bulk validation, compliance overview
+│   │   │   ├── policy_exchange.py    # Import/export & template library
+│   │   │   ├── domain_governance.py  # Domain-level governance & analytics
+│   │   │   └── policy_conflicts.py   # Exception management & deployment gates
+│   │   ├── services/        # Business logic layer
+│   │   │   ├── contract_service.py        # Contract generation & Git versioning
+│   │   │   ├── policy_engine.py           # Rule-based YAML policy validation
+│   │   │   ├── semantic_policy_engine.py  # LLM validation via Ollama
+│   │   │   ├── policy_orchestrator.py     # Intelligent routing & risk scoring
+│   │   │   ├── postgres_connector.py      # Schema introspection & PII detection
+│   │   │   ├── git_service.py             # Git operations (commit, tag, diff)
+│   │   │   ├── ollama_client.py           # HTTP client for local Ollama
+│   │   │   ├── authored_policy_loader.py  # Load & manage authored policies
+│   │   │   └── policy_converter.py        # YAML ↔ JSON format conversion
+│   │   ├── config.py        # Pydantic Settings; all env vars with defaults
+│   │   ├── database.py      # SQLAlchemy engine, session, DB init & seed data
+│   │   └── main.py          # FastAPI app factory; registers all routers
+│   ├── policies/            # YAML policy definitions (25 policies)
+│   │   ├── sensitive_data_policies.yaml      # SD001-SD005 (PII, encryption)
+│   │   ├── data_quality_policies.yaml        # DQ001-DQ005 (quality, freshness)
+│   │   ├── schema_governance_policies.yaml   # SG001-SG007 (schema, naming)
+│   │   └── semantic_policies.yaml            # SM001-SM008 (LLM context-aware)
+│   ├── contracts/           # Git-versioned data contracts (auto-managed)
+│   ├── tests/               # pytest test suite (23 files, 600+ tests)
+│   │   ├── test_policy_engine.py         # Rule-based policy validation
+│   │   ├── test_contract_service.py      # Contract generation & versioning
+│   │   ├── test_api_datasets.py          # Dataset CRUD endpoints
+│   │   ├── test_api_subscriptions.py     # Subscription workflow endpoints
+│   │   ├── test_api_git.py               # Git operations
+│   │   ├── test_api_semantic.py          # Semantic policy endpoints
+│   │   ├── test_api_orchestration.py     # Policy orchestration endpoints
+│   │   ├── test_models.py                # SQLAlchemy model operations
+│   │   ├── test_orchestration.py         # Policy orchestration strategies
+│   │   ├── test_semantic_scanner.py      # LLM semantic policy evaluation
+│   │   ├── test_semantic_engine.py       # Semantic engine unit tests
+│   │   ├── test_policy_authoring.py      # Policy creation and management
+│   │   ├── test_policy_conflicts.py      # Exception and conflict handling
+│   │   ├── test_policy_converter.py      # YAML ↔ JSON conversion
+│   │   ├── test_policy_enforcement.py    # End-to-end enforcement workflows
+│   │   ├── test_policy_exchange.py       # Policy import/export
+│   │   ├── test_policy_lifecycle.py      # Full policy lifecycle
+│   │   ├── test_policy_reports.py        # Reporting endpoints
+│   │   ├── test_domain_governance.py     # Domain-level governance
+│   │   ├── test_git_service.py           # Git service unit tests
+│   │   ├── test_ollama_client.py         # Ollama client tests
+│   │   ├── test_authored_policy_loader.py # Authored policy loader
+│   │   └── test_postgres_connector.py    # PostgreSQL connector
 │   └── requirements.txt     # Python dependencies
 ├── frontend/               # React 18 + Vite frontend
 │   ├── src/
 │   │   ├── components/
-│   │   │   └── Layout.jsx   # App layout with sidebar navigation
+│   │   │   ├── Layout.jsx              # App layout with sidebar navigation
+│   │   │   ├── TopNavLayout.jsx        # Top navigation layout variant
+│   │   │   └── PolicyAuthoring/        # Policy management UI components
+│   │   │       ├── PolicyForm.jsx       # Create/edit policy form
+│   │   │       ├── PolicyList.jsx       # Policy list with filters
+│   │   │       ├── PolicyDetail.jsx     # Policy detail view
+│   │   │       ├── PolicyReview.jsx     # Review & approve workflow
+│   │   │       ├── PolicyTimeline.jsx   # Lifecycle timeline view
+│   │   │       ├── PolicyDashboard.jsx  # Policy compliance dashboard
+│   │   │       ├── PolicyExchange.jsx   # Import/export UI
+│   │   │       ├── PolicyConflicts.jsx  # Exception management UI
+│   │   │       ├── DomainGovernance.jsx # Domain governance UI
+│   │   │       └── ComplianceReport.jsx # Compliance reports UI
 │   │   ├── contexts/
-│   │   │   └── AuthContext.jsx  # Role-based auth context
+│   │   │   └── AuthContext.jsx         # Role-based auth context
 │   │   ├── pages/
 │   │   │   ├── DataOwner/
-│   │   │   │   ├── DatasetRegistrationWizard.jsx  # Multi-step registration
-│   │   │   │   └── OwnerDashboard.jsx             # Owner metrics dashboard
+│   │   │   │   ├── DatasetRegistrationWizard.jsx  # 4-step registration wizard
+│   │   │   │   └── OwnerDashboard.jsx             # Owner metrics & violations
 │   │   │   ├── DataConsumer/
-│   │   │   │   └── DataCatalogBrowser.jsx         # Catalog & subscriptions
+│   │   │   │   └── DataCatalogBrowser.jsx         # Catalog & subscription flow
 │   │   │   ├── DataSteward/
 │   │   │   │   └── ApprovalQueue.jsx              # Approval workflow
 │   │   │   ├── Admin/
-│   │   │   │   └── ComplianceDashboard.jsx        # Metrics & analytics
-│   │   │   └── RoleSelector.jsx                   # Role selection
+│   │   │   │   └── ComplianceDashboard.jsx        # Platform-wide analytics
+│   │   │   ├── RoleSelector.jsx        # Landing page; role picker
+│   │   │   ├── PolicyManager.jsx       # Policy management page
+│   │   │   ├── GitHistory.jsx          # Contract version history viewer
+│   │   │   ├── SchemaImport.jsx        # Schema import from PostgreSQL
+│   │   │   ├── ContractViewer.jsx      # Contract display (YAML/JSON)
+│   │   │   ├── DatasetCatalog.jsx      # Dataset catalog page
+│   │   │   ├── DatasetDetail.jsx       # Dataset detail view
+│   │   │   ├── Dashboard.jsx           # General dashboard
+│   │   │   ├── ComplianceDashboard.jsx # Compliance metrics page
+│   │   │   └── SubscriptionQueue.jsx   # Subscription queue view
 │   │   ├── services/
-│   │   │   └── api.js       # API client with Axios
+│   │   │   └── api.js       # Axios client; all API calls go through here
 │   │   ├── stores/
-│   │   │   └── index.js     # Zustand state management
-│   │   ├── App.jsx          # Router configuration
-│   │   └── main.jsx         # React entry point
+│   │   │   └── index.js     # Zustand global state management
+│   │   ├── App.jsx          # Root: router + auth context provider
+│   │   └── main.jsx         # Vite entry point
 │   ├── package.json         # NPM dependencies
-│   └── vite.config.js       # Vite configuration with proxy
+│   └── vite.config.js       # Vite configuration with /api proxy
 ├── demo/
-│   ├── setup_postgres.sql   # Database schema
-│   └── sample_data.sql      # Sample data with violations
+│   ├── setup_postgres.sql   # Database schema setup
+│   └── sample_data.sql      # Sample data with intentional violations
 ├── examples/
-│   └── register_customer_accounts.json
-├── docker-compose.yml       # PostgreSQL setup
-├── test_setup.py           # Automated test suite
-├── start.sh                # Quick start script
-└── README.md               # This file
+│   └── register_customer_accounts.json  # Example API payload
+├── docker-compose.yml       # PostgreSQL 15 demo DB setup
+├── test_setup.py            # Automated setup verification
+├── start.sh                 # Quick-start script
+└── README.md                # This file
 ```
 
 ## 🤝 Contributing

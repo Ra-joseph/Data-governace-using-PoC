@@ -235,50 +235,91 @@ PostgreSQL → Generic types:
 - Commit history with authors
 - Revert capabilities
 
-#### 6. API Layer (FastAPI) - 30+ Endpoints
+#### 6. API Layer (FastAPI) - 55+ Endpoints across 11 routers
 
-**Datasets Endpoints:**
-- `POST /datasets/` - Register new dataset
+**Datasets & Schema Import (`/api/v1/datasets`):**
+- `POST /datasets/` - Register new dataset (triggers policy validation)
 - `GET /datasets/` - List with filtering
 - `GET /datasets/{id}` - Get details
 - `PUT /datasets/{id}` - Update dataset
 - `DELETE /datasets/{id}` - Soft delete
+- `POST /datasets/import-schema` - Import schema from PostgreSQL
+- `GET /datasets/postgres/tables` - List PostgreSQL tables
 
-**Schema Import:**
-- `POST /datasets/import-schema` - Import from sources
-- `GET /datasets/postgres/tables` - List tables
-
-**Subscription Endpoints:**
+**Subscription Endpoints (`/subscriptions`):**
 - `POST /subscriptions/` - Create subscription request
 - `GET /subscriptions/` - List subscriptions with filtering
 - `GET /subscriptions/{id}` - Get subscription details
-- `PUT /subscriptions/{id}/approve` - Approve subscription
-- `PUT /subscriptions/{id}/reject` - Reject subscription
-- `PUT /subscriptions/{id}/credentials` - Issue access credentials
-- `GET /subscriptions/pending` - List pending approvals
-- `GET /subscriptions/dataset/{id}` - Subscriptions by dataset
+- `POST /subscriptions/{id}/approve` - Approve or reject subscription
+- `PUT /subscriptions/{id}` - Update subscription
+- `DELETE /subscriptions/{id}` - Cancel subscription
 
-**Semantic Policy Endpoints:**
+**Semantic Policy Endpoints (`/api/v1/semantic`):**
 - `POST /semantic/scan` - Run semantic scan on dataset
-- `GET /semantic/policies` - List semantic policies
+- `POST /semantic/validate` - Validate using semantic policies
+- `GET /semantic/models` - List available LLM models
 - `GET /semantic/results/{id}` - Get scan results
 - `GET /semantic/status` - Check Ollama connectivity
 
-**Orchestration Endpoints:**
-- `POST /orchestrate/validate` - Run orchestrated validation
-- `GET /orchestrate/strategies` - List available strategies
-- `PUT /orchestrate/strategy` - Set default strategy
+**Orchestration Endpoints (`/api/v1/orchestration`):**
+- `POST /orchestration/validate` - Run orchestrated validation
+- `GET /orchestration/strategies` - List available strategies
+- `POST /orchestration/analyze-risk` - Analyze contract risk level
+- `GET /orchestration/metrics` - Get performance metrics
+- `POST /orchestration/configure` - Configure orchestrator settings
 
-**Contract Endpoints:**
-- `POST /contracts/` - Generate contract
-- `GET /contracts/{id}` - Get contract details
-- `GET /contracts/{id}/diff` - Compare contract versions
-- `PUT /contracts/{id}/enrich` - Enrich contract with SLA
+**Policy Authoring (`/api/v1/policies/authored`):**
+- `POST /policies/authored/` - Create policy draft
+- `GET /policies/authored/` - List authored policies
+- `PATCH /policies/authored/{id}` - Update policy draft
+- `POST /policies/authored/{id}/submit` - Submit for review
+- `POST /policies/authored/{id}/approve` - Approve policy
+- `POST /policies/authored/{id}/reject` - Reject with feedback
+- `GET /policies/authored/{id}/yaml` - Get YAML artifact
+- `GET /policies/authored/{id}/versions` - List all versions
+- `GET /policies/authored/{id}/versions/{v}/diff` - Compare versions
+- `POST /policies/authored/{id}/revise` - Create new revision
+- `POST /policies/authored/{id}/deprecate` - Deprecate policy
+- `GET /policies/authored/{id}/timeline` - Lifecycle timeline
+
+**Policy Dashboard (`/api/v1/policy-dashboard`):**
+- `GET /policy-dashboard/stats` - Compliance metrics summary
+- `GET /policy-dashboard/active-policies` - List active policies
+- `POST /policy-dashboard/validate-combined` - Combined rule + semantic validation
+
+**Policy Reports (`/api/v1/policy-reports`):**
+- `GET /policy-reports/impact/{policy_id}` - Policy impact analysis
+- `GET /policy-reports/compliance` - Compliance overview
+- `POST /policy-reports/bulk-validate` - Bulk validate datasets
+- `GET /policy-reports/policy-compliance/{policy_id}` - Per-policy compliance
+
+**Policy Exchange (`/api/v1/policy-exchange`):**
+- `GET /policy-exchange/export/{policy_id}` - Export single policy
+- `GET /policy-exchange/export-bundle` - Export all policies
+- `POST /policy-exchange/import` - Import policy bundle
+- `GET /policy-exchange/templates` - List policy templates
+- `POST /policy-exchange/templates/{id}/instantiate` - Create from template
+
+**Domain Governance (`/api/v1/domain-governance`):**
+- `GET /domain-governance/domains` - List governance domains
+- `GET /domain-governance/domains/{domain}` - Get domain details
+- `GET /domain-governance/matrix` - Domain-policy compliance matrix
+- `GET /domain-governance/analytics` - Domain-level analytics
+- `GET /domain-governance/effectiveness` - Policy effectiveness by domain
+
+**Policy Exceptions (`/api/v1/policy-exceptions`):**
+- `POST /policy-exceptions/detect-failures` - Detect policy conflicts
+- `GET /policy-exceptions/failures` - List detected failures
+- `POST /policy-exceptions/` - Create exception request
+- `GET /policy-exceptions/requests` - List exception requests
+- `POST /policy-exceptions/requests/{id}/approve` - Approve exception
+- `POST /policy-exceptions/requests/{id}/reject` - Reject exception
+- `GET /policy-exceptions/deployment-gate/{domain}` - Check deployment gate
+- `GET /policy-exceptions/stats` - Exception statistics
 
 **System:**
 - `GET /` - API information
 - `GET /health` - Health check
-- `GET /stats` - Platform statistics
 
 **Response Format:**
 All responses follow consistent structure:
@@ -366,6 +407,47 @@ All responses follow consistent structure:
 - System health and statistics
 - Policy configuration management
 - User and role overview
+
+#### 11. Policy Authoring System
+
+**Full Policy Lifecycle Management:**
+- Draft → Review → Approve → Publish → Deprecate workflow
+- Policy versioning with diff comparison between versions
+- Domain-scoped policy organization
+- Approval log tracking with audit trail
+- YAML artifact generation from authored policies
+- Policy timeline visualization
+
+**Components:**
+- `PolicyForm.jsx` — Create and edit policy drafts
+- `PolicyList.jsx` — Browse and filter policies
+- `PolicyDetail.jsx` — View policy metadata and content
+- `PolicyReview.jsx` — Steward review and approval workflow
+- `PolicyTimeline.jsx` — Lifecycle event visualization
+
+#### 12. Policy Exchange & Templates
+
+**Import/Export Capabilities:**
+- Export individual policies or full bundles as JSON
+- Import policy bundles from external sources
+- Template library for common governance patterns
+- Template instantiation with parameterized customization
+
+#### 13. Domain Governance
+
+**Domain-Based Governance:**
+- Organize datasets and policies by business domain
+- Domain-policy compliance matrix visualization
+- Cross-domain analytics and effectiveness tracking
+- Domain-specific deployment gate enforcement
+
+#### 14. Policy Conflict & Exception Management
+
+**Conflict Detection and Resolution:**
+- Automated detection of policy failures and conflicts
+- Exception request workflow (create → approve/reject)
+- Deployment gate checks per domain before release
+- Exception statistics and audit reporting
 
 ## Demo Scenario
 
@@ -639,6 +721,12 @@ policies:
 - Compliance dashboard with interactive analytics
 - Semantic policy scanning via local Ollama LLMs
 - Intelligent policy orchestration with 4 strategies
+- Policy authoring system with full lifecycle (draft → approve → publish → deprecate)
+- Policy versioning with diff comparison
+- Policy exchange (import/export + template library)
+- Domain governance with compliance matrix and analytics
+- Policy conflict detection, exception management, and deployment gates
+- Comprehensive test suite (23 test files, 600+ tests)
 
 ### Future Enhancements
 
