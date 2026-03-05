@@ -28,6 +28,9 @@ Data-governace-using-PoC/               ← repo root
 ├── CONTRIBUTING.md                     ← contribution guidelines
 ├── MEDIUM_ARTICLE.md                   ← publication article
 ├── TEST_RESULTS.md                     ← latest test run results
+├── .claude/
+│   └── skills/
+│       └── test-and-fix.md             ← Claude skill: run tests & suggest fixes
 └── data-governance-platform/           ← main platform directory
     ├── README.md                       ← complete platform guide
     ├── QUICKSTART.md                   ← 5-minute setup
@@ -38,8 +41,12 @@ Data-governace-using-PoC/               ← repo root
     ├── FRONTEND_GUIDE.md               ← frontend architecture
     ├── SEMANTIC_SCANNING.md            ← LLM policy guide
     ├── POLICY_ORCHESTRATION.md         ← orchestration strategies
+    ├── FULL_STACK_INVENTORY.md         ← complete file inventory
+    ├── MANIFEST.md                     ← project manifest
+    ├── DIRECTORY_TREE.txt              ← auto-generated file listing
     ├── docker-compose.yml              ← PostgreSQL 15 demo DB
     ├── start.sh                        ← quick-start script
+    ├── test_setup.py                   ← automated setup test suite
     ├── backend/                        ← FastAPI backend
     ├── frontend/                       ← React + Vite frontend
     ├── demo/                           ← SQL setup & sample data
@@ -57,11 +64,12 @@ Data-governace-using-PoC/               ← repo root
 | Metadata DB | SQLite | (bundled) |
 | Demo DB | PostgreSQL | 15-alpine |
 | ORM | SQLAlchemy | 2.0.25 |
-| Validation | Pydantic v2 | — |
+| Validation | Pydantic v2 | 2.5.3 |
 | Config | pydantic-settings | 2.1.0 |
 | Git integration | GitPython | 3.1.41 |
 | Policy files | PyYAML | 6.0.1 |
 | LLM client | Ollama (local) | — |
+| HTTP | httpx | 0.26.0 |
 | Server | uvicorn[standard] | 0.27.0 |
 | Testing | pytest | 7.4.4 |
 
@@ -116,21 +124,21 @@ backend/
 │   │   ├── subscription.py
 │   │   └── policy.py
 │   └── services/        ← Business logic (bulk of the complexity)
-│       ├── contract_service.py        (contract generation & Git versioning)
-│       ├── policy_engine.py           (rule-based YAML policy validation)
-│       ├── semantic_policy_engine.py  (LLM validation via Ollama)
-│       ├── policy_orchestrator.py     (intelligent routing & risk scoring)
-│       ├── postgres_connector.py      (schema introspection from PostgreSQL)
-│       ├── git_service.py             (Git operations — commit, tag, diff)
-│       ├── ollama_client.py           (HTTP client for local Ollama)
-│       ├── authored_policy_loader.py  (load/manage authored policies)
-│       └── policy_converter.py        (YAML ↔ JSON format conversion)
+│       ├── contract_service.py        (contract generation & Git versioning — 481 LoC)
+│       ├── policy_engine.py           (rule-based YAML policy validation — 342 LoC)
+│       ├── semantic_policy_engine.py  (LLM validation via Ollama — 461 LoC)
+│       ├── policy_orchestrator.py     (intelligent routing & risk scoring — 538 LoC)
+│       ├── postgres_connector.py      (schema introspection from PostgreSQL — 557 LoC)
+│       ├── git_service.py             (Git operations — commit, tag, diff — 317 LoC)
+│       ├── ollama_client.py           (HTTP client for local Ollama — 237 LoC)
+│       ├── authored_policy_loader.py  (load/manage authored policies — 258 LoC)
+│       └── policy_converter.py        (YAML ↔ JSON format conversion — 204 LoC)
 ├── policies/            ← YAML policy definitions (edit these to change rules)
 │   ├── sensitive_data_policies.yaml   (5 PII/encryption policies — SD001–SD005)
 │   ├── data_quality_policies.yaml     (5 quality policies — DQ001–DQ005)
 │   ├── schema_governance_policies.yaml(7 schema policies — SG001–SG007)
-│   └── semantic_policies.yaml         (8 LLM policies — SM001–SM008)
-├── tests/               ← pytest test suite (323 tests, 18 files)
+│   └── semantic_policies.yaml         (8 LLM policies — SEM001–SEM008)
+├── tests/               ← pytest test suite (510 tests, 23 files)
 ├── requirements.txt
 └── pytest.ini
 ```
@@ -161,6 +169,15 @@ frontend/src/
 │   └── api.js                   ← Axios client; all API calls go through here
 ├── pages/
 │   ├── RoleSelector.jsx         ← Landing page; role picker
+│   ├── Dashboard.jsx            ← Main metrics dashboard
+│   ├── DatasetCatalog.jsx       ← Grid-view catalog with filters
+│   ├── DatasetDetail.jsx        ← Individual dataset detail view
+│   ├── SubscriptionQueue.jsx    ← Subscription management view
+│   ├── ComplianceDashboard.jsx  ← Top-level compliance view
+│   ├── ContractViewer.jsx       ← Contract display (YAML/JSON)
+│   ├── GitHistory.jsx           ← Version history viewer
+│   ├── PolicyManager.jsx        ← Policy management UI
+│   ├── SchemaImport.jsx         ← Schema import from PostgreSQL
 │   ├── DataOwner/
 │   │   ├── DatasetRegistrationWizard.jsx  ← 4-step registration form
 │   │   └── OwnerDashboard.jsx             ← violations & metrics
@@ -168,14 +185,30 @@ frontend/src/
 │   │   └── DataCatalogBrowser.jsx         ← catalog & subscription flow
 │   ├── DataSteward/
 │   │   └── ApprovalQueue.jsx              ← approval workflow
-│   ├── Admin/
-│   │   └── ComplianceDashboard.jsx        ← analytics & Recharts
-│   ├── ContractViewer.jsx        ← contract display (YAML/JSON)
-│   ├── GitHistory.jsx            ← version history viewer
-│   ├── PolicyManager.jsx         ← policy management UI
-│   └── SchemaImport.jsx          ← schema import from PostgreSQL
-└── components/
-    └── PolicyAuthoring/          ← policy editor components
+│   └── Admin/
+│       └── ComplianceDashboard.jsx        ← analytics & Recharts
+├── components/
+│   ├── Layout.jsx               ← Sidebar navigation layout
+│   ├── Layout.css
+│   ├── TopNavLayout.jsx         ← Top navigation layout
+│   ├── TopNavLayout.css
+│   └── PolicyAuthoring/         ← policy editor components
+│       ├── PolicyForm.jsx
+│       ├── PolicyList.jsx
+│       ├── PolicyDetail.jsx
+│       ├── PolicyReview.jsx
+│       ├── PolicyDashboard.jsx
+│       ├── PolicyTimeline.jsx
+│       ├── PolicyConflicts.jsx
+│       ├── PolicyExchange.jsx
+│       ├── DomainGovernance.jsx
+│       ├── ComplianceReport.jsx
+│       └── index.js
+└── test/
+    ├── AuthContext.test.jsx     ← Role-based auth tests
+    ├── api.test.js              ← Axios client tests
+    ├── stores.test.js           ← Zustand store tests
+    └── setup.js                 ← Test configuration
 ```
 
 **Key frontend patterns:**
@@ -183,6 +216,7 @@ frontend/src/
 - Global state lives in Zustand (`stores/index.js`); component-local state uses React `useState`.
 - Navigation uses React Router v6 with programmatic `useNavigate`.
 - Vite proxies `/api` to `http://localhost:8000` (see `vite.config.js`).
+- Two layout variants: `Layout.jsx` (sidebar) and `TopNavLayout.jsx` (top navigation).
 
 ---
 
@@ -192,7 +226,7 @@ frontend/src/
 Stored in `backend/policies/*.yaml`. Each policy has:
 ```yaml
 policies:
-  - id: SD001              # Unique ID (prefix: SD=Sensitive Data, DQ=Quality, SG=Schema, SM=Semantic)
+  - id: SD001              # Unique ID (prefix: SD=Sensitive Data, DQ=Quality, SG=Schema, SEM=Semantic)
     name: pii_encryption_required
     severity: critical     # critical | high | medium | low
     rule: |
@@ -209,10 +243,10 @@ policies:
 | SD | `sensitive_data_policies.yaml` | 5 | PII, encryption, masking |
 | DQ | `data_quality_policies.yaml` | 5 | Nullability, freshness, quality |
 | SG | `schema_governance_policies.yaml` | 7 | Schema structure, naming, types |
-| SM | `semantic_policies.yaml` | 8 | LLM context-aware validation |
+| SEM | `semantic_policies.yaml` | 8 | LLM context-aware validation |
 
 ### Semantic Policies (LLM)
-Evaluated by `semantic_policy_engine.py` via `ollama_client.py`. Ollama must be running locally on port 11434. Semantic policies handle nuanced cases that rule-based checks cannot express.
+Evaluated by `semantic_policy_engine.py` via `ollama_client.py`. Ollama must be running locally on port 11434. Semantic policies (SEM001–SEM008) handle nuanced cases that rule-based checks cannot express.
 
 ### Orchestration Strategies
 `policy_orchestrator.py` routes validation requests based on data classification and risk score:
@@ -277,9 +311,7 @@ npm run dev                        # Dev server at http://localhost:3000
 ```bash
 cd data-governance-platform
 docker-compose up -d               # Starts PostgreSQL on port 5432
-# Run demo data setup
-psql -h localhost -U governance_user -d financial_demo -f demo/setup_postgres.sql
-psql -h localhost -U governance_user -d financial_demo -f demo/sample_data.sql
+# Data is auto-loaded from demo/setup_postgres.sql and demo/sample_data.sql
 ```
 
 ### Quick Start (all-in-one)
@@ -300,6 +332,7 @@ python -m pytest tests/ -v                         # All tests, verbose
 python -m pytest tests/ -m unit                    # Unit tests only
 python -m pytest tests/ -m integration             # Integration tests
 python -m pytest tests/ -m api                     # API endpoint tests
+python -m pytest tests/ -m service                 # Service layer tests
 python -m pytest tests/ --cov=app --cov-report=html # Coverage report
 python -m pytest tests/test_policy_engine.py -v    # Single file
 ```
@@ -308,18 +341,27 @@ python -m pytest tests/test_policy_engine.py -v    # Single file
 - `unit` — Pure unit tests, no DB or network
 - `integration` — Tests requiring a database
 - `api` — Tests hitting FastAPI endpoints
+- `service` — Service layer business logic tests
+- `slow` — Tests that take a long time to run
 
-**Test file map:**
+**Test file map (23 files, ~510 tests):**
 | File | What it covers |
 |------|---------------|
 | `test_policy_engine.py` | Rule-based policy validation logic |
 | `test_contract_service.py` | Contract generation and versioning |
 | `test_api_datasets.py` | Dataset CRUD endpoints |
 | `test_api_subscriptions.py` | Subscription workflow endpoints |
-| `test_api_git.py` | Git operations |
+| `test_api_git.py` | Git history & contract endpoints |
+| `test_api_orchestration.py` | Orchestration routing endpoints |
+| `test_api_semantic.py` | LLM semantic policy endpoints |
 | `test_models.py` | SQLAlchemy model operations |
 | `test_orchestration.py` | Policy orchestration strategies |
 | `test_semantic_scanner.py` | LLM semantic policy evaluation |
+| `test_semantic_engine.py` | Semantic engine internals |
+| `test_git_service.py` | Git service operations |
+| `test_postgres_connector.py` | PostgreSQL schema introspection |
+| `test_ollama_client.py` | Ollama HTTP client |
+| `test_authored_policy_loader.py` | Authored policy loading |
 | `test_policy_authoring.py` | Policy creation and management |
 | `test_policy_conflicts.py` | Exception and conflict handling |
 | `test_policy_converter.py` | YAML ↔ JSON conversion |
@@ -336,6 +378,14 @@ npm test                  # Watch mode
 npm run test:ui           # Interactive UI
 npm run test:coverage     # Coverage report
 ```
+
+**Frontend test files (4 files, ~92 tests):**
+| File | What it covers |
+|------|---------------|
+| `test/AuthContext.test.jsx` | Role-based auth context |
+| `test/api.test.js` | Axios client and API calls |
+| `test/stores.test.js` | Zustand global store |
+| `test/setup.js` | Test environment configuration |
 
 ### Test Fixtures
 `backend/tests/conftest.py` provides:
@@ -368,8 +418,18 @@ All routes are prefixed with `/api/v1`.
 | `POST` | `/policy-authoring/` | Create authored policy |
 | `POST` | `/policy-exchange/export` | Export policies |
 | `POST` | `/policy-exchange/import` | Import policies |
+| `GET` | `/domain-governance/` | Domain-level governance rules |
+| `GET` | `/policy-conflicts/` | List policy exceptions and conflicts |
 
 Interactive API docs: `http://localhost:8000/docs`
+
+---
+
+## Claude Skills
+
+A custom Claude Code skill is included at `.claude/skills/test-and-fix.md`:
+
+- **test-and-fix**: Runs the backend pytest suite and frontend Vitest suite, analyses any failures, and suggests targeted code fixes. Invoke via `/test-and-fix` in Claude Code.
 
 ---
 
@@ -450,6 +510,8 @@ export default function MyComponent() {
 - Cross-page shared state: Zustand store in `stores/index.js`
 - Auth/role: `useContext(AuthContext)` from `contexts/AuthContext.jsx`
 
+**Layouts:** Use `Layout.jsx` for sidebar navigation or `TopNavLayout.jsx` for top navigation, depending on the page role context.
+
 **Naming:**
 - Components: `PascalCase.jsx`
 - Hooks: `useCamelCase`
@@ -467,7 +529,7 @@ master        ← primary development branch (existing)
 feature/*     ← new features
 bugfix/*      ← bug fixes
 docs/*        ← documentation updates
-claude/*      ← AI-assisted changes (e.g., claude/add-claude-documentation-Y6bTE)
+claude/*      ← AI-assisted changes (e.g., claude/add-claude-documentation-UEP9p)
 ```
 
 ### Commit Convention
@@ -498,7 +560,10 @@ The platform uses Git to version data contracts. Contracts are committed to `bac
 | `backend/policies/*.yaml` | Policy definitions — edit these to add/modify rules |
 | `frontend/src/services/api.js` | All API calls; add new endpoints here |
 | `frontend/src/stores/index.js` | Global state; add new state slices here |
+| `frontend/src/components/Layout.jsx` | Sidebar navigation layout |
+| `frontend/src/components/TopNavLayout.jsx` | Top navigation layout |
 | `data-governance-platform/docker-compose.yml` | PostgreSQL demo DB setup |
+| `.claude/skills/test-and-fix.md` | Claude skill for running tests |
 
 ---
 
@@ -523,6 +588,7 @@ The platform uses Git to version data contracts. Contracts are committed to `bac
 2. Add a route in `frontend/src/App.jsx`.
 3. Link to it from the relevant role dashboard.
 4. Use `api.js` for data fetching; use `useState` for local state.
+5. Choose `Layout.jsx` or `TopNavLayout.jsx` as the wrapping layout.
 
 ### Modifying the Database Schema
 1. Update the SQLAlchemy model in `backend/app/models/`.
@@ -544,6 +610,8 @@ The platform uses Git to version data contracts. Contracts are committed to `bac
 | `sqlite3.OperationalError: no such table` | DB not initialized | Restart backend (auto-creates tables) |
 | Git contract commit fails | `backend/contracts/` not a git repo | Backend auto-inits it; check permissions |
 | Frontend API calls return 422 | Pydantic validation failure | Check request payload matches schema |
+| Tests fail with import errors | Missing dependencies | `pip install -r requirements.txt` |
+| Frontend tests fail | Node modules missing | `npm install` |
 
 ---
 
@@ -555,4 +623,4 @@ The platform uses Git to version data contracts. Contracts are committed to `bac
 
 ---
 
-*Last updated: 2026-02-27. Generated by Claude Code for the Data Governance Platform PoC.*
+*Last updated: 2026-03-04. Generated by Claude Code for the Data Governance Platform PoC.*
