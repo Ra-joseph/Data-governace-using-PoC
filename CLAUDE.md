@@ -395,6 +395,75 @@ npm run test:coverage     # Coverage report
 
 ---
 
+### Regression Testing Requirements
+
+**Hard requirement: run the complete regression suite after every code change, without exception.**
+
+"Complete regression" means all 23 backend test files (~510 tests) and all 4 frontend test files (~92 tests) pass with zero failures and zero errors. A partial test run does not satisfy this requirement.
+
+---
+
+#### Complete Regression Commands
+
+Both suites must pass before a task is considered complete.
+
+**Backend (all 23 files, ~510 tests):**
+```bash
+cd data-governance-platform/backend
+source venv/bin/activate
+python -m pytest tests/ -v --tb=short
+```
+
+**Frontend (all 4 files, ~92 tests):**
+```bash
+cd data-governance-platform/frontend
+npm test -- --run
+```
+
+---
+
+#### What "Complete Regression" Covers
+
+| Suite | Files | Tests | Markers included |
+|-------|-------|-------|-----------------|
+| Backend pytest | All 23 `test_*.py` files in `backend/tests/` | ~510 | `unit`, `integration`, `api`, `service`, `slow` |
+| Frontend Vitest | All 4 files in `frontend/src/test/` | ~92 | All suites |
+
+Do **not** limit the run to a single marker (e.g., `-m unit` only). All markers — including `slow` — must be included unless the environment cannot support them (document the reason if any are skipped).
+
+---
+
+#### Pass Criteria
+
+The regression suite passes when **all** of the following are true:
+
+1. `pytest` exits with code `0` — zero failures, zero errors.
+2. `npm test -- --run` exits with code `0` — zero failed suites, zero failed test cases.
+3. No new `SKIPPED` or `xfail` markers were added as a workaround to hide failures.
+4. Test count has not decreased — if fewer tests are collected than ~510 backend / ~92 frontend, investigate before proceeding.
+
+---
+
+#### Handling Failures
+
+1. **Identify scope**: determine whether the failure pre-existed your change (check `TEST_RESULTS.md`). If pre-existing, document it and continue.
+2. **Classify**: use the `/test-and-fix` skill's failure classification (implementation bug, test bug, missing fixture, import error, environment issue).
+3. **Fix before marking done**: do not mark a task complete with a failing regression.
+4. **Do not suppress**: never add `pytest.mark.skip`, `xfail`, or comment out assertions to make the suite green. Fix the root cause.
+5. **Re-run full regression** after each fix to confirm no secondary regressions were introduced.
+
+---
+
+#### Regression in the Multi-Agent Workflow
+
+When using multiple sub-agents (see "Multi-Agent Coordination Strategy"), regression is the **orchestrator's responsibility**:
+
+- Sub-agents must not declare their subtask `DONE` based only on tests within their own scope.
+- The orchestrator runs full regression after **all** sub-agents have completed and all changes are integrated.
+- If regression fails after integration, the orchestrator diagnoses which agent's output caused it and assigns a fix sub-agent.
+
+---
+
 ## API Reference (key endpoints)
 
 All routes are prefixed with `/api/v1`.
@@ -430,6 +499,123 @@ Interactive API docs: `http://localhost:8000/docs`
 A custom Claude Code skill is included at `.claude/skills/test-and-fix.md`:
 
 - **test-and-fix**: Runs the backend pytest suite and frontend Vitest suite, analyses any failures, and suggests targeted code fixes. Invoke via `/test-and-fix` in Claude Code.
+
+---
+
+## Multi-Agent Coordination Strategy
+
+Every task — regardless of size — must be executed using a coordinated multi-agent approach. A **main (orchestrator) agent** decomposes the work and delegates subtasks to **sub-agents** that run in parallel. The number of sub-agents is determined intelligently by task complexity, scope, and how much of the work can be parallelized.
+
+This is not optional: even a task that could be done sequentially by a single agent must follow this pattern, because parallelism reduces latency and parallel validation catches cross-cutting issues.
+
+---
+
+### Roles: Orchestrator vs. Sub-Agents
+
+| Role | Responsibilities |
+|------|----------------|
+| **Orchestrator (main agent)** | Reads the task, explores the codebase to understand scope, decomposes into subtasks, assigns each subtask to a sub-agent, collects and integrates results, resolves conflicts, produces the final output |
+| **Sub-agent** | Owns exactly one subtask, operates within a defined scope (files, layers, test files), reports results and any blockers back to the orchestrator |
+
+**Orchestrator rules:**
+- Explore the codebase first (Glob, Grep, Read) before decomposing — never decompose blindly.
+- Assign each sub-agent a scope boundary: specific files, directories, or layers it is allowed to touch.
+- Explicitly state which sub-agents can run in parallel vs. which must wait for another agent's output.
+- Integrate all sub-agent outputs before writing any file.
+- Run the full regression suite (see "Regression Testing Requirements") after all sub-agents complete.
+
+**Sub-agent rules:**
+- Work only within the assigned scope. Never touch files outside the assigned boundary.
+- Report: what was done, what files were changed, any assumptions made, any blockers encountered.
+- If a blocker requires touching another agent's scope, escalate to the orchestrator — do not expand scope unilaterally.
+
+---
+
+### Task Decomposition: Use the Layered Architecture as Boundaries
+
+| Layer | Typical Sub-Agent Scope |
+|-------|------------------------|
+| Models (`app/models/`) | Schema changes, new model fields, relationships |
+| Schemas (`app/schemas/`) | Pydantic request/response shapes |
+| Services (`app/services/`) | Business logic, policy enforcement |
+| Routers (`app/api/`) | Endpoint wiring, HTTP surface |
+| Policies (`backend/policies/`) | YAML rule additions or edits |
+| Frontend API (`frontend/src/services/api.js`) | New API call bindings |
+| Frontend UI (`frontend/src/pages/`, `components/`) | New pages, component changes |
+| Tests (`backend/tests/`, `frontend/src/test/`) | New or updated test coverage |
+
+---
+
+### Agent Count by Task Complexity
+
+| Task Type | Sub-Agents | Parallelism Strategy |
+|-----------|-----------|----------------------|
+| **Trivial** — Fix a typo, update one config value, add one field to a schema | 1–2 | Agent 1: implement. Agent 2: update affected test. |
+| **Simple** — Add a new policy rule (YAML + engine method + test) | 2–3 | Agent 1: YAML + engine. Agent 2: test. Agent 3 (if needed): frontend display. |
+| **Moderate** — Add a new API endpoint (router + schema + service + test + frontend) | 3–5 | Agent 1: model + schema. Agent 2: service logic. Agent 3: router. Agent 4: tests. Agent 5: frontend API binding. Agents 1–3 often run in parallel; Agent 4 waits on 1–3. |
+| **Complex** — Add a new governance feature end-to-end (DB model, service, orchestration, policy, UI, tests) | 5–8 | Decompose by layer. Parallel: models, policies, frontend scaffold. Sequential gate: schemas depend on models; router depends on service; tests depend on all implementation. |
+| **Cross-cutting** — Refactor a service used by many routers, update a core data model, change auth logic | 5+ | One agent per affected module. Orchestrator produces a dependency graph before spawning agents. All agents report diffs; orchestrator merges and checks for conflicts before writing. |
+
+**Rule of thumb for determining agent count:**
+1. Count the number of distinct files that need non-trivial changes.
+2. Identify which changes are independent (can run in parallel) vs. dependent (must sequence).
+3. Assign one sub-agent per group of independent files.
+4. Add one extra sub-agent for integration testing if the task touches more than 3 files.
+
+---
+
+### Example: Adding a New API Endpoint
+
+Task: *"Add a `GET /api/v1/datasets/{id}/audit-log` endpoint."*
+
+**Orchestrator decomposition:**
+
+```
+Parallel batch 1 — these agents run concurrently (no dependencies between them):
+  Sub-agent A — app/models/dataset.py          Add audit_log relationship if needed
+  Sub-agent B — app/schemas/dataset.py         Add AuditLogResponse schema
+  Sub-agent C — app/services/ (new file)       Implement audit log retrieval logic
+
+Sequential batch 2 — these agents start only after batch 1 is complete:
+  Sub-agent D — app/api/datasets.py            Wire GET endpoint, call service from A/B/C
+  Sub-agent E — backend/tests/                 Add test_api_audit_log.py: happy path + 404
+  Sub-agent F — frontend/src/services/api.js   Expose getAuditLog(datasetId) function
+
+Orchestrator final step:
+  Collect all outputs → resolve schema conflicts → run full regression suite
+```
+
+---
+
+### How Sub-Agents Report Results
+
+Each sub-agent returns a structured summary to the orchestrator:
+
+```
+Agent: <label, e.g., "Sub-agent B — Pydantic schemas">
+Status: DONE | BLOCKED
+Files changed:
+  - backend/app/schemas/dataset.py  (added AuditLogResponse, AuditLogEntry)
+Assumptions made:
+  - audit_log field on Dataset model exists (relies on Sub-agent A output)
+Blockers:
+  - None
+Cross-agent dependencies introduced:
+  - Sub-agent D (router) must import AuditLogResponse from this schema
+```
+
+The orchestrator reads all reports, checks for conflicts (e.g., two agents editing the same line of the same file), resolves them, and then writes all changes before triggering regression.
+
+---
+
+### When to Use Fewer Sub-Agents
+
+Use fewer sub-agents when:
+- The entire change fits in a single file (use 1 sub-agent + orchestrator verification).
+- Changes are strictly sequential with no parallelizable steps (avoid fake parallelism with forced hand-offs).
+- The task is a pure documentation update with no code change.
+
+Even in these cases, the orchestrator role remains: it must still explore before acting and run regression after any code change.
 
 ---
 
