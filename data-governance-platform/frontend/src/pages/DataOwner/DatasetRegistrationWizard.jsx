@@ -52,6 +52,7 @@ export function DatasetRegistrationWizard() {
   const [loading, setLoading] = useState(false);
   const [importMode, setImportMode] = useState('manual'); // 'manual' or 'postgres'
   const [availableTables, setAvailableTables] = useState([]);
+  const [importedMetadata, setImportedMetadata] = useState(null);
 
   const [formData, setFormData] = useState({
     // Basic Info
@@ -112,26 +113,31 @@ export function DatasetRegistrationWizard() {
   };
 
   const importFromPostgres = async (tableName) => {
+    setLoading(true);
     try {
       const response = await datasetAPI.importSchema({
-        source_type: 'postgresql',
+        source_type: 'postgres',        // fixed: was 'postgresql'
         table_name: tableName,
-        schema: 'public',
+        schema_name: 'public',
       });
 
       const importedData = response.data;
+      const metadata = importedData.metadata || {};
       setFormData(prev => ({
         ...prev,
-        name: importedData.name || tableName,
-        description: importedData.description || '',
-        schema: importedData.schema || [],
-        contains_pii: importedData.schema?.some(col => col.pii) || false,
+        name: prev.name || tableName,
+        description: importedData.description || prev.description,
+        schema: importedData.schema_definition || [], // fixed: was .schema
+        contains_pii: metadata.contains_pii || false,
+        classification: metadata.suggested_classification || prev.classification,
       }));
-
-      toast.success(`Schema imported from ${tableName}`);
-      setCurrentStep(2); // Skip to governance step
+      setImportedMetadata(metadata);
+      toast.success(`Schema imported: ${importedData.schema_definition?.length || 0} fields from ${tableName}`);
+      // Stay on Step 1 so owner reviews Technical Details Panel before proceeding
     } catch (error) {
-      toast.error('Failed to import schema');
+      toast.error(error.response?.data?.detail || 'Failed to import schema');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -474,6 +480,159 @@ export function DatasetRegistrationWizard() {
                       {table}
                     </button>
                   ))}
+
+                  {/* Technical Details Panel — shown after schema import */}
+                  {importedMetadata && (
+                    <div style={{
+                      marginTop: '1rem',
+                      padding: '1rem',
+                      background: 'var(--color-bg-secondary)',
+                      border: '1px solid var(--color-border-default)',
+                      borderRadius: 'var(--radius-lg)',
+                    }}>
+                      <p style={{ fontWeight: 600, marginBottom: '0.75rem', fontSize: '0.9rem' }}>
+                        Technical Details
+                      </p>
+
+                      {/* Statistics */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                          <strong>Row Count:</strong> {importedMetadata.row_count != null ? importedMetadata.row_count.toLocaleString() : 'N/A'}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                          <strong>Disk Size:</strong> {importedMetadata.total_size || 'N/A'}
+                        </div>
+                      </div>
+
+                      {/* PII Warning */}
+                      {importedMetadata.contains_pii && (
+                        <div style={{
+                          padding: '0.5rem 0.75rem',
+                          marginBottom: '0.75rem',
+                          borderRadius: 'var(--radius-md)',
+                          background: 'rgba(220, 38, 38, 0.1)',
+                          color: 'var(--color-error)',
+                          fontSize: '0.8rem',
+                          fontWeight: 500,
+                        }}>
+                          ⚠ Contains PII — auto-applied classification: <strong>{importedMetadata.suggested_classification}</strong>
+                        </div>
+                      )}
+
+                      {/* Primary Keys */}
+                      {importedMetadata.primary_keys?.length > 0 && (
+                        <div style={{ fontSize: '0.8rem', marginBottom: '0.5rem' }}>
+                          <strong>Primary Keys:</strong>{' '}
+                          {importedMetadata.primary_keys.map(k => (
+                            <span key={k} style={{
+                              display: 'inline-block',
+                              padding: '0.1rem 0.4rem',
+                              marginRight: '0.25rem',
+                              background: 'rgba(0, 112, 173, 0.15)',
+                              color: 'var(--color-accent-primary)',
+                              borderRadius: '0.25rem',
+                              fontSize: '0.75rem',
+                              fontFamily: 'monospace',
+                            }}>{k}</span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Foreign Keys */}
+                      {Object.keys(importedMetadata.foreign_keys || {}).length > 0 && (
+                        <div style={{ fontSize: '0.8rem', marginBottom: '0.5rem' }}>
+                          <strong>Foreign Keys:</strong>
+                          <div style={{ marginTop: '0.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+                            {Object.entries(importedMetadata.foreign_keys).map(([col, ref]) => (
+                              <span key={col} style={{
+                                padding: '0.1rem 0.4rem',
+                                background: 'var(--color-bg-tertiary)',
+                                borderRadius: '0.25rem',
+                                fontSize: '0.75rem',
+                                fontFamily: 'monospace',
+                              }}>
+                                {col} → {ref}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Indexes */}
+                      {importedMetadata.indexes?.length > 0 && (
+                        <div style={{ fontSize: '0.8rem', marginBottom: '0.75rem' }}>
+                          <strong>Indexes:</strong>{' '}
+                          <span style={{ color: 'var(--color-text-secondary)', fontFamily: 'monospace' }}>
+                            {importedMetadata.indexes.join(', ')}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Field list with PII / PK badges */}
+                      {formData.schema.length > 0 && (
+                        <div>
+                          <p style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+                            Fields ({formData.schema.length})
+                          </p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                            {formData.schema.map((field) => (
+                              <div key={field.name} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
+                                fontSize: '0.78rem',
+                                padding: '0.3rem 0.5rem',
+                                background: 'var(--color-bg-tertiary)',
+                                borderRadius: 'var(--radius-sm)',
+                              }}>
+                                <span style={{ fontFamily: 'monospace', fontWeight: 500, minWidth: '8rem' }}>{field.name}</span>
+                                <span style={{ color: 'var(--color-text-secondary)' }}>{field.type}</span>
+                                {importedMetadata.primary_keys?.includes(field.name) && (
+                                  <span style={{
+                                    padding: '0.05rem 0.35rem',
+                                    background: 'rgba(0, 112, 173, 0.2)',
+                                    color: 'var(--color-accent-primary)',
+                                    borderRadius: '0.2rem',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600,
+                                  }}>PK</span>
+                                )}
+                                {importedMetadata.foreign_keys?.[field.name] && (
+                                  <span style={{
+                                    padding: '0.05rem 0.35rem',
+                                    background: 'rgba(124, 58, 237, 0.15)',
+                                    color: '#7c3aed',
+                                    borderRadius: '0.2rem',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600,
+                                  }}>FK</span>
+                                )}
+                                {field.pii && (
+                                  <span style={{
+                                    padding: '0.05rem 0.35rem',
+                                    background: 'rgba(220, 38, 38, 0.15)',
+                                    color: 'var(--color-error)',
+                                    borderRadius: '0.2rem',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600,
+                                  }}>PII</span>
+                                )}
+                                {!field.nullable && (
+                                  <span style={{
+                                    padding: '0.05rem 0.35rem',
+                                    background: 'rgba(217, 119, 6, 0.1)',
+                                    color: 'var(--color-warning)',
+                                    borderRadius: '0.2rem',
+                                    fontSize: '0.7rem',
+                                  }}>NOT NULL</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 

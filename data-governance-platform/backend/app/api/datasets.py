@@ -459,6 +459,60 @@ def import_schema(request: SchemaImportRequest):
         raise HTTPException(status_code=400, detail=f"Unsupported source type: {request.source_type}")
 
 
+@router.post("/{dataset_id}/refresh-schema", response_model=SchemaImportResponse)
+def refresh_dataset_schema(dataset_id: int, db: Session = Depends(get_db)):
+    """
+    Re-import schema from PostgreSQL for an existing dataset.
+
+    Reconnects to the configured PostgreSQL database and re-imports the schema
+    for an existing dataset using its stored physical_location as the table name.
+    Updates the dataset's schema_definition and contains_pii flag in the database.
+
+    Args:
+        dataset_id: ID of the dataset to refresh.
+        db: Database session (injected dependency).
+
+    Returns:
+        Refreshed schema definition with updated metadata, PII detection, and
+        technical details (row count, disk size, primary keys, foreign keys, indexes).
+
+    Raises:
+        HTTPException 404: If dataset not found.
+        HTTPException 400: If dataset source_type is not postgres.
+        HTTPException 500: If PostgreSQL connection fails or schema import errors.
+    """
+    dataset = db.query(Dataset).filter(Dataset.id == dataset_id, Dataset.is_active == True).first()
+    if not dataset:
+        raise HTTPException(status_code=404, detail=f"Dataset {dataset_id} not found")
+
+    if dataset.source_type != "postgres":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Schema refresh only supported for postgres datasets, got: {dataset.source_type}"
+        )
+
+    table_name = dataset.physical_location or dataset.name
+    try:
+        connector = PostgresConnector()
+        if not connector.test_connection():
+            raise HTTPException(status_code=500, detail="Failed to connect to PostgreSQL database")
+
+        result = connector.import_table_schema(table_name)
+
+        # Update dataset schema in DB
+        dataset.schema_definition = result["schema_definition"]
+        dataset.contains_pii = result["metadata"].get("contains_pii", False)
+        db.commit()
+        db.refresh(dataset)
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Schema refresh failed: {str(e)}")
+
+
 @router.get("/postgres/tables", response_model=List[TableInfo])
 def list_postgres_tables(schema: str = Query("public")):
     """

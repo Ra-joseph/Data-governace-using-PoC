@@ -45,8 +45,9 @@ export const datasetAPI = {
   update: (id, data) => api.put(`/api/v1/datasets/${id}`, data),
   delete: (id) => api.delete(`/api/v1/datasets/${id}`),
   importSchema: (data) => api.post('/api/v1/datasets/import-schema', data),
-  listPostgresTables: (schema = 'public') => 
+  listPostgresTables: (schema = 'public') =>
     api.get('/api/v1/datasets/postgres/tables', { params: { schema } }),
+  refreshSchema: (id) => api.post(`/api/v1/datasets/${id}/refresh-schema`),
 };
 
 // Contract APIs
