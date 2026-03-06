@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
+from app.config import settings
 from app.database import get_db
 from app.models.contract import Contract
 from app.services.policy_orchestrator import (
@@ -127,7 +128,7 @@ def analyze_contract(
         )
 
     # Initialize orchestrator
-    orchestrator = PolicyOrchestrator(enable_semantic=True)
+    orchestrator = PolicyOrchestrator(enable_semantic=settings.ENABLE_LLM_VALIDATION)
 
     # Analyze contract
     contract_data = contract.machine_readable
@@ -176,7 +177,7 @@ def validate_with_strategy(
         )
 
     # Initialize orchestrator
-    orchestrator = PolicyOrchestrator(enable_semantic=True)
+    orchestrator = PolicyOrchestrator(enable_semantic=settings.ENABLE_LLM_VALIDATION)
 
     # Validate with specified strategy
     try:
@@ -214,7 +215,7 @@ def recommend_strategy(
         )
 
     # Initialize orchestrator
-    orchestrator = PolicyOrchestrator(enable_semantic=True)
+    orchestrator = PolicyOrchestrator(enable_semantic=settings.ENABLE_LLM_VALIDATION)
 
     # Get recommendation
     contract_data = contract.machine_readable
@@ -242,7 +243,7 @@ def get_orchestration_stats():
 
     Returns information about available engines, policies, and performance.
     """
-    orchestrator = PolicyOrchestrator(enable_semantic=True)
+    orchestrator = PolicyOrchestrator(enable_semantic=settings.ENABLE_LLM_VALIDATION)
 
     # Check semantic availability
     semantic_available = orchestrator.semantic_engine.is_available()

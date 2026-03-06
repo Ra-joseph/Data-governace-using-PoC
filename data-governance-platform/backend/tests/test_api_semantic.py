@@ -14,6 +14,7 @@ from app.models.contract import Contract
 class TestSemanticHealthEndpoint:
     """Test GET /api/v1/semantic/health."""
 
+    @patch("app.api.semantic.settings", Mock(ENABLE_LLM_VALIDATION=True))
     @patch("app.api.semantic.SemanticPolicyEngine")
     def test_semantic_health_available(self, mock_engine_cls, client):
         """Test health check when semantic scanning is available."""
@@ -49,6 +50,7 @@ class TestSemanticHealthEndpoint:
         data = response.json()
         assert data["available"] is False
 
+    @patch("app.api.semantic.settings", Mock(ENABLE_LLM_VALIDATION=True))
     @patch("app.api.semantic.SemanticPolicyEngine")
     def test_semantic_health_exception(self, mock_engine_cls, client):
         """Test health check graceful error handling."""
@@ -214,6 +216,7 @@ class TestSemanticValidateEndpoint:
 class TestSemanticModelsEndpoint:
     """Test GET /api/v1/semantic/models."""
 
+    @patch("app.api.semantic.settings", Mock(ENABLE_LLM_VALIDATION=True))
     @patch("app.api.semantic.get_ollama_client")
     def test_list_models_success(self, mock_factory, client):
         """Test listing available Ollama models."""
@@ -230,6 +233,7 @@ class TestSemanticModelsEndpoint:
         assert data["current_model"] == "mistral:7b"
         assert "recommended_models" in data
 
+    @patch("app.api.semantic.settings", Mock(ENABLE_LLM_VALIDATION=True))
     @patch("app.api.semantic.get_ollama_client")
     def test_list_models_ollama_down(self, mock_factory, client):
         """Test listing models when Ollama is not running."""

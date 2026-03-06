@@ -42,6 +42,10 @@ class Settings(BaseSettings):
         GIT_USER_EMAIL: Git commit author email.
         POLICIES_PATH: Path to YAML policy definitions.
         CORS_ORIGINS: List of allowed CORS origins.
+        ENABLE_LLM_VALIDATION: Enable LLM-based semantic validation via Ollama.
+        OLLAMA_BASE_URL: Base URL for the Ollama API server.
+        OLLAMA_MODEL: Ollama model to use for semantic validation.
+        OLLAMA_TIMEOUT: Timeout in seconds for Ollama API requests.
 
     Example:
         >>> settings = Settings()
@@ -84,7 +88,13 @@ class Settings(BaseSettings):
     
     # CORS
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
-    
+
+    # LLM / Ollama (Semantic Validation)
+    ENABLE_LLM_VALIDATION: bool = False
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "mistral:7b"
+    OLLAMA_TIMEOUT: int = 30
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
