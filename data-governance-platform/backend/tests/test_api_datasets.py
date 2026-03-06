@@ -357,3 +357,197 @@ class TestDatasetsAPI:
         assert response.status_code == 201
         data = response.json()
         assert data["status"] == "draft"  # Should be draft due to failed validation
+
+    def test_import_schema_invalid_source_type_enum(self, client):
+        """Verify 'postgresql' is rejected (422) and 'postgres' is the correct enum value."""
+        # 'postgresql' is not a valid SourceType enum value — backend should return 422
+        bad_request = {
+            "source_type": "postgresql",
+            "table_name": "customers",
+            "schema_name": "public",
+        }
+        response = client.post("/api/v1/datasets/import-schema", json=bad_request)
+        assert response.status_code == 422
+
+    @patch('app.api.datasets.PostgresConnector')
+    def test_import_schema_valid_postgres_source_type(self, mock_connector_class, client):
+        """Verify 'postgres' is the accepted enum value for schema import."""
+        mock_connector = MagicMock()
+        mock_connector.test_connection.return_value = True
+        mock_connector.import_table_schema.return_value = {
+            "table_name": "customers",
+            "schema_name": "public",
+            "description": "Customer table",
+            "schema_definition": [{"name": "id", "type": "integer", "pii": False}],
+            "metadata": {
+                "contains_pii": False,
+                "suggested_classification": "internal",
+                "primary_keys": ["id"],
+                "foreign_keys": {},
+                "indexes": [],
+                "row_count": 500,
+                "total_size": "48 kB",
+            },
+        }
+        mock_connector_class.return_value = mock_connector
+
+        good_request = {
+            "source_type": "postgres",
+            "table_name": "customers",
+            "schema_name": "public",
+        }
+        response = client.post("/api/v1/datasets/import-schema", json=good_request)
+        assert response.status_code == 200
+        assert response.json()["table_name"] == "customers"
+
+
+@pytest.mark.api
+@pytest.mark.unit
+class TestRefreshDatasetSchema:
+    """Tests for the POST /datasets/{id}/refresh-schema endpoint."""
+
+    MOCK_IMPORT_RESULT = {
+        "table_name": "customers",
+        "schema_name": "public",
+        "description": "Customer table",
+        "schema_definition": [
+            {"name": "id", "type": "integer", "required": True, "nullable": False, "pii": False, "description": "PK"},
+            {"name": "email", "type": "string", "required": True, "nullable": False, "pii": True, "description": "Email"},
+        ],
+        "metadata": {
+            "contains_pii": True,
+            "suggested_classification": "confidential",
+            "primary_keys": ["id"],
+            "foreign_keys": {},
+            "indexes": ["idx_customers_email"],
+            "row_count": 1500,
+            "total_size": "256 kB",
+        },
+    }
+
+    @patch('app.api.datasets.PostgresConnector')
+    def test_refresh_schema_success(self, mock_connector_class, client, sample_dataset):
+        """Happy path: refresh schema updates dataset schema_definition and contains_pii."""
+        mock_connector = MagicMock()
+        mock_connector.test_connection.return_value = True
+        mock_connector.import_table_schema.return_value = self.MOCK_IMPORT_RESULT
+        mock_connector_class.return_value = mock_connector
+
+        response = client.post(f"/api/v1/datasets/{sample_dataset.id}/refresh-schema")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["table_name"] == "customers"
+        assert "schema_definition" in data
+        assert len(data["schema_definition"]) == 2
+        assert data["metadata"]["contains_pii"] is True
+        assert data["metadata"]["row_count"] == 1500
+        assert data["metadata"]["total_size"] == "256 kB"
+        assert data["metadata"]["primary_keys"] == ["id"]
+        assert data["metadata"]["indexes"] == ["idx_customers_email"]
+
+        # Verify the connector was called with the correct table name
+        mock_connector.import_table_schema.assert_called_once_with(sample_dataset.physical_location)
+
+    def test_refresh_schema_dataset_not_found(self, client):
+        """Non-existent dataset ID returns 404."""
+        response = client.post("/api/v1/datasets/99999/refresh-schema")
+        assert response.status_code == 404
+        assert "not found" in response.json()["detail"].lower()
+
+    def test_refresh_schema_not_postgres_source(self, client, db):
+        """Dataset with source_type != postgres returns 400."""
+        from app.models.dataset import Dataset
+
+        non_postgres = Dataset(
+            name="file_dataset",
+            description="A file-based dataset",
+            owner_name="Test Owner",
+            owner_email="owner@example.com",
+            source_type="file",
+            source_connection="s3://bucket/path",
+            physical_location="path/to/file.csv",
+            schema_definition=[],
+            classification="internal",
+        )
+        db.add(non_postgres)
+        db.commit()
+        db.refresh(non_postgres)
+
+        response = client.post(f"/api/v1/datasets/{non_postgres.id}/refresh-schema")
+        assert response.status_code == 400
+        assert "postgres" in response.json()["detail"].lower()
+
+    @patch('app.api.datasets.PostgresConnector')
+    def test_refresh_schema_connection_failure(self, mock_connector_class, client, sample_dataset):
+        """PostgreSQL connection failure returns 500."""
+        mock_connector = MagicMock()
+        mock_connector.test_connection.return_value = False
+        mock_connector_class.return_value = mock_connector
+
+        response = client.post(f"/api/v1/datasets/{sample_dataset.id}/refresh-schema")
+        assert response.status_code == 500
+        assert "Failed to connect" in response.json()["detail"]
+
+    @patch('app.api.datasets.PostgresConnector')
+    def test_refresh_schema_connector_exception(self, mock_connector_class, client, sample_dataset):
+        """Unexpected exception during import returns 500 with detail."""
+        mock_connector = MagicMock()
+        mock_connector.test_connection.return_value = True
+        mock_connector.import_table_schema.side_effect = RuntimeError("relation does not exist")
+        mock_connector_class.return_value = mock_connector
+
+        response = client.post(f"/api/v1/datasets/{sample_dataset.id}/refresh-schema")
+        assert response.status_code == 500
+        assert "Schema refresh failed" in response.json()["detail"]
+
+    @patch('app.api.datasets.PostgresConnector')
+    def test_refresh_schema_updates_contains_pii_flag(self, mock_connector_class, client, db):
+        """Refresh schema correctly updates contains_pii on the dataset record."""
+        from app.models.dataset import Dataset
+
+        # Dataset starts with no PII
+        dataset = Dataset(
+            name="no_pii_dataset",
+            description="Initially no PII",
+            owner_name="Owner",
+            owner_email="owner@test.com",
+            source_type="postgres",
+            source_connection="postgresql://localhost/test",
+            physical_location="public.no_pii_table",
+            schema_definition=[],
+            classification="internal",
+            contains_pii=False,
+        )
+        db.add(dataset)
+        db.commit()
+        db.refresh(dataset)
+
+        # Refresh returns PII fields
+        mock_connector = MagicMock()
+        mock_connector.test_connection.return_value = True
+        mock_connector.import_table_schema.return_value = {
+            "table_name": "no_pii_table",
+            "schema_name": "public",
+            "description": "",
+            "schema_definition": [
+                {"name": "ssn", "type": "string", "pii": True, "nullable": False, "required": True},
+            ],
+            "metadata": {
+                "contains_pii": True,
+                "suggested_classification": "confidential",
+                "primary_keys": [],
+                "foreign_keys": {},
+                "indexes": [],
+                "row_count": 0,
+                "total_size": "8 kB",
+            },
+        }
+        mock_connector_class.return_value = mock_connector
+
+        response = client.post(f"/api/v1/datasets/{dataset.id}/refresh-schema")
+        assert response.status_code == 200
+
+        # Verify DB was updated
+        db.refresh(dataset)
+        assert dataset.contains_pii is True
