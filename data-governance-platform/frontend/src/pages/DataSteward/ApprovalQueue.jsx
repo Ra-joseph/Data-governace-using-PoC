@@ -14,6 +14,8 @@ import {
   X
 } from 'lucide-react';
 import { subscriptionAPI, contractAPI } from '../../services/api';
+import { SkeletonLoader } from '../../components/SkeletonLoader';
+import { EmptyState } from '../../components/EmptyState';
 
 const statusStyles = {
   pending: { color: '#d97706', background: 'rgba(217,119,6,0.08)' },
@@ -38,6 +40,7 @@ export function ApprovalQueue() {
   const [filter, setFilter] = useState('pending');
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [actionLoading, setActionLoading] = useState(null); // 'approved' | 'rejected' | null
   const [reviewDecision, setReviewDecision] = useState({
     status: 'approved',
     reviewer_notes: '',
@@ -86,6 +89,7 @@ export function ApprovalQueue() {
       return;
     }
 
+    setActionLoading(reviewDecision.status);
     try {
       await subscriptionAPI.approve(selectedSubscription.id, reviewDecision);
       toast.success(
@@ -96,6 +100,26 @@ export function ApprovalQueue() {
       loadSubscriptions();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to submit review');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDecision = async (decision) => {
+    setReviewDecision((prev) => ({ ...prev, status: decision }));
+    setActionLoading(decision);
+    try {
+      await subscriptionAPI.approve(selectedSubscription.id, { ...reviewDecision, status: decision });
+      toast.success(
+        `Subscription ${decision === 'approved' ? 'approved' : 'rejected'} successfully!`
+      );
+      setShowReviewModal(false);
+      setSelectedSubscription(null);
+      loadSubscriptions();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to submit review');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -117,20 +141,6 @@ export function ApprovalQueue() {
     approved: subscriptions.filter((s) => s.status === 'approved').length,
     rejected: subscriptions.filter((s) => s.status === 'rejected').length,
   };
-
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: 'var(--color-bg-primary)',
-      }}>
-        <div style={{ color: 'var(--color-text-primary)' }}>Loading approvals...</div>
-      </div>
-    );
-  }
 
   return (
     <div style={{
@@ -276,26 +286,16 @@ export function ApprovalQueue() {
           borderRadius: 'var(--radius-xl)',
           border: '1px solid var(--color-border-default)',
         }}>
-          {subscriptions.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center' }}>
-              <Clock style={{
-                width: '4rem',
-                height: '4rem',
-                color: 'var(--color-text-muted)',
-                margin: '0 auto 1rem',
-              }} />
-              <h3 style={{
-                fontSize: '1.125rem',
-                fontWeight: 600,
-                color: 'var(--color-text-secondary)',
-                marginBottom: '0.5rem',
-              }}>
-                No subscriptions found
-              </h3>
-              <p style={{ color: 'var(--color-text-tertiary)' }}>
-                No {filter} subscription requests at the moment
-              </p>
+          {loading ? (
+            <div style={{ padding: '1.5rem' }}>
+              <SkeletonLoader type="row" count={5} />
             </div>
+          ) : subscriptions.length === 0 ? (
+            <EmptyState
+              icon={Clock}
+              title={filter === 'pending' ? 'No pending approvals' : `No ${filter} subscriptions`}
+              description={filter === 'pending' ? 'All subscription requests have been reviewed.' : `There are no subscriptions with ${filter} status.`}
+            />
           ) : (
             <div>
               {subscriptions.map((subscription, index) => (
@@ -930,19 +930,48 @@ export function ApprovalQueue() {
                 Cancel
               </button>
               <button
-                onClick={submitReview}
+                onClick={() => handleDecision('approved')}
+                disabled={actionLoading !== null}
+                className={actionLoading === 'approved' ? 'btn-loading' : ''}
                 style={{
                   padding: '0.75rem 1.5rem',
                   borderRadius: 'var(--radius-md)',
                   transition: 'all 0.2s',
                   fontWeight: 500,
                   border: 'none',
-                  cursor: 'pointer',
+                  cursor: actionLoading !== null ? 'not-allowed' : 'pointer',
                   color: '#FFFFFF',
-                  background: reviewDecision.status === 'approved' ? '#16a34a' : '#dc2626',
+                  background: '#16a34a',
                 }}
               >
-                {reviewDecision.status === 'approved' ? 'Approve Request' : 'Reject Request'}
+                {actionLoading === 'approved' ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="btn-spinner" />
+                    Approving...
+                  </span>
+                ) : 'Approve'}
+              </button>
+              <button
+                onClick={() => handleDecision('rejected')}
+                disabled={actionLoading !== null}
+                className={actionLoading === 'rejected' ? 'btn-loading' : ''}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: 'var(--radius-md)',
+                  transition: 'all 0.2s',
+                  fontWeight: 500,
+                  border: 'none',
+                  cursor: actionLoading !== null ? 'not-allowed' : 'pointer',
+                  color: '#FFFFFF',
+                  background: '#dc2626',
+                }}
+              >
+                {actionLoading === 'rejected' ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="btn-spinner" />
+                    Rejecting...
+                  </span>
+                ) : 'Reject'}
               </button>
             </div>
           </div>

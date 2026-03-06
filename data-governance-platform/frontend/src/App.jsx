@@ -30,9 +30,11 @@ import { ComplianceDashboard } from './pages/ComplianceDashboard';
 import { GitHistory } from './pages/GitHistory';
 import { PolicyList, PolicyForm, PolicyDetail, PolicyReview, PolicyDashboard, PolicyTimeline, ComplianceReport, PolicyExchange, DomainGovernance, PolicyConflicts } from './components/PolicyAuthoring';
 import './App.css';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function App() {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <Router>
         <Toaster
@@ -120,6 +122,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

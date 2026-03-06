@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { datasetAPI, subscriptionAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { SkeletonLoader } from '../../components/SkeletonLoader';
+import { EmptyState } from '../../components/EmptyState';
 
 const classificationColors = {
   public: { color: '#16a34a', background: 'rgba(22,163,74,0.08)' },
@@ -36,6 +38,7 @@ export function DataCatalogBrowser() {
   const [hoveredCancelBtn, setHoveredCancelBtn] = useState(false);
   const [hoveredSubmitBtn, setHoveredSubmitBtn] = useState(false);
   const [hoveredCloseBtn, setHoveredCloseBtn] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const [subscriptionForm, setSubscriptionForm] = useState({
     use_case: '',
@@ -103,6 +106,7 @@ export function DataCatalogBrowser() {
       return;
     }
 
+    setSubmitting(true);
     try {
       await subscriptionAPI.create({
         dataset_id: selectedDataset.id,
@@ -128,6 +132,8 @@ export function DataCatalogBrowser() {
       });
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to submit subscription');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -165,20 +171,6 @@ export function DataCatalogBrowser() {
     fontSize: '13px',
     outline: 'none',
   };
-
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        backgroundColor: '#FAF9F6',
-      }}>
-        <div style={{ color: '#1A1A1A' }}>Loading catalog...</div>
-      </div>
-    );
-  }
 
   return (
     <div style={{
@@ -287,177 +279,177 @@ export function DataCatalogBrowser() {
         </div>
 
         {/* Dataset Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-          gap: '24px',
-        }}>
-          {filteredDatasets.map((dataset) => {
-            const isHovered = hoveredCardId === dataset.id;
-            return (
-              <div
-                key={dataset.id}
-                onMouseEnter={() => setHoveredCardId(dataset.id)}
-                onMouseLeave={() => setHoveredCardId(null)}
-                style={{
-                  backgroundColor: '#FFFFFF',
-                  borderRadius: '12px',
-                  border: `1px solid ${isHovered ? '#0070AD' : '#E5E2DB'}`,
-                  overflow: 'hidden',
-                  transition: 'border-color 0.2s ease',
-                }}
-              >
-                <div style={{ padding: '24px' }}>
-                  {/* Header */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    justifyContent: 'space-between',
-                    marginBottom: '16px',
-                  }}>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{
-                        fontSize: '1.125rem',
-                        fontWeight: 600,
-                        color: isHovered ? '#0070AD' : '#1A1A1A',
-                        marginBottom: '4px',
-                        transition: 'color 0.2s ease',
-                      }}>
-                        {dataset.name}
-                      </h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={getClassificationStyle(dataset.classification)}>
-                          {dataset.classification}
-                        </span>
-                        {dataset.contains_pii && (
-                          <span style={{
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            backgroundColor: 'rgba(217,119,6,0.08)',
-                            color: '#d97706',
-                          }}>
-                            PII
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <Database style={{
-                      width: '32px',
-                      height: '32px',
-                      color: isHovered ? '#0070AD' : '#B0ADA6',
-                      transition: 'color 0.2s ease',
-                    }} />
-                  </div>
-
-                  {/* Description */}
-                  <p style={{
-                    fontSize: '14px',
-                    color: '#5A5A5A',
-                    marginBottom: '16px',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: 'vertical',
+        {loading ? (
+          <SkeletonLoader type="card" count={6} />
+        ) : filteredDatasets.length === 0 ? (
+          <EmptyState
+            icon={Database}
+            title={searchTerm || selectedClassification !== 'all' ? 'No datasets match your filters' : 'No datasets available'}
+            description={searchTerm || selectedClassification !== 'all' ? 'Try adjusting your search or filter criteria.' : 'Published datasets will appear here once they are registered and approved.'}
+            actionLabel={searchTerm || selectedClassification !== 'all' ? 'Clear filters' : undefined}
+            onAction={searchTerm || selectedClassification !== 'all' ? () => { setSearchTerm(''); setSelectedClassification('all'); } : undefined}
+          />
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+            gap: '24px',
+          }}>
+            {filteredDatasets.map((dataset) => {
+              const isHovered = hoveredCardId === dataset.id;
+              return (
+                <div
+                  key={dataset.id}
+                  onMouseEnter={() => setHoveredCardId(dataset.id)}
+                  onMouseLeave={() => setHoveredCardId(null)}
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: '12px',
+                    border: `1px solid ${isHovered ? '#0070AD' : '#E5E2DB'}`,
                     overflow: 'hidden',
-                  }}>
-                    {dataset.description}
-                  </p>
-
-                  {/* Metadata */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px', fontSize: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8A8A8A' }}>
-                      <Shield style={{ width: '16px', height: '16px' }} />
-                      <span>{dataset.owner_name}</span>
-                    </div>
-                    {dataset.schema && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8A8A8A' }}>
-                        <FileText style={{ width: '16px', height: '16px' }} />
-                        <span>{dataset.schema.length} fields</span>
-                      </div>
-                    )}
-                    {dataset.subscriber_count > 0 && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8A8A8A' }}>
-                        <Users style={{ width: '16px', height: '16px' }} />
-                        <span>{dataset.subscriber_count} subscribers</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Compliance Status */}
-                  {dataset.contract?.validation_result && (
-                    <div style={{ marginBottom: '16px' }}>
-                      {dataset.contract.validation_result.status === 'passed' ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#16a34a', fontSize: '14px' }}>
-                          <CheckCircle style={{ width: '16px', height: '16px' }} />
-                          <span>Policy Compliant</span>
-                        </div>
-                      ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#d97706', fontSize: '14px' }}>
-                          <AlertCircle style={{ width: '16px', height: '16px' }} />
-                          <span>
-                            {dataset.contract.validation_result.failures} violation(s)
+                    transition: 'border-color 0.2s ease',
+                  }}
+                >
+                  <div style={{ padding: '24px' }}>
+                    {/* Header */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      marginBottom: '16px',
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{
+                          fontSize: '1.125rem',
+                          fontWeight: 600,
+                          color: isHovered ? '#0070AD' : '#1A1A1A',
+                          marginBottom: '4px',
+                          transition: 'color 0.2s ease',
+                        }}>
+                          {dataset.name}
+                        </h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={getClassificationStyle(dataset.classification)}>
+                            {dataset.classification}
                           </span>
+                          {dataset.contains_pii && (
+                            <span style={{
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              backgroundColor: 'rgba(217,119,6,0.08)',
+                              color: '#d97706',
+                            }}>
+                              PII
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <Database style={{
+                        width: '32px',
+                        height: '32px',
+                        color: isHovered ? '#0070AD' : '#B0ADA6',
+                        transition: 'color 0.2s ease',
+                      }} />
+                    </div>
+
+                    {/* Description */}
+                    <p style={{
+                      fontSize: '14px',
+                      color: '#5A5A5A',
+                      marginBottom: '16px',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}>
+                      {dataset.description}
+                    </p>
+
+                    {/* Metadata */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px', fontSize: '14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8A8A8A' }}>
+                        <Shield style={{ width: '16px', height: '16px' }} />
+                        <span>{dataset.owner_name}</span>
+                      </div>
+                      {dataset.schema && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8A8A8A' }}>
+                          <FileText style={{ width: '16px', height: '16px' }} />
+                          <span>{dataset.schema.length} fields</span>
+                        </div>
+                      )}
+                      {dataset.subscriber_count > 0 && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8A8A8A' }}>
+                          <Users style={{ width: '16px', height: '16px' }} />
+                          <span>{dataset.subscriber_count} subscribers</span>
                         </div>
                       )}
                     </div>
-                  )}
 
-                  {/* Compliance Tags */}
-                  {dataset.compliance_tags && dataset.compliance_tags.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
-                      {dataset.compliance_tags.map((tag) => (
-                        <span
-                          key={tag}
-                          style={{
-                            padding: '4px 8px',
-                            backgroundColor: '#F4F3EE',
-                            color: '#5A5A5A',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                          }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                    {/* Compliance Status */}
+                    {dataset.contract?.validation_result && (
+                      <div style={{ marginBottom: '16px' }}>
+                        {dataset.contract.validation_result.status === 'passed' ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#16a34a', fontSize: '14px' }}>
+                            <CheckCircle style={{ width: '16px', height: '16px' }} />
+                            <span>Policy Compliant</span>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#d97706', fontSize: '14px' }}>
+                            <AlertCircle style={{ width: '16px', height: '16px' }} />
+                            <span>
+                              {dataset.contract.validation_result.failures} violation(s)
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
-                  {/* Subscribe Button */}
-                  <button
-                    onClick={() => handleSubscribe(dataset)}
-                    onMouseEnter={() => setHoveredButton(dataset.id)}
-                    onMouseLeave={() => setHoveredButton(null)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      backgroundColor: hoveredButton === dataset.id ? '#005a8a' : '#0070AD',
-                      color: '#FFFFFF',
-                      borderRadius: '8px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontWeight: 500,
-                      fontSize: '14px',
-                      transition: 'background-color 0.2s ease',
-                    }}
-                  >
-                    Request Access
-                  </button>
+                    {/* Compliance Tags */}
+                    {dataset.compliance_tags && dataset.compliance_tags.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+                        {dataset.compliance_tags.map((tag) => (
+                          <span
+                            key={tag}
+                            style={{
+                              padding: '4px 8px',
+                              backgroundColor: '#F4F3EE',
+                              color: '#5A5A5A',
+                              borderRadius: '4px',
+                              fontSize: '12px',
+                            }}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Subscribe Button */}
+                    <button
+                      onClick={() => handleSubscribe(dataset)}
+                      onMouseEnter={() => setHoveredButton(dataset.id)}
+                      onMouseLeave={() => setHoveredButton(null)}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        backgroundColor: hoveredButton === dataset.id ? '#005a8a' : '#0070AD',
+                        color: '#FFFFFF',
+                        borderRadius: '8px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        transition: 'background-color 0.2s ease',
+                      }}
+                    >
+                      Request Access
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {filteredDatasets.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <Database style={{ width: '64px', height: '64px', color: '#B0ADA6', margin: '0 auto 16px' }} />
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#5A5A5A', marginBottom: '8px' }}>
-              No datasets found
-            </h3>
-            <p style={{ color: '#8A8A8A' }}>
-              Try adjusting your search or filter criteria
-            </p>
+              );
+            })}
           </div>
         )}
       </div>
@@ -738,21 +730,28 @@ export function DataCatalogBrowser() {
               </button>
               <button
                 onClick={submitSubscription}
+                disabled={submitting}
                 onMouseEnter={() => setHoveredSubmitBtn(true)}
                 onMouseLeave={() => setHoveredSubmitBtn(false)}
+                className={submitting ? 'btn-loading' : ''}
                 style={{
                   padding: '12px 24px',
-                  backgroundColor: hoveredSubmitBtn ? '#005a8a' : '#0070AD',
+                  backgroundColor: hoveredSubmitBtn && !submitting ? '#005a8a' : '#0070AD',
                   color: '#FFFFFF',
                   borderRadius: '8px',
                   border: 'none',
-                  cursor: 'pointer',
+                  cursor: submitting ? 'not-allowed' : 'pointer',
                   fontWeight: 500,
                   fontSize: '14px',
                   transition: 'background-color 0.2s ease',
                 }}
               >
-                Submit Request
+                {submitting ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="btn-spinner" />
+                    Subscribing...
+                  </span>
+                ) : 'Request Access'}
               </button>
             </div>
           </div>

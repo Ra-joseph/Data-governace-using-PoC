@@ -26,6 +26,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { datasetAPI, subscriptionAPI } from '../../services/api';
+import { SkeletonLoader } from '../../components/SkeletonLoader';
 import './ComplianceDashboard.css';
 
 const TOOLTIP_STYLE = {
@@ -155,7 +156,23 @@ export function ComplianceDashboard() {
       : 0;
 
   if (loading) {
-    return <div className="compliance-loading">Loading dashboard...</div>;
+    return (
+      <div className="compliance-dashboard">
+        <div className="compliance-header">
+          <div className="skeleton" style={{ height: 36, width: 260, borderRadius: '8px', marginBottom: 8 }} />
+          <div className="skeleton" style={{ height: 18, width: 340, borderRadius: '6px' }} />
+        </div>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <SkeletonLoader type="stat" count={4} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <SkeletonLoader type="chart" />
+          <SkeletonLoader type="chart" />
+          <SkeletonLoader type="chart" />
+          <SkeletonLoader type="chart" />
+        </div>
+      </div>
+    );
   }
 
   return (

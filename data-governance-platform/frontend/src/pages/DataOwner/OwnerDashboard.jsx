@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { datasetAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { SkeletonLoader } from '../../components/SkeletonLoader';
 
 export function OwnerDashboard() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export function OwnerDashboard() {
   const [datasets, setDatasets] = useState([]);
   const [violations, setViolations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     total: 0,
     withViolations: 0,
@@ -62,8 +64,9 @@ export function OwnerDashboard() {
         active: datasetsData.filter(ds => ds.status === 'published').length,
         subscribers: datasetsData.reduce((sum, ds) => sum + (ds.subscriber_count || 0), 0),
       });
-    } catch (error) {
+    } catch (err) {
       toast.error('Failed to load datasets');
+      setError('Failed to load your datasets. Please refresh to try again.');
     } finally {
       setLoading(false);
     }
@@ -94,13 +97,69 @@ export function OwnerDashboard() {
   if (loading) {
     return (
       <div style={{
+        minHeight: '100vh',
+        backgroundColor: 'var(--color-bg-primary)',
+        padding: 'var(--space-2xl)',
+      }}>
+        <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
+          <div style={{ marginBottom: 'var(--space-2xl)' }}>
+            <div className="skeleton" style={{ height: 36, width: 280, borderRadius: 'var(--radius-md)', marginBottom: '0.5rem' }} />
+            <div className="skeleton" style={{ height: 18, width: 340, borderRadius: 'var(--radius-sm)' }} />
+          </div>
+          <div style={{ marginBottom: 'var(--space-2xl)' }}>
+            <SkeletonLoader type="stat" count={4} />
+          </div>
+          <SkeletonLoader type="row" count={5} />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: 'var(--color-bg-primary)',
+        padding: 'var(--space-2xl)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: '100vh',
-        backgroundColor: 'var(--color-bg-primary)',
       }}>
-        <div style={{ color: 'var(--color-text-primary)' }}>Loading...</div>
+        <div style={{
+          background: 'var(--color-bg-secondary)',
+          border: '1px solid var(--color-border-default)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '3rem 2rem',
+          textAlign: 'center',
+          maxWidth: 400,
+        }}>
+          <div style={{
+            width: 56, height: 56,
+            background: 'rgba(220,38,38,0.08)',
+            borderRadius: 'var(--radius-lg)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 1rem',
+            color: 'var(--color-error)',
+          }}>
+            <AlertTriangle size={28} />
+          </div>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--color-text-primary)' }}>
+            Unable to load datasets
+          </h3>
+          <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1.5rem' }}>{error}</p>
+          <button
+            onClick={() => { setError(null); setLoading(true); loadData(); }}
+            style={{
+              padding: '0.625rem 1.5rem',
+              background: 'var(--color-accent-primary)',
+              color: '#fff', border: 'none',
+              borderRadius: 'var(--radius-md)',
+              fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
