@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { gitAPI } from '../services/api';
 import toast from 'react-hot-toast';
+import { SkeletonLoader } from '../components/SkeletonLoader';
+import { CopyButton } from '../components/CopyButton';
 import './GitHistory.css';
 
 export const GitHistory = () => {
@@ -91,16 +93,17 @@ export const GitHistory = () => {
     return true;
   });
 
-  if (loading) {
-    return (
-      <div className="page-container">
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Loading Git repository...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="git-history-layout" style={{ minHeight: '100vh', display: 'flex' }}>
+      <aside className="git-sidebar" style={{ width: 300, background: 'var(--color-bg-secondary)', borderRight: '1px solid var(--color-border-default)', padding: '1.5rem' }}>
+        <div className="skeleton" style={{ height: 20, width: '60%', borderRadius: '6px', marginBottom: '1rem' }} />
+        <SkeletonLoader type="row" count={4} />
+      </aside>
+      <main style={{ flex: 1, padding: '2rem' }}>
+        <SkeletonLoader type="row" count={6} />
+      </main>
+    </div>
+  );
 
   return (
     <div className="page-container">
@@ -233,7 +236,7 @@ export const GitHistory = () => {
                 
                 <div className="commit-content">
                   <div className="commit-header">
-                    <div className="commit-message">{commit.message}</div>
+                    <div className="commit-message" title={commit.message}>{commit.message}</div>
                     <div className="commit-time">
                       <Clock size={14} />
                       {getTimeAgo(commit.date)}
@@ -241,11 +244,12 @@ export const GitHistory = () => {
                   </div>
                   
                   <div className="commit-meta">
-                    <div className="commit-hash">
+                    <div className="commit-hash" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                       <GitCommit size={14} />
-                      {commit.commit_hash.substring(0, 7)}
+                      <span title={commit.commit_hash}>{commit.commit_hash.substring(0, 7)}</span>
+                      <CopyButton value={commit.commit_hash || ''} label="Copy commit hash" />
                     </div>
-                    <div className="commit-author">
+                    <div className="commit-author" title={commit.author}>
                       <User size={14} />
                       {commit.author}
                     </div>

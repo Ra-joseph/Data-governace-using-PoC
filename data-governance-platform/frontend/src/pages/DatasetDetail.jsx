@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { datasetAPI } from '../services/api';
-import { Shield, Database, Calendar, User } from 'lucide-react';
+import { Shield, Database, Calendar, User, AlertTriangle } from 'lucide-react';
+import { SkeletonLoader } from '../components/SkeletonLoader';
 import './Dashboard.css';
 
 export const DatasetDetail = () => {
@@ -24,8 +25,31 @@ export const DatasetDetail = () => {
     }
   };
 
-  if (loading) return <div className="page-container"><div className="loading-state"><div className="spinner"></div></div></div>;
-  if (!dataset) return <div className="page-container"><p>Dataset not found</p></div>;
+  if (loading) return (
+    <div className="page-container">
+      <div className="page-header">
+        <div>
+          <div className="skeleton" style={{ height: 36, width: 240, borderRadius: '8px', marginBottom: 8 }} />
+          <div className="skeleton" style={{ height: 18, width: 320, borderRadius: '6px' }} />
+        </div>
+      </div>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <SkeletonLoader type="stat" count={4} />
+      </div>
+      <SkeletonLoader type="row" count={6} />
+    </div>
+  );
+  if (!dataset) return (
+    <div className="page-container">
+      <div className="error-state">
+        <div className="error-state-icon">
+          <AlertTriangle size={28} />
+        </div>
+        <h3>Dataset not found</h3>
+        <p>The dataset you're looking for doesn't exist or may have been removed.</p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="page-container">

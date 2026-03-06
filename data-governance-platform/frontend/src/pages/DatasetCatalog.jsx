@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { datasetAPI } from '../services/api';
 import toast from 'react-hot-toast';
+import { SkeletonLoader } from '../components/SkeletonLoader';
+import { EmptyState } from '../components/EmptyState';
 import './DatasetCatalog.css';
 
 export const DatasetCatalog = () => {
@@ -117,10 +119,15 @@ export const DatasetCatalog = () => {
       </div>
 
       {loading ? (
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Loading datasets...</p>
-        </div>
+        <SkeletonLoader type="card" count={6} />
+      ) : filteredDatasets.length === 0 ? (
+        <EmptyState
+          icon={Database}
+          title={searchTerm ? 'No datasets match your search' : 'No datasets found'}
+          description={searchTerm ? 'Try a different search term or clear the filter.' : 'Datasets will appear here once they are registered.'}
+          actionLabel={searchTerm ? 'Clear search' : undefined}
+          onAction={searchTerm ? () => setSearchTerm('') : undefined}
+        />
       ) : (
         <div className="dataset-grid">
           {filteredDatasets.map((dataset, index) => (
@@ -170,22 +177,6 @@ export const DatasetCatalog = () => {
               </Link>
             </motion.div>
           ))}
-        </div>
-      )}
-
-      {!loading && filteredDatasets.length === 0 && (
-        <div className="empty-state">
-          <Database size={48} strokeWidth={1.5} />
-          <h3>No datasets found</h3>
-          <p>
-            {searchTerm
-              ? 'Try adjusting your search criteria'
-              : 'Get started by registering your first dataset'}
-          </p>
-          <Link to="/import" className="btn-primary">
-            <Plus size={18} />
-            Register Dataset
-          </Link>
         </div>
       )}
     </div>

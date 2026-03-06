@@ -25,6 +25,7 @@ import {
   Legend 
 } from 'recharts';
 import { datasetAPI } from '../services/api';
+import { SkeletonLoader } from '../components/SkeletonLoader';
 import './Dashboard.css';
 
 const container = {
@@ -174,9 +175,16 @@ export const Dashboard = () => {
   if (loading) {
     return (
       <div className="page-container">
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Loading dashboard...</p>
+        <div className="page-header">
+          <div className="skeleton" style={{ height: 36, width: 200, borderRadius: '8px', marginBottom: 8 }} />
+          <div className="skeleton" style={{ height: 18, width: 300, borderRadius: '6px' }} />
+        </div>
+        <div style={{ marginBottom: '2rem' }}>
+          <SkeletonLoader type="stat" count={4} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+          <SkeletonLoader type="chart" />
+          <SkeletonLoader type="chart" />
         </div>
       </div>
     );

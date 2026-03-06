@@ -8,7 +8,8 @@ import {
   CheckCircle,
   ChevronRight,
   ChevronLeft,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { datasetAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -50,6 +51,7 @@ export function DatasetRegistrationWizard() {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [importMode, setImportMode] = useState('manual'); // 'manual' or 'postgres'
   const [availableTables, setAvailableTables] = useState([]);
   const [importedMetadata, setImportedMetadata] = useState(null);
@@ -171,6 +173,20 @@ export function DatasetRegistrationWizard() {
       ...prev,
       schema: prev.schema.filter((_, i) => i !== index)
     }));
+  };
+
+  const validateStep = () => {
+    const errors = {};
+    if (currentStep === 0) {
+      if (!formData.name.trim()) errors.name = 'Dataset name is required';
+      if (!formData.description.trim()) errors.description = 'Description is required';
+      if (!formData.source_system.trim()) errors.source_system = 'Source system is required';
+    }
+    if (currentStep === 1) {
+      if (formData.schema.length === 0) errors.schema = 'At least one schema field is required';
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async () => {
@@ -355,8 +371,9 @@ export function DatasetRegistrationWizard() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., customer_accounts"
-                  style={inputStyle}
+                  style={fieldErrors.name ? { ...inputStyle, border: '1px solid var(--color-error)' } : inputStyle}
                 />
+                {fieldErrors.name && <span className="field-error-msg">{fieldErrors.name}</span>}
               </div>
 
               <div>
@@ -368,8 +385,9 @@ export function DatasetRegistrationWizard() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Describe the purpose and contents of this dataset"
                   rows={4}
-                  style={{ ...inputStyle, resize: 'vertical' }}
+                  style={fieldErrors.description ? { ...inputStyle, resize: 'vertical', border: '1px solid var(--color-error)' } : { ...inputStyle, resize: 'vertical' }}
                 />
+                {fieldErrors.description && <span className="field-error-msg">{fieldErrors.description}</span>}
               </div>
 
               <div>
@@ -381,8 +399,9 @@ export function DatasetRegistrationWizard() {
                   value={formData.source_system}
                   onChange={(e) => setFormData({ ...formData, source_system: e.target.value })}
                   placeholder="e.g., PostgreSQL Production DB"
-                  style={inputStyle}
+                  style={fieldErrors.source_system ? { ...inputStyle, border: '1px solid var(--color-error)' } : inputStyle}
                 />
+                {fieldErrors.source_system && <span className="field-error-msg">{fieldErrors.source_system}</span>}
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
@@ -1036,7 +1055,12 @@ export function DatasetRegistrationWizard() {
 
           {currentStep < steps.length - 1 ? (
             <button
-              onClick={() => setCurrentStep(currentStep + 1)}
+              onClick={() => {
+                if (validateStep()) {
+                  setFieldErrors({});
+                  setCurrentStep(prev => prev + 1);
+                }
+              }}
               disabled={!canProceed()}
               style={{
                 padding: '0.75rem 1.5rem',
@@ -1060,6 +1084,7 @@ export function DatasetRegistrationWizard() {
             <button
               onClick={handleSubmit}
               disabled={loading || !canProceed()}
+              className={loading ? 'btn-loading' : ''}
               style={{
                 padding: '0.75rem 1.5rem',
                 background: (!loading && canProceed()) ? 'var(--color-success)' : 'var(--color-bg-elevated)',
@@ -1075,8 +1100,13 @@ export function DatasetRegistrationWizard() {
                 fontWeight: 500,
               }}
             >
-              {loading ? 'Submitting...' : 'Submit Dataset'}
-              <CheckCircle style={{ width: '1.25rem', height: '1.25rem' }} />
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="btn-spinner" />
+                  Registering...
+                </span>
+              ) : 'Register Dataset'}
+              {!loading && <CheckCircle style={{ width: '1.25rem', height: '1.25rem' }} />}
             </button>
           )}
         </div>
