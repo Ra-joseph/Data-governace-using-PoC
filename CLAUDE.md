@@ -506,6 +506,11 @@ A custom Claude Code skill is included at `.claude/skills/test-and-fix.md`:
 
 Every task — regardless of size — must be executed using a coordinated multi-agent approach. A **main (orchestrator) agent** decomposes the work and delegates subtasks to **sub-agents** that run in parallel. The number of sub-agents is determined intelligently by task complexity, scope, and how much of the work can be parallelized.
 
+This applies to **all phases** of a task, not just execution:
+- **Context-gathering phase**: when reading files to understand the codebase before planning, sub-agents read different parts of the codebase concurrently (e.g., one sub-agent reads backend files, another reads frontend files, another reads policy files).
+- **Planning phase**: when analysing gathered context to form an implementation plan, sub-agents can analyse different concerns concurrently (e.g., one analyses schema impact, another analyses test coverage, another analyses API surface).
+- **Execution phase**: sub-agents implement changes across different layers or files concurrently.
+
 This is not optional: even a task that could be done sequentially by a single agent must follow this pattern, because parallelism reduces latency and parallel validation catches cross-cutting issues.
 
 ---
@@ -518,8 +523,8 @@ This is not optional: even a task that could be done sequentially by a single ag
 | **Sub-agent** | Owns exactly one subtask, operates within a defined scope (files, layers, test files), reports results and any blockers back to the orchestrator |
 
 **Orchestrator rules:**
-- Explore the codebase first (Glob, Grep, Read) before decomposing — never decompose blindly.
-- Assign each sub-agent a scope boundary: specific files, directories, or layers it is allowed to touch.
+- **Context-gathering is also parallelised**: before decomposing the implementation, spawn sub-agents to read different parts of the codebase concurrently. Never do sequential file reads in the orchestrator when sub-agents can read in parallel.
+- Assign each sub-agent a scope boundary: specific files, directories, or layers it is allowed to read or touch.
 - Explicitly state which sub-agents can run in parallel vs. which must wait for another agent's output.
 - Integrate all sub-agent outputs before writing any file.
 - Run the full regression suite (see "Regression Testing Requirements") after all sub-agents complete.
@@ -613,9 +618,16 @@ The orchestrator reads all reports, checks for conflicts (e.g., two agents editi
 Use fewer sub-agents when:
 - The entire change fits in a single file (use 1 sub-agent + orchestrator verification).
 - Changes are strictly sequential with no parallelizable steps (avoid fake parallelism with forced hand-offs).
-- The task is a pure documentation update with no code change.
 
-Even in these cases, the orchestrator role remains: it must still explore before acting and run regression after any code change.
+Even in these cases, the orchestrator role remains: it must still coordinate context-gathering sub-agents before acting and run regression after any code change.
+
+**Context-gathering always uses sub-agents**, even for small tasks. If a task requires reading more than one file or directory to understand scope, assign a separate sub-agent to each distinct area of the codebase and gather their findings concurrently before the orchestrator forms a plan.
+
+| Context-gathering scenario | Sub-agent split |
+|---------------------------|----------------|
+| Understanding a single service | 1 sub-agent reads the service file; 1 reads its tests |
+| Understanding a full feature (backend + frontend) | Sub-agent A: backend service + router; Sub-agent B: frontend component + API call; Sub-agent C: related tests |
+| Codebase-wide impact assessment | One sub-agent per layer (models, services, routers, frontend, tests) running concurrently |
 
 ---
 
