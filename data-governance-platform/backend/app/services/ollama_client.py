@@ -11,6 +11,8 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 import logging
 
+from app.config import settings
+
 logger = logging.getLogger(__name__)
 
 
@@ -230,8 +232,8 @@ def get_ollama_client(config: Optional[Dict[str, Any]] = None) -> OllamaClient:
         config = {}
 
     return OllamaClient(
-        base_url=config.get('base_url', 'http://localhost:11434'),
-        model=config.get('model', 'mistral:7b'),
+        base_url=config.get('base_url', settings.OLLAMA_BASE_URL),
+        model=config.get('model', settings.OLLAMA_MODEL),
         temperature=config.get('temperature', 0.1),
-        timeout=config.get('timeout', 30)
+        timeout=config.get('timeout', settings.OLLAMA_TIMEOUT)
     )

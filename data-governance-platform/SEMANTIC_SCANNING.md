@@ -20,7 +20,9 @@
 
 ## 🎯 Overview
 
-The Data Governance Platform supports **semantic policy scanning** powered by local LLM models via [Ollama](https://ollama.ai/). This feature enables advanced policy validation that goes beyond rule-based pattern matching to understand the **semantic meaning and context** of your data.
+The Data Governance Platform optionally supports **semantic policy scanning** powered by local LLM models via [Ollama](https://ollama.ai/). This feature is **disabled by default** (`ENABLE_LLM_VALIDATION=false`) and must be explicitly enabled in configuration. When disabled, the platform runs only the 17 deterministic rule-based policies. When enabled, semantic scanning adds 8 AI-powered policies that go beyond rule-based pattern matching to understand the **semantic meaning and context** of your data.
+
+> **Note:** If your environment has restrictions on AI/LLM usage, you can skip this guide entirely. The rule-based policy engine provides comprehensive governance validation without any LLM dependency.
 
 ### Why Semantic Scanning?
 
@@ -103,6 +105,23 @@ Semantic scanning uses AI to analyze these nuanced scenarios that require unders
 
 - Docker (for running the platform)
 - Ollama installed locally
+- `ENABLE_LLM_VALIDATION=true` set in `backend/.env`
+
+### Step 0: Enable LLM Validation in Configuration
+
+Before installing Ollama, enable the feature in your backend configuration:
+
+```bash
+# Create or edit the .env file in the backend directory
+echo "ENABLE_LLM_VALIDATION=true" >> backend/.env
+
+# Optionally configure Ollama connection settings (defaults shown):
+# OLLAMA_BASE_URL=http://localhost:11434
+# OLLAMA_MODEL=mistral:7b
+# OLLAMA_TIMEOUT=30
+```
+
+> **Important:** Without this setting, all semantic endpoints will return "LLM validation is disabled by configuration" even if Ollama is running.
 
 ### Step 1: Install Ollama
 
@@ -142,7 +161,7 @@ Check that semantic scanning is available:
 curl http://localhost:8000/api/v1/semantic/health
 ```
 
-Expected response:
+Expected response (when `ENABLE_LLM_VALIDATION=true` and Ollama is running):
 ```json
 {
   "available": true,
@@ -151,6 +170,18 @@ Expected response:
   "current_model": "mistral:7b",
   "policies_loaded": 8,
   "message": "Semantic scanning is available with 8 policies"
+}
+```
+
+If `ENABLE_LLM_VALIDATION` is not set or is `false`, you will see:
+```json
+{
+  "available": false,
+  "ollama_running": false,
+  "available_models": [],
+  "current_model": "disabled",
+  "policies_loaded": 0,
+  "message": "LLM validation is disabled by configuration. Set ENABLE_LLM_VALIDATION=true to enable."
 }
 ```
 
@@ -207,10 +238,11 @@ Triggers model download (runs in background).
 ### Python SDK Usage
 
 ```python
+from app.config import settings
 from app.services.semantic_policy_engine import SemanticPolicyEngine
 
-# Initialize with semantic scanning enabled
-engine = SemanticPolicyEngine(enabled=True)
+# Initialize using the global config flag
+engine = SemanticPolicyEngine(enabled=settings.ENABLE_LLM_VALIDATION)
 
 # Check if available
 if engine.is_available():
@@ -226,13 +258,14 @@ if engine.is_available():
 
 ### Integrated with Contract Service
 
-Semantic scanning is automatically included when enabled:
+Semantic scanning is automatically included when enabled via configuration:
 
 ```python
+from app.config import settings
 from app.services.contract_service import ContractService
 
-# Create service with semantic scanning
-service = ContractService(enable_semantic=True)
+# Create service using the global config flag
+service = ContractService(enable_semantic=settings.ENABLE_LLM_VALIDATION)
 
 # Validation now includes both rule-based + semantic
 result = service.validate_contract_combined(contract_data)
@@ -245,7 +278,20 @@ print(f"Total failures: {result.failures}")
 
 ## 🔧 Configuration
 
-Edit `/backend/policies/semantic_policies.yaml` to configure:
+### Global Toggle (Environment Variables / `.env`)
+
+The following environment variables control LLM validation. Set them in `backend/.env`:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ENABLE_LLM_VALIDATION` | `false` | Master switch — must be `true` to use any semantic features |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API server URL |
+| `OLLAMA_MODEL` | `mistral:7b` | Model to use for semantic validation |
+| `OLLAMA_TIMEOUT` | `30` | Request timeout in seconds |
+
+### Policy-Level Configuration
+
+Edit `/backend/policies/semantic_policies.yaml` to fine-tune policy behavior:
 
 ```yaml
 semantic_config:
@@ -329,12 +375,27 @@ engine.llm_client.clear_cache()
 
 ## 🔧 Troubleshooting
 
+### LLM Validation Disabled by Configuration
+
+**Error**: "LLM validation is disabled by configuration"
+
+**Solution**:
+```bash
+# Enable LLM validation in backend/.env
+echo "ENABLE_LLM_VALIDATION=true" >> backend/.env
+
+# Restart the backend
+# The setting defaults to false — you must explicitly enable it
+```
+
 ### Ollama Not Running
 
 **Error**: "Semantic scanning is not available"
 
 **Solution**:
 ```bash
+# Make sure ENABLE_LLM_VALIDATION=true is set, then:
+
 # Start Ollama
 ollama serve
 
@@ -502,9 +563,11 @@ Start with `mistral:7b`, enable caching, and run semantic validation on critical
 
 ## ✅ Quick Start Checklist
 
+- [ ] Enable LLM validation: `echo "ENABLE_LLM_VALIDATION=true" >> backend/.env`
 - [ ] Install Ollama: `curl -fsSL https://ollama.ai/install.sh | sh`
 - [ ] Start Ollama: `ollama serve`
 - [ ] Pull model: `ollama pull mistral:7b`
+- [ ] Restart the backend to pick up the new config
 - [ ] Check health: `curl http://localhost:8000/api/v1/semantic/health`
 - [ ] Run validation: `POST /api/v1/semantic/validate`
 - [ ] Review results and iterate!

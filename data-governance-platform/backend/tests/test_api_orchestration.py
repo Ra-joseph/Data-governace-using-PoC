@@ -330,3 +330,103 @@ class TestOrchestrationStatsEndpoint:
         assert "strategies" in data
         assert data["engines"]["rule_based"]["available"] is True
         assert data["total_policies"] >= 5
+
+
+@pytest.mark.api
+class TestOrchestrationLLMDisabled:
+    """Test orchestration endpoints when ENABLE_LLM_VALIDATION is False (default)."""
+
+    @patch("app.api.orchestration.PolicyOrchestrator")
+    def test_orchestrator_initialized_with_semantic_disabled(self, mock_orch_cls, client, db, sample_dataset):
+        """Verify orchestrator is created with enable_semantic=False when LLM is disabled."""
+        contract = Contract(
+            dataset_id=sample_dataset.id,
+            version="1.0.0",
+            human_readable="# Contract",
+            machine_readable={
+                "dataset": {"name": "test"},
+                "schema": [{"name": "id", "type": "integer", "pii": False}],
+                "governance": {"classification": "internal"}
+            },
+            schema_hash="abc",
+            governance_rules={},
+            validation_status="passed"
+        )
+        db.add(contract)
+        db.commit()
+
+        mock_orch = Mock()
+        mock_orch.validate_contract.return_value = ValidationResult(
+            status=ValidationStatus.PASSED,
+            passed=10,
+            warnings=0,
+            failures=0,
+            violations=[]
+        )
+        mock_orch_cls.return_value = mock_orch
+
+        response = client.post("/api/v1/orchestration/validate", json={
+            "contract_id": contract.id,
+            "strategy": "fast"
+        })
+        assert response.status_code == 200
+
+        # Verify orchestrator was created with semantic disabled
+        mock_orch_cls.assert_called_once_with(enable_semantic=False)
+
+    @patch("app.api.orchestration.PolicyOrchestrator")
+    def test_stats_with_semantic_disabled(self, mock_orch_cls, client):
+        """Stats endpoint works when LLM validation is disabled."""
+        mock_orch = Mock()
+        mock_orch.semantic_engine.is_available.return_value = False
+        mock_orch.rule_engine._get_all_policy_ids.return_value = ["SD001", "SD002", "SD003"]
+        mock_orch.semantic_engine.policies = {"policies": []}
+        mock_orch_cls.return_value = mock_orch
+
+        response = client.get("/api/v1/orchestration/stats")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["engines"]["rule_based"]["available"] is True
+        assert data["engines"]["semantic"]["available"] is False
+
+        # Verify orchestrator was created with semantic disabled
+        mock_orch_cls.assert_called_once_with(enable_semantic=False)
+
+    @patch("app.api.orchestration.settings", Mock(ENABLE_LLM_VALIDATION=True))
+    @patch("app.api.orchestration.PolicyOrchestrator")
+    def test_orchestrator_initialized_with_semantic_enabled(self, mock_orch_cls, client, db, sample_dataset):
+        """Verify orchestrator is created with enable_semantic=True when LLM is enabled."""
+        contract = Contract(
+            dataset_id=sample_dataset.id,
+            version="1.0.0",
+            human_readable="# Contract",
+            machine_readable={
+                "dataset": {"name": "test"},
+                "schema": [{"name": "id", "type": "integer", "pii": False}],
+                "governance": {"classification": "internal"}
+            },
+            schema_hash="abc",
+            governance_rules={},
+            validation_status="passed"
+        )
+        db.add(contract)
+        db.commit()
+
+        mock_orch = Mock()
+        mock_orch.validate_contract.return_value = ValidationResult(
+            status=ValidationStatus.PASSED,
+            passed=10,
+            warnings=0,
+            failures=0,
+            violations=[]
+        )
+        mock_orch_cls.return_value = mock_orch
+
+        response = client.post("/api/v1/orchestration/validate", json={
+            "contract_id": contract.id,
+            "strategy": "fast"
+        })
+        assert response.status_code == 200
+
+        # Verify orchestrator was created with semantic ENABLED
+        mock_orch_cls.assert_called_once_with(enable_semantic=True)

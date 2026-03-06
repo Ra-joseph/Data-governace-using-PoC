@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
+from app.config import settings
 from app.database import get_db
 from app.models.contract import Contract
 from app.services.semantic_policy_engine import SemanticPolicyEngine
@@ -57,6 +58,16 @@ def check_semantic_health():
     Example:
         GET /semantic/health
     """
+    if not settings.ENABLE_LLM_VALIDATION:
+        return SemanticHealthResponse(
+            available=False,
+            ollama_running=False,
+            available_models=[],
+            current_model="disabled",
+            policies_loaded=0,
+            message="LLM validation is disabled by configuration. Set ENABLE_LLM_VALIDATION=true to enable."
+        )
+
     try:
         # Initialize semantic engine
         semantic_engine = SemanticPolicyEngine(enabled=True)
@@ -190,12 +201,12 @@ def validate_with_semantic(
         raise HTTPException(status_code=404, detail=f"Contract {request.contract_id} not found")
 
     # Initialize semantic engine
-    semantic_engine = SemanticPolicyEngine(enabled=True)
+    semantic_engine = SemanticPolicyEngine(enabled=settings.ENABLE_LLM_VALIDATION)
 
     if not semantic_engine.is_available():
         raise HTTPException(
             status_code=503,
-            detail="Semantic scanning is not available. Ensure Ollama is running and the model is loaded."
+            detail="Semantic scanning is not available. Ensure Ollama is running and the model is loaded, and ENABLE_LLM_VALIDATION=true is set."
         )
 
     # Run semantic validation
@@ -238,6 +249,15 @@ def list_available_models():
     Example:
         GET /semantic/models
     """
+    if not settings.ENABLE_LLM_VALIDATION:
+        return {
+            "total": 0,
+            "current_model": "disabled",
+            "models": [],
+            "recommended_models": [],
+            "message": "LLM validation is disabled by configuration. Set ENABLE_LLM_VALIDATION=true to enable."
+        }
+
     try:
         ollama_client = get_ollama_client()
 
@@ -296,6 +316,13 @@ def pull_model(model_name: str):
         The download happens asynchronously. Use GET /semantic/models to check
         when the model is available.
     """
+    if not settings.ENABLE_LLM_VALIDATION:
+        return {
+            "message": "LLM validation is disabled by configuration",
+            "model": model_name,
+            "note": "Set ENABLE_LLM_VALIDATION=true to enable LLM features."
+        }
+
     import requests
 
     try:

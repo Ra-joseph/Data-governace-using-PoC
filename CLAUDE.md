@@ -246,7 +246,7 @@ policies:
 | SEM | `semantic_policies.yaml` | 8 | LLM context-aware validation |
 
 ### Semantic Policies (LLM)
-Evaluated by `semantic_policy_engine.py` via `ollama_client.py`. Ollama must be running locally on port 11434. Semantic policies (SEM001–SEM008) handle nuanced cases that rule-based checks cannot express.
+Evaluated by `semantic_policy_engine.py` via `ollama_client.py`. Semantic policies (SEM001–SEM008) handle nuanced cases that rule-based checks cannot express. **Semantic validation is disabled by default** — set `ENABLE_LLM_VALIDATION=true` in `backend/.env` to enable. When disabled, the platform uses only the 17 deterministic rule-based policies. Ollama must be running locally on port 11434 when enabled.
 
 ### Orchestration Strategies
 `policy_orchestrator.py` routes validation requests based on data classification and risk score:
@@ -278,6 +278,10 @@ All settings are in `backend/app/config.py` as a Pydantic `Settings` class. Crea
 | `CORS_ORIGINS` | `["http://localhost:3000"]` | Allowed frontend origins |
 | `DEBUG` | `True` | FastAPI debug mode |
 | `API_V1_PREFIX` | `/api/v1` | API version prefix |
+| `ENABLE_LLM_VALIDATION` | `False` | Enable LLM semantic validation via Ollama |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API server URL |
+| `OLLAMA_MODEL` | `mistral:7b` | LLM model for semantic validation |
+| `OLLAMA_TIMEOUT` | `30` | Ollama request timeout (seconds) |
 
 ---
 
