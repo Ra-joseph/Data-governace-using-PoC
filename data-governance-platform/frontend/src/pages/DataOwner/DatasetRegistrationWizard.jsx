@@ -13,6 +13,38 @@ import {
 import { datasetAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
+const inputStyle = {
+  width: '100%',
+  padding: '0.75rem 1rem',
+  background: 'var(--color-bg-tertiary)',
+  border: '1px solid var(--color-border-default)',
+  borderRadius: 'var(--radius-md)',
+  color: 'var(--color-text-primary)',
+  fontSize: '0.9375rem',
+  outline: 'none',
+};
+
+const labelStyle = {
+  display: 'block',
+  fontSize: '0.875rem',
+  fontWeight: 500,
+  color: 'var(--color-text-secondary)',
+  marginBottom: '0.5rem',
+};
+
+const smallLabelStyle = {
+  display: 'block',
+  fontSize: '0.75rem',
+  color: 'var(--color-text-tertiary)',
+  marginBottom: '0.25rem',
+};
+
+const sectionCardStyle = {
+  background: 'var(--color-bg-tertiary)',
+  borderRadius: 'var(--radius-lg)',
+  padding: '1rem',
+};
+
 export function DatasetRegistrationWizard() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -161,60 +193,135 @@ export function DatasetRegistrationWizard() {
     }
   };
 
+  const getStepCircleStyle = (isCompleted, isActive) => {
+    if (isCompleted) {
+      return {
+        width: '3rem',
+        height: '3rem',
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: '2px solid #16a34a',
+        background: '#16a34a',
+        color: 'white',
+        transition: 'all 0.2s ease',
+      };
+    }
+    if (isActive) {
+      return {
+        width: '3rem',
+        height: '3rem',
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: '2px solid #0070AD',
+        background: '#0070AD',
+        color: 'white',
+        transition: 'all 0.2s ease',
+      };
+    }
+    return {
+      width: '3rem',
+      height: '3rem',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      border: '2px solid var(--color-border-default)',
+      background: 'var(--color-bg-elevated)',
+      color: 'var(--color-text-tertiary)',
+      transition: 'all 0.2s ease',
+    };
+  };
+
+  const getSelectedButtonStyle = (isSelected) => {
+    if (isSelected) {
+      return {
+        padding: '0.75rem 1rem',
+        borderRadius: 'var(--radius-md)',
+        border: '2px solid var(--color-accent-primary)',
+        background: 'rgba(0, 112, 173, 0.1)',
+        color: 'var(--color-text-primary)',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        textTransform: 'capitalize',
+      };
+    }
+    return {
+      padding: '0.75rem 1rem',
+      borderRadius: 'var(--radius-md)',
+      border: '2px solid var(--color-border-default)',
+      background: 'transparent',
+      color: 'var(--color-text-secondary)',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      textTransform: 'capitalize',
+    };
+  };
+
   return (
-    <div className="min-h-screen bg-gray-900 py-8 px-4">
-      <div className="max-w-5xl mx-auto">
+    <div style={{
+      minHeight: '100vh',
+      background: 'var(--color-bg-primary)',
+      padding: 'var(--space-xl) var(--space-md)',
+    }}>
+      <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
+        <div style={{ marginBottom: 'var(--space-xl)' }}>
+          <h1 style={{
+            fontSize: '1.875rem',
+            fontWeight: 700,
+            color: 'var(--color-text-primary)',
+            fontFamily: 'var(--font-display)',
+            marginBottom: '0.5rem',
+          }}>
             Register New Dataset
           </h1>
-          <p className="text-gray-400">
+          <p style={{ color: 'var(--color-text-secondary)' }}>
             Follow the steps to register your dataset with the governance platform
           </p>
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between">
+        <div style={{ marginBottom: '3rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             {steps.map((step, index) => {
               const Icon = step.icon;
               const isActive = index === currentStep;
               const isCompleted = index < currentStep;
 
               return (
-                <div key={index} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center flex-1">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
-                        isCompleted
-                          ? 'bg-green-500 border-green-500'
-                          : isActive
-                          ? 'bg-purple-500 border-purple-500'
-                          : 'bg-gray-800 border-gray-700'
-                      }`}
-                    >
-                      <Icon className="w-6 h-6 text-white" />
+                <div key={index} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+                    <div style={getStepCircleStyle(isCompleted, isActive)}>
+                      <Icon style={{ width: '1.5rem', height: '1.5rem' }} />
                     </div>
-                    <div className="mt-2 text-center">
-                      <p
-                        className={`text-sm font-semibold ${
-                          isActive ? 'text-white' : 'text-gray-500'
-                        }`}
-                      >
+                    <div style={{ marginTop: '0.5rem', textAlign: 'center' }}>
+                      <p style={{
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                        color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
+                      }}>
                         {step.title}
                       </p>
-                      <p className="text-xs text-gray-600 mt-1">
+                      <p style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--color-text-muted)',
+                        marginTop: '0.25rem',
+                      }}>
                         {step.description}
                       </p>
                     </div>
                   </div>
                   {index < steps.length - 1 && (
-                    <div
-                      className={`h-0.5 flex-1 mx-4 ${
-                        isCompleted ? 'bg-green-500' : 'bg-gray-800'
-                      }`}
-                    />
+                    <div style={{
+                      height: '2px',
+                      flex: 1,
+                      margin: '0 1rem',
+                      background: isCompleted ? '#16a34a' : 'var(--color-border-default)',
+                    }} />
                   )}
                 </div>
               );
@@ -223,12 +330,18 @@ export function DatasetRegistrationWizard() {
         </div>
 
         {/* Step Content */}
-        <div className="bg-gray-800 rounded-xl border border-gray-700 p-8">
+        <div style={{
+          background: 'var(--color-bg-secondary)',
+          borderRadius: 'var(--radius-xl)',
+          border: '1px solid var(--color-border-default)',
+          padding: 'var(--space-xl)',
+          boxShadow: 'var(--shadow-sm)',
+        }}>
           {/* Step 0: Basic Information */}
           {currentStep === 0 && (
-            <div className="space-y-6">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label style={labelStyle}>
                   Dataset Name *
                 </label>
                 <input
@@ -236,12 +349,12 @@ export function DatasetRegistrationWizard() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., customer_accounts"
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  style={inputStyle}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label style={labelStyle}>
                   Description *
                 </label>
                 <textarea
@@ -249,12 +362,12 @@ export function DatasetRegistrationWizard() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Describe the purpose and contents of this dataset"
                   rows={4}
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  style={{ ...inputStyle, resize: 'vertical' }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label style={labelStyle}>
                   Source System *
                 </label>
                 <input
@@ -262,32 +375,32 @@ export function DatasetRegistrationWizard() {
                   value={formData.source_system}
                   onChange={(e) => setFormData({ ...formData, source_system: e.target.value })}
                   placeholder="e.g., PostgreSQL Production DB"
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  style={inputStyle}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label style={labelStyle}>
                     Owner Name
                   </label>
                   <input
                     type="text"
                     value={formData.owner_name}
                     onChange={(e) => setFormData({ ...formData, owner_name: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                    style={inputStyle}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label style={labelStyle}>
                     Owner Email
                   </label>
                   <input
                     type="email"
                     value={formData.owner_email}
                     onChange={(e) => setFormData({ ...formData, owner_email: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                    style={inputStyle}
                   />
                 </div>
               </div>
@@ -296,20 +409,27 @@ export function DatasetRegistrationWizard() {
 
           {/* Step 1: Schema Definition */}
           {currentStep === 1 && (
-            <div className="space-y-6">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {/* Import Mode Selection */}
-              <div className="bg-gray-900 rounded-lg p-4 mb-6">
-                <p className="text-sm font-medium text-gray-300 mb-3">
+              <div style={{
+                ...sectionCardStyle,
+                marginBottom: '0.5rem',
+              }}>
+                <p style={{
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: 'var(--color-text-secondary)',
+                  marginBottom: '0.75rem',
+                }}>
                   Choose how to define your schema:
                 </p>
-                <div className="flex gap-4">
+                <div style={{ display: 'flex', gap: '1rem' }}>
                   <button
                     onClick={() => setImportMode('manual')}
-                    className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
-                      importMode === 'manual'
-                        ? 'border-purple-500 bg-purple-500/10 text-white'
-                        : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                    }`}
+                    style={{
+                      ...getSelectedButtonStyle(importMode === 'manual'),
+                      flex: 1,
+                    }}
                   >
                     Manual Entry
                   </button>
@@ -318,11 +438,10 @@ export function DatasetRegistrationWizard() {
                       setImportMode('postgres');
                       loadPostgresTables();
                     }}
-                    className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
-                      importMode === 'postgres'
-                        ? 'border-purple-500 bg-purple-500/10 text-white'
-                        : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                    }`}
+                    style={{
+                      ...getSelectedButtonStyle(importMode === 'postgres'),
+                      flex: 1,
+                    }}
                   >
                     Import from PostgreSQL
                   </button>
@@ -331,17 +450,27 @@ export function DatasetRegistrationWizard() {
 
               {/* PostgreSQL Import */}
               {importMode === 'postgres' && (
-                <div className="space-y-3">
-                  <p className="text-sm text-gray-400">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
                     Select a table to import:
                   </p>
                   {availableTables.map((table) => (
                     <button
                       key={table}
                       onClick={() => importFromPostgres(table)}
-                      className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-left text-white hover:border-purple-500 transition-all"
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem 1rem',
+                        background: 'var(--color-bg-tertiary)',
+                        border: '1px solid var(--color-border-default)',
+                        borderRadius: 'var(--radius-md)',
+                        textAlign: 'left',
+                        color: 'var(--color-text-primary)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}
                     >
-                      <Database className="w-4 h-4 inline mr-2" />
+                      <Database style={{ width: '1rem', height: '1rem', display: 'inline', marginRight: '0.5rem' }} />
                       {table}
                     </button>
                   ))}
@@ -350,27 +479,42 @@ export function DatasetRegistrationWizard() {
 
               {/* Manual Schema Entry */}
               {importMode === 'manual' && (
-                <div className="space-y-4">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {formData.schema.map((field, index) => (
                     <div
                       key={index}
-                      className="bg-gray-900 rounded-lg p-4 space-y-3"
+                      style={{
+                        ...sectionCardStyle,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.75rem',
+                      }}
                     >
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-medium text-gray-300">
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <h4 style={{
+                          fontSize: '0.875rem',
+                          fontWeight: 500,
+                          color: 'var(--color-text-secondary)',
+                        }}>
                           Field {index + 1}
                         </h4>
                         <button
                           onClick={() => removeSchemaField(index)}
-                          className="text-red-400 hover:text-red-300 text-sm"
+                          style={{
+                            color: 'var(--color-error)',
+                            fontSize: '0.875rem',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                          }}
                         >
                           Remove
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">
+                          <label style={smallLabelStyle}>
                             Field Name
                           </label>
                           <input
@@ -380,12 +524,12 @@ export function DatasetRegistrationWizard() {
                               updateSchemaField(index, 'name', e.target.value)
                             }
                             placeholder="e.g., customer_id"
-                            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-purple-500"
+                            style={{ ...inputStyle, fontSize: '0.875rem' }}
                           />
                         </div>
 
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">
+                          <label style={smallLabelStyle}>
                             Data Type
                           </label>
                           <select
@@ -393,7 +537,7 @@ export function DatasetRegistrationWizard() {
                             onChange={(e) =>
                               updateSchemaField(index, 'type', e.target.value)
                             }
-                            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-purple-500"
+                            style={{ ...inputStyle, fontSize: '0.875rem' }}
                           >
                             {dataTypes.map((type) => (
                               <option key={type} value={type}>
@@ -405,7 +549,7 @@ export function DatasetRegistrationWizard() {
                       </div>
 
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">
+                        <label style={smallLabelStyle}>
                           Description
                         </label>
                         <input
@@ -415,24 +559,36 @@ export function DatasetRegistrationWizard() {
                             updateSchemaField(index, 'description', e.target.value)
                           }
                           placeholder="Describe this field"
-                          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-purple-500"
+                          style={{ ...inputStyle, fontSize: '0.875rem' }}
                         />
                       </div>
 
-                      <div className="flex items-center gap-6">
-                        <label className="flex items-center text-sm text-gray-300">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <label style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          fontSize: '0.875rem',
+                          color: 'var(--color-text-secondary)',
+                          cursor: 'pointer',
+                        }}>
                           <input
                             type="checkbox"
                             checked={field.nullable}
                             onChange={(e) =>
                               updateSchemaField(index, 'nullable', e.target.checked)
                             }
-                            className="mr-2"
+                            style={{ marginRight: '0.5rem' }}
                           />
                           Nullable
                         </label>
 
-                        <label className="flex items-center text-sm text-gray-300">
+                        <label style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          fontSize: '0.875rem',
+                          color: 'var(--color-text-secondary)',
+                          cursor: 'pointer',
+                        }}>
                           <input
                             type="checkbox"
                             checked={field.pii}
@@ -442,7 +598,7 @@ export function DatasetRegistrationWizard() {
                                 setFormData(prev => ({ ...prev, contains_pii: true }));
                               }
                             }}
-                            className="mr-2"
+                            style={{ marginRight: '0.5rem' }}
                           />
                           Contains PII
                         </label>
@@ -452,7 +608,17 @@ export function DatasetRegistrationWizard() {
 
                   <button
                     onClick={addSchemaField}
-                    className="w-full px-4 py-3 bg-purple-500/10 border-2 border-dashed border-purple-500 rounded-lg text-purple-400 hover:bg-purple-500/20 transition-all"
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      background: 'rgba(0, 112, 173, 0.08)',
+                      border: '2px dashed var(--color-accent-primary)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--color-accent-primary)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      fontSize: '0.9375rem',
+                    }}
                   >
                     + Add Field
                   </button>
@@ -463,21 +629,17 @@ export function DatasetRegistrationWizard() {
 
           {/* Step 2: Governance & Compliance */}
           {currentStep === 2 && (
-            <div className="space-y-6">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label style={labelStyle}>
                   Data Classification *
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   {classifications.map((cls) => (
                     <button
                       key={cls}
                       onClick={() => setFormData({ ...formData, classification: cls })}
-                      className={`px-4 py-3 rounded-lg border-2 capitalize transition-all ${
-                        formData.classification === cls
-                          ? 'border-purple-500 bg-purple-500/10 text-white'
-                          : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                      }`}
+                      style={getSelectedButtonStyle(formData.classification === cls)}
                     >
                       {cls}
                     </button>
@@ -486,33 +648,42 @@ export function DatasetRegistrationWizard() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label style={labelStyle}>
                   Compliance Tags
                 </label>
-                <div className="flex flex-wrap gap-2">
-                  {complianceTags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => {
-                        const tags = formData.compliance_tags.includes(tag)
-                          ? formData.compliance_tags.filter(t => t !== tag)
-                          : [...formData.compliance_tags, tag];
-                        setFormData({ ...formData, compliance_tags: tags });
-                      }}
-                      className={`px-4 py-2 rounded-lg border transition-all ${
-                        formData.compliance_tags.includes(tag)
-                          ? 'border-purple-500 bg-purple-500/10 text-white'
-                          : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  ))}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {complianceTags.map((tag) => {
+                    const isSelected = formData.compliance_tags.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        onClick={() => {
+                          const tags = formData.compliance_tags.includes(tag)
+                            ? formData.compliance_tags.filter(t => t !== tag)
+                            : [...formData.compliance_tags, tag];
+                          setFormData({ ...formData, compliance_tags: tags });
+                        }}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          borderRadius: 'var(--radius-md)',
+                          border: isSelected
+                            ? '1px solid var(--color-accent-primary)'
+                            : '1px solid var(--color-border-default)',
+                          background: isSelected ? 'rgba(0, 112, 173, 0.1)' : 'transparent',
+                          color: isSelected ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        {tag}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label style={labelStyle}>
                   Retention Period (days) *
                 </label>
                 <input
@@ -521,12 +692,12 @@ export function DatasetRegistrationWizard() {
                   onChange={(e) =>
                     setFormData({ ...formData, retention_period_days: parseInt(e.target.value) })
                   }
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  style={inputStyle}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label style={labelStyle}>
                   Use Cases (one per line)
                 </label>
                 <textarea
@@ -539,15 +710,19 @@ export function DatasetRegistrationWizard() {
                   }
                   placeholder="Enter approved use cases for this dataset"
                   rows={4}
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  style={{ ...inputStyle, resize: 'vertical' }}
                 />
               </div>
 
               {formData.contains_pii && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label style={labelStyle}>
                     Data Residency
-                    <span className="text-xs text-gray-500 ml-2">
+                    <span style={{
+                      fontSize: '0.75rem',
+                      color: 'var(--color-text-tertiary)',
+                      marginLeft: '0.5rem',
+                    }}>
                       (Required for PII data)
                     </span>
                   </label>
@@ -558,7 +733,7 @@ export function DatasetRegistrationWizard() {
                       setFormData({ ...formData, data_residency: e.target.value })
                     }
                     placeholder="e.g., US-EAST, EU-WEST"
-                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                    style={inputStyle}
                   />
                 </div>
               )}
@@ -567,72 +742,106 @@ export function DatasetRegistrationWizard() {
 
           {/* Step 3: Review & Submit */}
           {currentStep === 3 && (
-            <div className="space-y-6">
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{
+                background: 'rgba(0, 112, 173, 0.08)',
+                border: '1px solid rgba(0, 112, 173, 0.25)',
+                borderRadius: 'var(--radius-md)',
+                padding: '1rem',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.75rem',
+              }}>
+                <AlertCircle style={{
+                  width: '1.25rem',
+                  height: '1.25rem',
+                  color: 'var(--color-accent-primary)',
+                  flexShrink: 0,
+                  marginTop: '0.125rem',
+                }} />
                 <div>
-                  <h4 className="text-sm font-semibold text-blue-400 mb-1">
+                  <h4 style={{
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    color: 'var(--color-accent-primary)',
+                    marginBottom: '0.25rem',
+                  }}>
                     Review Before Submitting
                   </h4>
-                  <p className="text-sm text-gray-400">
+                  <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
                     Please review your dataset information. Once submitted, a data contract will be
                     generated and validated against governance policies.
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold text-gray-300 mb-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={sectionCardStyle}>
+                  <h4 style={{
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    color: 'var(--color-text-secondary)',
+                    marginBottom: '0.75rem',
+                  }}>
                     Basic Information
                   </h4>
-                  <dl className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Name:</dt>
-                      <dd className="text-white font-medium">{formData.name}</dd>
+                  <dl style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.875rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <dt style={{ color: 'var(--color-text-tertiary)' }}>Name:</dt>
+                      <dd style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>{formData.name}</dd>
                     </div>
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Source:</dt>
-                      <dd className="text-white">{formData.source_system}</dd>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <dt style={{ color: 'var(--color-text-tertiary)' }}>Source:</dt>
+                      <dd style={{ color: 'var(--color-text-primary)' }}>{formData.source_system}</dd>
                     </div>
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Owner:</dt>
-                      <dd className="text-white">{formData.owner_name}</dd>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <dt style={{ color: 'var(--color-text-tertiary)' }}>Owner:</dt>
+                      <dd style={{ color: 'var(--color-text-primary)' }}>{formData.owner_name}</dd>
                     </div>
                   </dl>
                 </div>
 
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold text-gray-300 mb-3">
+                <div style={sectionCardStyle}>
+                  <h4 style={{
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    color: 'var(--color-text-secondary)',
+                    marginBottom: '0.75rem',
+                  }}>
                     Schema
                   </h4>
-                  <p className="text-sm text-gray-400">
+                  <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
                     {formData.schema.length} fields defined
                     {formData.contains_pii && (
-                      <span className="ml-2 text-yellow-400">
+                      <span style={{ marginLeft: '0.5rem', color: 'var(--color-warning)' }}>
                         (Contains PII)
                       </span>
                     )}
                   </p>
                 </div>
 
-                <div className="bg-gray-900 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold text-gray-300 mb-3">
+                <div style={sectionCardStyle}>
+                  <h4 style={{
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    color: 'var(--color-text-secondary)',
+                    marginBottom: '0.75rem',
+                  }}>
                     Governance
                   </h4>
-                  <dl className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Classification:</dt>
-                      <dd className="text-white capitalize">{formData.classification}</dd>
+                  <dl style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.875rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <dt style={{ color: 'var(--color-text-tertiary)' }}>Classification:</dt>
+                      <dd style={{ color: 'var(--color-text-primary)', textTransform: 'capitalize' }}>{formData.classification}</dd>
                     </div>
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Retention:</dt>
-                      <dd className="text-white">{formData.retention_period_days} days</dd>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <dt style={{ color: 'var(--color-text-tertiary)' }}>Retention:</dt>
+                      <dd style={{ color: 'var(--color-text-primary)' }}>{formData.retention_period_days} days</dd>
                     </div>
                     {formData.compliance_tags.length > 0 && (
-                      <div className="flex justify-between">
-                        <dt className="text-gray-500">Compliance:</dt>
-                        <dd className="text-white">{formData.compliance_tags.join(', ')}</dd>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <dt style={{ color: 'var(--color-text-tertiary)' }}>Compliance:</dt>
+                        <dd style={{ color: 'var(--color-text-primary)' }}>{formData.compliance_tags.join(', ')}</dd>
                       </div>
                     )}
                   </dl>
@@ -643,13 +852,26 @@ export function DatasetRegistrationWizard() {
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between mt-8">
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'var(--space-xl)' }}>
           <button
             onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
             disabled={currentStep === 0}
-            className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            style={{
+              padding: '0.75rem 1.5rem',
+              background: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--color-border-default)',
+              cursor: currentStep === 0 ? 'not-allowed' : 'pointer',
+              opacity: currentStep === 0 ? 0.5 : 1,
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontWeight: 500,
+            }}
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft style={{ width: '1.25rem', height: '1.25rem' }} />
             Previous
           </button>
 
@@ -657,19 +879,45 @@ export function DatasetRegistrationWizard() {
             <button
               onClick={() => setCurrentStep(currentStep + 1)}
               disabled={!canProceed()}
-              className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: canProceed() ? 'var(--color-accent-primary)' : 'var(--color-bg-elevated)',
+                color: canProceed() ? '#FFFFFF' : 'var(--color-text-muted)',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                cursor: canProceed() ? 'pointer' : 'not-allowed',
+                opacity: canProceed() ? 1 : 0.5,
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontWeight: 500,
+              }}
             >
               Next
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight style={{ width: '1.25rem', height: '1.25rem' }} />
             </button>
           ) : (
             <button
               onClick={handleSubmit}
               disabled={loading || !canProceed()}
-              className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: (!loading && canProceed()) ? 'var(--color-success)' : 'var(--color-bg-elevated)',
+                color: (!loading && canProceed()) ? '#FFFFFF' : 'var(--color-text-muted)',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                cursor: (loading || !canProceed()) ? 'not-allowed' : 'pointer',
+                opacity: (loading || !canProceed()) ? 0.5 : 1,
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontWeight: 500,
+              }}
             >
               {loading ? 'Submitting...' : 'Submit Dataset'}
-              <CheckCircle className="w-5 h-5" />
+              <CheckCircle style={{ width: '1.25rem', height: '1.25rem' }} />
             </button>
           )}
         </div>

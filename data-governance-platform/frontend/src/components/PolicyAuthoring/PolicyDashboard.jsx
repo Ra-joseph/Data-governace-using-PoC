@@ -18,20 +18,20 @@ const CATEGORY_LABELS = {
 };
 
 const CATEGORY_COLORS = {
-  data_quality: '#3b82f6',
-  security: '#ef4444',
-  privacy: '#f59e0b',
-  compliance: '#10b981',
-  lineage: '#8b5cf6',
+  data_quality: '#0070AD',
+  security: '#dc2626',
+  privacy: '#d97706',
+  compliance: '#16a34a',
+  lineage: '#12ABDB',
   sla: '#0070AD',
 };
 
 const STATUS_COLORS = {
-  draft: '#9ca3af',
+  draft: '#8A8A8A',
   pending_approval: '#0070AD',
-  approved: '#10b981',
-  rejected: '#ef4444',
-  deprecated: '#6b7280',
+  approved: '#16a34a',
+  rejected: '#dc2626',
+  deprecated: '#8A8A8A',
 };
 
 const STATUS_LABELS = {
@@ -87,10 +87,10 @@ export const PolicyDashboard = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-md)', marginBottom: 'var(--space-xl)' }}>
         {[
           { label: 'Total Policies', value: stats.total_policies, icon: FileText, color: '#0070AD' },
-          { label: 'Approved & Active', value: approved, icon: CheckCircle, color: '#10b981' },
-          { label: 'Pending Review', value: pending, icon: Clock, color: '#f59e0b' },
-          { label: 'Generated Artifacts', value: stats.total_artifacts, icon: Shield, color: '#8b5cf6' },
-          { label: 'Audit Actions', value: stats.total_approval_actions, icon: Activity, color: '#3b82f6' },
+          { label: 'Approved & Active', value: approved, icon: CheckCircle, color: '#16a34a' },
+          { label: 'Pending Review', value: pending, icon: Clock, color: '#d97706' },
+          { label: 'Generated Artifacts', value: stats.total_artifacts, icon: Shield, color: '#12ABDB' },
+          { label: 'Audit Actions', value: stats.total_approval_actions, icon: Activity, color: '#0070AD' },
         ].map((card, i) => (
           <motion.div
             key={card.label}
@@ -122,7 +122,7 @@ export const PolicyDashboard = () => {
             {Object.entries(stats.by_status || {}).map(([status, count]) => {
               const total = stats.total_policies || 1;
               const pct = Math.round((count / total) * 100);
-              const color = STATUS_COLORS[status] || '#9ca3af';
+              const color = STATUS_COLORS[status] || '#8A8A8A';
               return (
                 <div key={status}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: 4 }}>
@@ -176,9 +176,9 @@ export const PolicyDashboard = () => {
           <h4 style={{ marginBottom: 'var(--space-lg)' }}>Severity Distribution</h4>
           <div style={{ display: 'flex', gap: 'var(--space-md)', justifyContent: 'center' }}>
             {[
-              { key: 'CRITICAL', color: '#ef4444', icon: XCircle },
-              { key: 'WARNING', color: '#f59e0b', icon: AlertTriangle },
-              { key: 'INFO', color: '#10b981', icon: CheckCircle },
+              { key: 'CRITICAL', color: '#dc2626', icon: XCircle },
+              { key: 'WARNING', color: '#d97706', icon: AlertTriangle },
+              { key: 'INFO', color: '#16a34a', icon: CheckCircle },
             ].map(sev => (
               <div key={sev.key} style={{ textAlign: 'center', flex: 1 }}>
                 <div style={{
@@ -204,7 +204,7 @@ export const PolicyDashboard = () => {
           <div style={{ display: 'flex', gap: 'var(--space-md)', justifyContent: 'center' }}>
             {[
               { key: 'rule_based', label: 'Rule-Based', color: '#0070AD', desc: 'Deterministic YAML rules' },
-              { key: 'ai_semantic', label: 'AI Semantic', color: '#8b5cf6', desc: 'LLM-powered analysis' },
+              { key: 'ai_semantic', label: 'AI Semantic', color: '#12ABDB', desc: 'LLM-powered analysis' },
             ].map(scanner => (
               <div key={scanner.key} style={{ textAlign: 'center', flex: 1, padding: 'var(--space-md)', background: 'var(--color-bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
                 <div style={{ fontSize: '2rem', fontWeight: 700, color: scanner.color }}>
@@ -238,7 +238,7 @@ export const PolicyDashboard = () => {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
             {stats.recent_approvals?.map(log => {
-              const actionColor = log.action === 'approved' ? '#10b981' : log.action === 'rejected' ? '#ef4444' : '#0070AD';
+              const actionColor = log.action === 'approved' ? '#16a34a' : log.action === 'rejected' ? '#dc2626' : '#0070AD';
               return (
                 <div key={log.id} style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',

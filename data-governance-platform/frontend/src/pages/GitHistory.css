@@ -1,5 +1,5 @@
 .repo-status-card {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.05));
+  background: linear-gradient(135deg, rgba(0, 112, 173, 0.08), rgba(18, 171, 219, 0.04));
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);

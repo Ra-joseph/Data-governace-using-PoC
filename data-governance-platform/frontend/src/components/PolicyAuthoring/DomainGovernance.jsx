@@ -8,11 +8,11 @@ import { domainGovernanceAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const CAT_COLORS = {
-  data_quality: '#3b82f6',
-  security: '#ef4444',
-  privacy: '#f59e0b',
-  compliance: '#10b981',
-  lineage: '#8b5cf6',
+  data_quality: '#0070AD',
+  security: '#dc2626',
+  privacy: '#d97706',
+  compliance: '#16a34a',
+  lineage: '#12ABDB',
   sla: '#0070AD',
 };
 
@@ -91,22 +91,22 @@ export const DomainGovernance = () => {
                 <h4 style={{ margin: 0, textTransform: 'capitalize' }}>{d.domain}</h4>
                 <div style={{
                   width: 42, height: 42, borderRadius: '50%',
-                  background: d.coverage_score >= 80 ? 'rgba(16,185,129,0.15)' : d.coverage_score >= 40 ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)',
+                  background: d.coverage_score >= 80 ? 'rgba(22,163,74,0.15)' : d.coverage_score >= 40 ? 'rgba(217,119,6,0.15)' : 'rgba(220,38,38,0.15)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '0.8rem', fontWeight: 700,
-                  color: d.coverage_score >= 80 ? '#10b981' : d.coverage_score >= 40 ? '#f59e0b' : '#ef4444',
+                  color: d.coverage_score >= 80 ? '#16a34a' : d.coverage_score >= 40 ? '#d97706' : '#dc2626',
                 }}>{d.coverage_score}%</div>
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-md)', marginBottom: 'var(--space-sm)' }}>
                 <div><div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{d.total_policies}</div><div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}>Total</div></div>
-                <div><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#10b981' }}>{d.approved}</div><div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}>Active</div></div>
-                <div><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#f59e0b' }}>{d.pending}</div><div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}>Pending</div></div>
+                <div><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#16a34a' }}>{d.approved}</div><div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}>Active</div></div>
+                <div><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#d97706' }}>{d.pending}</div><div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}>Pending</div></div>
               </div>
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 {d.categories_covered.map(cat => (
                   <span key={cat} style={{
                     padding: '1px 6px', borderRadius: 9999, fontSize: '0.6rem', fontWeight: 600,
-                    background: `${CAT_COLORS[cat] || '#9ca3af'}15`, color: CAT_COLORS[cat] || '#9ca3af',
+                    background: `${CAT_COLORS[cat] || '#8A8A8A'}15`, color: CAT_COLORS[cat] || '#8A8A8A',
                   }}>{cat}</span>
                 ))}
               </div>
@@ -130,7 +130,7 @@ export const DomainGovernance = () => {
                 <tr>
                   <th style={{ textAlign: 'left', padding: '8px 12px', borderBottom: '1px solid var(--color-border)' }}>Domain</th>
                   {matrix.categories.map(c => (
-                    <th key={c} style={{ textAlign: 'center', padding: '8px 6px', borderBottom: '1px solid var(--color-border)', fontSize: '0.7rem', color: CAT_COLORS[c] || '#9ca3af' }}>
+                    <th key={c} style={{ textAlign: 'center', padding: '8px 6px', borderBottom: '1px solid var(--color-border)', fontSize: '0.7rem', color: CAT_COLORS[c] || '#8A8A8A' }}>
                       {c.replace('_', ' ')}
                     </th>
                   ))}
@@ -144,13 +144,13 @@ export const DomainGovernance = () => {
                     {matrix.categories.map(c => (
                       <td key={c} style={{ textAlign: 'center', padding: '8px 6px', borderBottom: '1px solid var(--color-border)' }}>
                         {row[c] > 0 ? (
-                          <CheckCircle size={16} style={{ color: '#10b981' }} />
+                          <CheckCircle size={16} style={{ color: '#16a34a' }} />
                         ) : (
-                          <XCircle size={16} style={{ color: 'rgba(239,68,68,0.3)' }} />
+                          <XCircle size={16} style={{ color: 'rgba(220,38,38,0.3)' }} />
                         )}
                       </td>
                     ))}
-                    <td style={{ textAlign: 'center', padding: '8px 12px', borderBottom: '1px solid var(--color-border)', fontWeight: 700, color: row.coverage_pct >= 80 ? '#10b981' : row.coverage_pct >= 40 ? '#f59e0b' : '#ef4444' }}>
+                    <td style={{ textAlign: 'center', padding: '8px 12px', borderBottom: '1px solid var(--color-border)', fontWeight: 700, color: row.coverage_pct >= 80 ? '#16a34a' : row.coverage_pct >= 40 ? '#d97706' : '#dc2626' }}>
                       {row.coverage_pct}%
                     </td>
                   </tr>
@@ -169,10 +169,10 @@ export const DomainGovernance = () => {
             <h4 style={{ marginBottom: 'var(--space-lg)' }}>Approval Funnel</h4>
             <div style={{ display: 'flex', gap: 'var(--space-md)', justifyContent: 'center' }}>
               {[
-                { label: 'Drafted', value: analytics.approval_funnel.drafted, color: '#3b82f6' },
+                { label: 'Drafted', value: analytics.approval_funnel.drafted, color: '#0070AD' },
                 { label: 'Submitted', value: analytics.approval_funnel.submitted, color: '#0070AD' },
-                { label: 'Approved', value: analytics.approval_funnel.approved, color: '#10b981' },
-                { label: 'Rejected', value: analytics.approval_funnel.rejected, color: '#ef4444' },
+                { label: 'Approved', value: analytics.approval_funnel.approved, color: '#16a34a' },
+                { label: 'Rejected', value: analytics.approval_funnel.rejected, color: '#dc2626' },
               ].map((step, i) => (
                 <div key={step.label} style={{ textAlign: 'center', flex: 1 }}>
                   <div style={{ fontSize: '1.75rem', fontWeight: 700, color: step.color }}>{step.value}</div>
@@ -189,10 +189,10 @@ export const DomainGovernance = () => {
               {Object.entries(analytics.category_distribution).map(([cat, count]) => (
                 <div key={cat} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: CAT_COLORS[cat] || '#9ca3af' }} />
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: CAT_COLORS[cat] || '#8A8A8A' }} />
                     <span style={{ fontSize: '0.8125rem' }}>{cat.replace('_', ' ')}</span>
                   </div>
-                  <span style={{ fontWeight: 700, color: CAT_COLORS[cat] || '#9ca3af' }}>{count}</span>
+                  <span style={{ fontWeight: 700, color: CAT_COLORS[cat] || '#8A8A8A' }}>{count}</span>
                 </div>
               ))}
             </div>
@@ -205,7 +205,7 @@ export const DomainGovernance = () => {
               ) : analytics.top_authors.map((a, i) => (
                 <div key={a.author} style={{
                   display: 'flex', justifyContent: 'space-between', padding: '6px 10px',
-                  background: i === 0 ? 'rgba(139,92,246,0.05)' : 'transparent',
+                  background: i === 0 ? 'rgba(0,112,173,0.05)' : 'transparent',
                   borderRadius: 'var(--radius-sm)',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -242,14 +242,14 @@ export const DomainGovernance = () => {
             <h4 style={{ marginBottom: 'var(--space-md)' }}>Governance Health Score</h4>
             <div style={{
               width: 120, height: 120, borderRadius: '50%', margin: '0 auto var(--space-md)',
-              background: `conic-gradient(${effectiveness.health_score >= 80 ? '#10b981' : effectiveness.health_score >= 50 ? '#f59e0b' : '#ef4444'} ${effectiveness.health_score * 3.6}deg, var(--color-bg-tertiary) 0deg)`,
+              background: `conic-gradient(${effectiveness.health_score >= 80 ? '#16a34a' : effectiveness.health_score >= 50 ? '#d97706' : '#dc2626'} ${effectiveness.health_score * 3.6}deg, var(--color-bg-tertiary) 0deg)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <div style={{
                 width: 96, height: 96, borderRadius: '50%', background: 'var(--color-bg-primary)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '1.75rem', fontWeight: 700,
-                color: effectiveness.health_score >= 80 ? '#10b981' : effectiveness.health_score >= 50 ? '#f59e0b' : '#ef4444',
+                color: effectiveness.health_score >= 80 ? '#16a34a' : effectiveness.health_score >= 50 ? '#d97706' : '#dc2626',
               }}>
                 {effectiveness.health_score}
               </div>
@@ -288,15 +288,15 @@ export const DomainGovernance = () => {
                     <div>
                       <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{p.title}</span>
                       <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
-                        <span style={{ fontSize: '0.6rem', fontWeight: 700, color: CAT_COLORS[p.category] || '#9ca3af', textTransform: 'uppercase' }}>{p.category}</span>
+                        <span style={{ fontSize: '0.6rem', fontWeight: 700, color: CAT_COLORS[p.category] || '#8A8A8A', textTransform: 'uppercase' }}>{p.category}</span>
                         <span style={{ fontSize: '0.6rem', color: 'var(--color-text-muted)' }}>v{p.version}</span>
                         <span style={{ fontSize: '0.6rem', color: 'var(--color-text-muted)' }}>{p.domains.join(', ')}</span>
                       </div>
                     </div>
                     <span style={{
                       padding: '2px 8px', borderRadius: 9999, fontSize: '0.6rem', fontWeight: 700,
-                      background: p.severity === 'CRITICAL' ? 'rgba(239,68,68,0.1)' : 'rgba(245,158,11,0.1)',
-                      color: p.severity === 'CRITICAL' ? '#ef4444' : '#f59e0b',
+                      background: p.severity === 'CRITICAL' ? 'rgba(220,38,38,0.1)' : 'rgba(217,119,6,0.1)',
+                      color: p.severity === 'CRITICAL' ? '#dc2626' : '#d97706',
                     }}>{p.severity}</span>
                   </div>
                 ))}

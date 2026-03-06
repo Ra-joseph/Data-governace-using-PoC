@@ -8,15 +8,15 @@ import toast from 'react-hot-toast';
 import { policyExceptionsAPI } from '../../services/api';
 
 const SEVERITY_COLORS = {
-  CRITICAL: { bg: 'rgba(239, 68, 68, 0.15)', border: '#ef4444' },
-  WARNING: { bg: 'rgba(245, 158, 11, 0.15)', border: '#f59e0b' },
-  INFO: { bg: 'rgba(59, 130, 246, 0.15)', border: '#3b82f6' },
+  CRITICAL: { bg: 'rgba(220, 38, 38, 0.15)', border: '#dc2626' },
+  WARNING: { bg: 'rgba(217, 119, 6, 0.15)', border: '#d97706' },
+  INFO: { bg: 'rgba(0, 112, 173, 0.15)', border: '#0070AD' },
 };
 
 const STATUS_BADGES = {
-  pending_review: { bg: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', label: 'Pending Review' },
-  approved: { bg: 'rgba(16, 185, 129, 0.2)', color: '#10b981', label: 'Approved' },
-  rejected: { bg: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', label: 'Rejected' },
+  pending_review: { bg: 'rgba(217, 119, 6, 0.2)', color: '#d97706', label: 'Pending Review' },
+  approved: { bg: 'rgba(22, 163, 74, 0.2)', color: '#16a34a', label: 'Approved' },
+  rejected: { bg: 'rgba(220, 38, 38, 0.2)', color: '#dc2626', label: 'Rejected' },
 };
 
 export const PolicyConflicts = () => {
@@ -139,16 +139,16 @@ export const PolicyConflicts = () => {
     <div style={{ padding: '2rem', maxWidth: 1200, margin: '0 auto' }}>
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-          <ShieldX size={28} style={{ color: '#ef4444' }} />
+          <ShieldX size={28} style={{ color: '#dc2626' }} />
           <div>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#e8eaed', margin: 0 }}>Policy Exceptions</h1>
-            <p style={{ color: '#9ca3af', margin: 0, fontSize: '0.9rem' }}>
+            <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Policy Exceptions</h1>
+            <p style={{ color: '#8A8A8A', margin: 0, fontSize: '0.9rem' }}>
               Manage policy failures, raise exceptions, and control the deployment gate
             </p>
           </div>
           <button onClick={runScan} disabled={scanning} style={{
             marginLeft: 'auto', padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none',
-            background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', color: '#fff', cursor: scanning ? 'not-allowed' : 'pointer',
+            background: 'linear-gradient(135deg, #12ABDB, #0070AD)', color: '#fff', cursor: scanning ? 'not-allowed' : 'pointer',
             fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem', opacity: scanning ? 0.7 : 1,
           }}>
             <RefreshCw size={16} className={scanning ? 'spinning' : ''} />
@@ -162,14 +162,14 @@ export const PolicyConflicts = () => {
         {tabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             padding: '0.5rem 1rem', borderRadius: 8, border: 'none', cursor: 'pointer',
-            background: tab === t.id ? 'rgba(139,92,246,0.2)' : 'transparent',
-            color: tab === t.id ? '#a78bfa' : '#9ca3af',
+            background: tab === t.id ? 'rgba(0,112,173,0.2)' : 'transparent',
+            color: tab === t.id ? '#a78bfa' : '#8A8A8A',
             display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: 500,
           }}>
             <t.icon size={16} /> {t.label}
             {t.id === 'requests' && requests.filter(r => r.status === 'pending_review').length > 0 && (
               <span style={{
-                background: '#f59e0b', color: '#000', borderRadius: '50%', width: 18, height: 18,
+                background: '#d97706', color: '#000', borderRadius: '50%', width: 18, height: 18,
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700,
               }}>
                 {requests.filter(r => r.status === 'pending_review').length}
@@ -183,7 +183,7 @@ export const PolicyConflicts = () => {
       {tab === 'failures' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {failures.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem', color: '#9ca3af' }}>
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#8A8A8A' }}>
               <ShieldCheck size={48} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
               <p>No policy failures detected. Run a scan to check.</p>
             </div>
@@ -200,19 +200,19 @@ export const PolicyConflicts = () => {
                       <div>
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.25rem' }}>
                           <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600, background: `${sev.border}22`, color: sev.border }}>{f.severity}</span>
-                          <span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>{f.domain}</span>
+                          <span style={{ color: '#8A8A8A', fontSize: '0.8rem' }}>{f.domain}</span>
                           {f.exception_status && (
                             <span style={{ background: STATUS_BADGES[f.exception_status]?.bg, color: STATUS_BADGES[f.exception_status]?.color, padding: '2px 8px', borderRadius: 4, fontSize: '0.7rem', fontWeight: 600 }}>
                               {STATUS_BADGES[f.exception_status]?.label}
                             </span>
                           )}
                         </div>
-                        <p style={{ color: '#e8eaed', margin: 0, fontSize: '0.95rem', fontWeight: 500 }}>{f.policy_title}</p>
-                        <p style={{ color: '#9ca3af', margin: '0.15rem 0 0', fontSize: '0.8rem' }}>
+                        <p style={{ color: 'var(--color-text-primary)', margin: 0, fontSize: '0.95rem', fontWeight: 500 }}>{f.policy_title}</p>
+                        <p style={{ color: '#8A8A8A', margin: '0.15rem 0 0', fontSize: '0.8rem' }}>
                           {f.total_failing} contract(s) failing · {f.policy_category}
                         </p>
                       </div>
-                      {isExpanded ? <ChevronUp size={18} style={{ color: '#9ca3af' }} /> : <ChevronDown size={18} style={{ color: '#9ca3af' }} />}
+                      {isExpanded ? <ChevronUp size={18} style={{ color: '#8A8A8A' }} /> : <ChevronDown size={18} style={{ color: '#8A8A8A' }} />}
                     </div>
 
                     <AnimatePresence>
@@ -220,13 +220,13 @@ export const PolicyConflicts = () => {
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                           style={{ marginTop: '0.75rem' }}>
                           <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem' }}>
-                            <div style={{ fontSize: '0.8rem', color: '#9ca3af', marginBottom: '0.5rem' }}>Failing Contracts</div>
+                            <div style={{ fontSize: '0.8rem', color: '#8A8A8A', marginBottom: '0.5rem' }}>Failing Contracts</div>
                             {(f.failing_contracts || []).map((c, i) => (
                               <div key={i} style={{ marginBottom: '0.5rem', padding: '0.4rem 0.6rem', background: 'rgba(255,255,255,0.03)', borderRadius: 6 }}>
-                                <span style={{ color: '#e8eaed', fontSize: '0.85rem' }}>Contract #{c.contract_id}</span>
-                                <span style={{ color: '#6b7280', fontSize: '0.8rem', marginLeft: '0.5rem' }}>{c.violation_count} violation(s)</span>
+                                <span style={{ color: 'var(--color-text-primary)', fontSize: '0.85rem' }}>Contract #{c.contract_id}</span>
+                                <span style={{ color: '#8A8A8A', fontSize: '0.8rem', marginLeft: '0.5rem' }}>{c.violation_count} violation(s)</span>
                                 {(c.violations || []).map((v, j) => (
-                                  <div key={j} style={{ color: '#9ca3af', fontSize: '0.75rem', marginLeft: '1rem' }}>
+                                  <div key={j} style={{ color: '#8A8A8A', fontSize: '0.75rem', marginLeft: '1rem' }}>
                                     {v.field}: {v.message}
                                   </div>
                                 ))}
@@ -236,8 +236,8 @@ export const PolicyConflicts = () => {
 
                           {(!f.exception_status || f.exception_status === 'rejected') && (
                             <button onClick={(e) => { e.stopPropagation(); setShowExceptionForm(f); }} style={{
-                              padding: '0.4rem 1rem', borderRadius: 6, border: '1px solid rgba(245,158,11,0.4)',
-                              background: 'rgba(245,158,11,0.1)', color: '#f59e0b', cursor: 'pointer', fontSize: '0.85rem',
+                              padding: '0.4rem 1rem', borderRadius: 6, border: '1px solid rgba(217,119,6,0.4)',
+                              background: 'rgba(217,119,6,0.1)', color: '#d97706', cursor: 'pointer', fontSize: '0.85rem',
                               display: 'flex', alignItems: 'center', gap: '0.4rem',
                             }}>
                               <Send size={14} /> {f.exception_status === 'rejected' ? 'Re-raise Exception' : 'Raise Exception'}
@@ -258,7 +258,7 @@ export const PolicyConflicts = () => {
       {tab === 'requests' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {requests.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem', color: '#9ca3af' }}>
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#8A8A8A' }}>
               <Clock size={48} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
               <p>No exception requests yet.</p>
             </div>
@@ -275,19 +275,19 @@ export const PolicyConflicts = () => {
                       <div>
                         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.25rem' }}>
                           <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600, background: badge.bg, color: badge.color }}>{badge.label}</span>
-                          <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>#{r.id}</span>
+                          <span style={{ color: '#8A8A8A', fontSize: '0.8rem' }}>#{r.id}</span>
                         </div>
-                        <p style={{ color: '#e8eaed', margin: '0.25rem 0 0', fontWeight: 500 }}>{r.policy_title}</p>
-                        <p style={{ color: '#9ca3af', fontSize: '0.85rem', margin: '0.15rem 0' }}>Domain: {r.domain} · Duration: {r.requested_duration_days} days</p>
+                        <p style={{ color: 'var(--color-text-primary)', margin: '0.25rem 0 0', fontWeight: 500 }}>{r.policy_title}</p>
+                        <p style={{ color: '#8A8A8A', fontSize: '0.85rem', margin: '0.15rem 0' }}>Domain: {r.domain} · Duration: {r.requested_duration_days} days</p>
                       </div>
                     </div>
 
                     <div style={{ marginTop: '0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: 8, padding: '0.75rem' }}>
-                      <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>Justification</div>
-                      <p style={{ color: '#e8eaed', fontSize: '0.85rem', margin: '0.25rem 0' }}>{r.justification}</p>
-                      <div style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '0.5rem' }}>Business Impact</div>
-                      <p style={{ color: '#e8eaed', fontSize: '0.85rem', margin: '0.25rem 0' }}>{r.business_impact}</p>
-                      <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#8A8A8A' }}>Justification</div>
+                      <p style={{ color: 'var(--color-text-primary)', fontSize: '0.85rem', margin: '0.25rem 0' }}>{r.justification}</p>
+                      <div style={{ fontSize: '0.8rem', color: '#8A8A8A', marginTop: '0.5rem' }}>Business Impact</div>
+                      <p style={{ color: 'var(--color-text-primary)', fontSize: '0.85rem', margin: '0.25rem 0' }}>{r.business_impact}</p>
+                      <div style={{ fontSize: '0.75rem', color: '#8A8A8A', marginTop: '0.5rem' }}>
                         Requested by {r.requested_by} · {new Date(r.created_at).toLocaleString()}
                       </div>
                     </div>
@@ -295,13 +295,13 @@ export const PolicyConflicts = () => {
                     {r.decision && (
                       <div style={{
                         marginTop: '0.5rem', padding: '0.5rem 0.75rem', borderRadius: 6,
-                        background: r.status === 'approved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-                        border: `1px solid ${r.status === 'approved' ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                        background: r.status === 'approved' ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.1)',
+                        border: `1px solid ${r.status === 'approved' ? 'rgba(22,163,74,0.2)' : 'rgba(220,38,38,0.2)'}`,
                       }}>
-                        <div style={{ color: r.status === 'approved' ? '#10b981' : '#ef4444', fontWeight: 600, fontSize: '0.85rem' }}>
+                        <div style={{ color: r.status === 'approved' ? '#16a34a' : '#dc2626', fontWeight: 600, fontSize: '0.85rem' }}>
                           {r.decision.action === 'approved' ? 'Approved' : 'Rejected'} by {r.decision.decided_by}
                         </div>
-                        <p style={{ color: '#9ca3af', fontSize: '0.8rem', margin: '0.15rem 0 0' }}>{r.decision.comments}</p>
+                        <p style={{ color: '#8A8A8A', fontSize: '0.8rem', margin: '0.15rem 0 0' }}>{r.decision.comments}</p>
                       </div>
                     )}
 
@@ -309,14 +309,14 @@ export const PolicyConflicts = () => {
                       <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
                         <button onClick={() => { setShowDecisionForm({ ...r, action: 'approve' }); setDecisionComments(''); }} style={{
                           padding: '0.4rem 1rem', borderRadius: 6, border: 'none',
-                          background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', cursor: 'pointer',
+                          background: 'linear-gradient(135deg, #16a34a, #059669)', color: '#fff', cursor: 'pointer',
                           fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem',
                         }}>
                           <CheckCircle size={14} /> Approve
                         </button>
                         <button onClick={() => { setShowDecisionForm({ ...r, action: 'reject' }); setDecisionComments(''); }} style={{
-                          padding: '0.4rem 1rem', borderRadius: 6, border: '1px solid rgba(239,68,68,0.4)',
-                          background: 'transparent', color: '#ef4444', cursor: 'pointer',
+                          padding: '0.4rem 1rem', borderRadius: 6, border: '1px solid rgba(220,38,38,0.4)',
+                          background: 'transparent', color: '#dc2626', cursor: 'pointer',
                           fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem',
                         }}>
                           <XCircle size={14} /> Reject
@@ -335,61 +335,61 @@ export const PolicyConflicts = () => {
       {tab === 'gate' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div style={{ background: 'rgba(15,20,25,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '2rem' }}>
-            <h2 style={{ color: '#e8eaed', marginBottom: '0.5rem' }}>Deployment Gate Check</h2>
-            <p style={{ color: '#9ca3af', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+            <h2 style={{ color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>Deployment Gate Check</h2>
+            <p style={{ color: '#8A8A8A', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
               Enter a domain name to check whether it may deploy. A domain is allowed only if all
               policy failures have approved exceptions or have been fixed.
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>
               <input value={gateDomain} onChange={e => setGateDomain(e.target.value)}
                 placeholder="e.g. finance" onKeyDown={e => e.key === 'Enter' && checkGate()}
-                style={{ flex: 1, padding: '0.5rem 0.75rem', borderRadius: 6, background: '#0f1419', color: '#e8eaed', border: '1px solid rgba(255,255,255,0.15)' }} />
+                style={{ flex: 1, padding: '0.5rem 0.75rem', borderRadius: 6, background: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)', border: '1px solid rgba(255,255,255,0.15)' }} />
               <button onClick={checkGate} style={{
                 padding: '0.5rem 1.25rem', borderRadius: 6, border: 'none',
-                background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', color: '#fff', cursor: 'pointer', fontWeight: 600,
+                background: 'linear-gradient(135deg, #12ABDB, #0070AD)', color: '#fff', cursor: 'pointer', fontWeight: 600,
               }}>Check Gate</button>
             </div>
 
             {gateResult && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                 <div style={{
-                  background: gateResult.allowed ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-                  border: `2px solid ${gateResult.allowed ? '#10b981' : '#ef4444'}`,
+                  background: gateResult.allowed ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.1)',
+                  border: `2px solid ${gateResult.allowed ? '#16a34a' : '#dc2626'}`,
                   borderRadius: 12, padding: '1.5rem', textAlign: 'center',
                 }}>
                   {gateResult.allowed
-                    ? <Unlock size={40} style={{ color: '#10b981', marginBottom: '0.5rem' }} />
-                    : <Lock size={40} style={{ color: '#ef4444', marginBottom: '0.5rem' }} />}
-                  <h3 style={{ color: gateResult.allowed ? '#10b981' : '#ef4444', margin: '0.25rem 0' }}>
+                    ? <Unlock size={40} style={{ color: '#16a34a', marginBottom: '0.5rem' }} />
+                    : <Lock size={40} style={{ color: '#dc2626', marginBottom: '0.5rem' }} />}
+                  <h3 style={{ color: gateResult.allowed ? '#16a34a' : '#dc2626', margin: '0.25rem 0' }}>
                     {gateResult.allowed ? 'DEPLOY ALLOWED' : 'DEPLOY BLOCKED'}
                   </h3>
-                  <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>{gateResult.reason}</p>
+                  <p style={{ color: '#8A8A8A', fontSize: '0.9rem' }}>{gateResult.reason}</p>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginTop: '1rem' }}>
                   {[
-                    { label: 'Total Failures', value: gateResult.total_failures, color: '#e8eaed' },
-                    { label: 'Approved', value: gateResult.approved_exceptions, color: '#10b981' },
-                    { label: 'Pending', value: gateResult.pending_exceptions, color: '#f59e0b' },
-                    { label: 'Rejected', value: gateResult.rejected_exceptions, color: '#ef4444' },
+                    { label: 'Total Failures', value: gateResult.total_failures, color: 'var(--color-text-primary)' },
+                    { label: 'Approved', value: gateResult.approved_exceptions, color: '#16a34a' },
+                    { label: 'Pending', value: gateResult.pending_exceptions, color: '#d97706' },
+                    { label: 'Rejected', value: gateResult.rejected_exceptions, color: '#dc2626' },
                   ].map((s, i) => (
                     <div key={i} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '0.75rem', textAlign: 'center' }}>
                       <div style={{ fontSize: '1.25rem', fontWeight: 700, color: s.color }}>{s.value}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{s.label}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#8A8A8A' }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
 
                 {gateResult.blockers?.length > 0 && (
                   <div style={{ marginTop: '1rem' }}>
-                    <h4 style={{ color: '#e8eaed', marginBottom: '0.5rem' }}>Blockers</h4>
+                    <h4 style={{ color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>Blockers</h4>
                     {gateResult.blockers.map((b, i) => (
                       <div key={i} style={{
                         padding: '0.5rem 0.75rem', borderRadius: 6, marginBottom: '0.4rem',
-                        background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
+                        background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.15)',
                       }}>
-                        <span style={{ color: '#e8eaed', fontSize: '0.85rem', fontWeight: 500 }}>{b.policy_title}</span>
-                        <span style={{ color: '#9ca3af', fontSize: '0.8rem', marginLeft: '0.5rem' }}>({b.severity})</span>
+                        <span style={{ color: 'var(--color-text-primary)', fontSize: '0.85rem', fontWeight: 500 }}>{b.policy_title}</span>
+                        <span style={{ color: '#8A8A8A', fontSize: '0.8rem', marginLeft: '0.5rem' }}>({b.severity})</span>
                         <p style={{ color: '#f87171', fontSize: '0.8rem', margin: '0.15rem 0 0' }}>{b.reason}</p>
                       </div>
                     ))}
@@ -406,60 +406,60 @@ export const PolicyConflicts = () => {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
             {[
-              { label: 'Total Failures', value: stats.total_failures, color: '#ef4444' },
-              { label: 'Total Exceptions', value: stats.total_exceptions, color: '#f59e0b' },
-              { label: 'Approval Rate', value: `${stats.approval_rate_pct}%`, color: '#10b981' },
+              { label: 'Total Failures', value: stats.total_failures, color: '#dc2626' },
+              { label: 'Total Exceptions', value: stats.total_exceptions, color: '#d97706' },
+              { label: 'Approval Rate', value: `${stats.approval_rate_pct}%`, color: '#16a34a' },
             ].map((s, i) => (
               <div key={i} style={{ background: 'rgba(15,20,25,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '1.5rem', textAlign: 'center' }}>
                 <div style={{ fontSize: '2rem', fontWeight: 700, color: s.color }}>{s.value}</div>
-                <div style={{ fontSize: '0.85rem', color: '#9ca3af' }}>{s.label}</div>
+                <div style={{ fontSize: '0.85rem', color: '#8A8A8A' }}>{s.label}</div>
               </div>
             ))}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
             <div style={{ background: 'rgba(15,20,25,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '1.5rem' }}>
-              <h3 style={{ color: '#e8eaed', marginBottom: '1rem' }}>Exception Status</h3>
+              <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '1rem' }}>Exception Status</h3>
               {[
-                { label: 'Pending Review', value: stats.pending_review, color: '#f59e0b' },
-                { label: 'Approved', value: stats.approved, color: '#10b981' },
-                { label: 'Rejected', value: stats.rejected, color: '#ef4444' },
+                { label: 'Pending Review', value: stats.pending_review, color: '#d97706' },
+                { label: 'Approved', value: stats.approved, color: '#16a34a' },
+                { label: 'Rejected', value: stats.rejected, color: '#dc2626' },
               ].map((item, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <span style={{ color: item.color }}>{item.label}</span>
-                  <span style={{ color: '#e8eaed', fontWeight: 600 }}>{item.value}</span>
+                  <span style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>{item.value}</span>
                 </div>
               ))}
             </div>
 
             <div style={{ background: 'rgba(15,20,25,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '1.5rem' }}>
-              <h3 style={{ color: '#e8eaed', marginBottom: '1rem' }}>Failures by Domain</h3>
+              <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '1rem' }}>Failures by Domain</h3>
               {Object.entries(stats.failures_by_domain || {}).map(([domain, count]) => (
                 <div key={domain} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span style={{ color: '#9ca3af' }}>{domain}</span>
-                  <span style={{ color: '#e8eaed', fontWeight: 600 }}>{count}</span>
+                  <span style={{ color: '#8A8A8A' }}>{domain}</span>
+                  <span style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>{count}</span>
                 </div>
               ))}
-              {Object.keys(stats.failures_by_domain || {}).length === 0 && <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>No failures</p>}
+              {Object.keys(stats.failures_by_domain || {}).length === 0 && <p style={{ color: '#8A8A8A', fontSize: '0.9rem' }}>No failures</p>}
             </div>
 
             <div style={{ background: 'rgba(15,20,25,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '1.5rem' }}>
-              <h3 style={{ color: '#e8eaed', marginBottom: '1rem' }}>Deployable Domains</h3>
+              <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '1rem' }}>Deployable Domains</h3>
               {(stats.domains_deployable || []).map(d => (
                 <div key={d} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
-                  <Unlock size={14} style={{ color: '#10b981' }} /> <span style={{ color: '#10b981' }}>{d}</span>
+                  <Unlock size={14} style={{ color: '#16a34a' }} /> <span style={{ color: '#16a34a' }}>{d}</span>
                 </div>
               ))}
-              {(stats.domains_deployable || []).length === 0 && <p style={{ color: '#6b7280', fontSize: '0.85rem' }}>None</p>}
+              {(stats.domains_deployable || []).length === 0 && <p style={{ color: '#8A8A8A', fontSize: '0.85rem' }}>None</p>}
             </div>
             <div style={{ background: 'rgba(15,20,25,0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '1.5rem' }}>
-              <h3 style={{ color: '#e8eaed', marginBottom: '1rem' }}>Blocked Domains</h3>
+              <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '1rem' }}>Blocked Domains</h3>
               {(stats.domains_blocked || []).map(d => (
                 <div key={d} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
-                  <Lock size={14} style={{ color: '#ef4444' }} /> <span style={{ color: '#ef4444' }}>{d}</span>
+                  <Lock size={14} style={{ color: '#dc2626' }} /> <span style={{ color: '#dc2626' }}>{d}</span>
                 </div>
               ))}
-              {(stats.domains_blocked || []).length === 0 && <p style={{ color: '#6b7280', fontSize: '0.85rem' }}>None</p>}
+              {(stats.domains_blocked || []).length === 0 && <p style={{ color: '#8A8A8A', fontSize: '0.85rem' }}>None</p>}
             </div>
           </div>
         </motion.div>
@@ -472,31 +472,31 @@ export const PolicyConflicts = () => {
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             style={{ background: '#1a1f2e', borderRadius: 16, padding: '2rem', maxWidth: 550, width: '90%', border: '1px solid rgba(255,255,255,0.1)' }}
             onClick={e => e.stopPropagation()}>
-            <h2 style={{ color: '#e8eaed', marginBottom: '0.5rem' }}>Raise Exception Request</h2>
-            <p style={{ color: '#9ca3af', fontSize: '0.85rem', marginBottom: '1rem' }}>
-              Policy: <strong style={{ color: '#e8eaed' }}>{showExceptionForm.policy_title}</strong> · Domain: {showExceptionForm.domain}
+            <h2 style={{ color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>Raise Exception Request</h2>
+            <p style={{ color: '#8A8A8A', fontSize: '0.85rem', marginBottom: '1rem' }}>
+              Policy: <strong style={{ color: 'var(--color-text-primary)' }}>{showExceptionForm.policy_title}</strong> · Domain: {showExceptionForm.domain}
             </p>
 
-            <label style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Business Justification *</label>
+            <label style={{ color: '#8A8A8A', fontSize: '0.85rem' }}>Business Justification *</label>
             <textarea value={exceptionForm.justification} onChange={e => setExceptionForm(f => ({ ...f, justification: e.target.value }))}
               rows={3} placeholder="Why does the domain need to deploy despite this failure?"
-              style={{ width: '100%', padding: '0.5rem', borderRadius: 6, background: '#0f1419', color: '#e8eaed', border: '1px solid rgba(255,255,255,0.15)', resize: 'vertical', marginBottom: '0.75rem' }} />
+              style={{ width: '100%', padding: '0.5rem', borderRadius: 6, background: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)', border: '1px solid rgba(255,255,255,0.15)', resize: 'vertical', marginBottom: '0.75rem' }} />
 
-            <label style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Business Impact *</label>
+            <label style={{ color: '#8A8A8A', fontSize: '0.85rem' }}>Business Impact *</label>
             <textarea value={exceptionForm.business_impact} onChange={e => setExceptionForm(f => ({ ...f, business_impact: e.target.value }))}
               rows={2} placeholder="What is the impact if deployment is blocked?"
-              style={{ width: '100%', padding: '0.5rem', borderRadius: 6, background: '#0f1419', color: '#e8eaed', border: '1px solid rgba(255,255,255,0.15)', resize: 'vertical', marginBottom: '0.75rem' }} />
+              style={{ width: '100%', padding: '0.5rem', borderRadius: 6, background: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)', border: '1px solid rgba(255,255,255,0.15)', resize: 'vertical', marginBottom: '0.75rem' }} />
 
             <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
               <div style={{ flex: 1 }}>
-                <label style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Requested By</label>
+                <label style={{ color: '#8A8A8A', fontSize: '0.85rem' }}>Requested By</label>
                 <input value={exceptionForm.requested_by} onChange={e => setExceptionForm(f => ({ ...f, requested_by: e.target.value }))}
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: 6, background: '#0f1419', color: '#e8eaed', border: '1px solid rgba(255,255,255,0.15)' }} />
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: 6, background: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)', border: '1px solid rgba(255,255,255,0.15)' }} />
               </div>
               <div style={{ flex: 1 }}>
-                <label style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Duration (days)</label>
+                <label style={{ color: '#8A8A8A', fontSize: '0.85rem' }}>Duration (days)</label>
                 <input type="number" value={exceptionForm.requested_duration_days} onChange={e => setExceptionForm(f => ({ ...f, requested_duration_days: parseInt(e.target.value) || 90 }))}
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: 6, background: '#0f1419', color: '#e8eaed', border: '1px solid rgba(255,255,255,0.15)' }} />
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: 6, background: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)', border: '1px solid rgba(255,255,255,0.15)' }} />
               </div>
             </div>
 
@@ -505,13 +505,13 @@ export const PolicyConflicts = () => {
                 disabled={!exceptionForm.justification.trim() || !exceptionForm.business_impact.trim()}
                 style={{
                   padding: '0.5rem 1.5rem', borderRadius: 8, border: 'none',
-                  background: exceptionForm.justification.trim() && exceptionForm.business_impact.trim() ? 'linear-gradient(135deg, #f59e0b, #d97706)' : '#374151',
+                  background: exceptionForm.justification.trim() && exceptionForm.business_impact.trim() ? 'linear-gradient(135deg, #d97706, #b45309)' : '#374151',
                   color: '#fff', cursor: exceptionForm.justification.trim() && exceptionForm.business_impact.trim() ? 'pointer' : 'not-allowed', fontWeight: 600,
                 }}>
                 Submit Exception Request
               </button>
               <button onClick={() => setShowExceptionForm(null)} style={{
-                padding: '0.5rem 1rem', borderRadius: 6, border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: '#9ca3af', cursor: 'pointer',
+                padding: '0.5rem 1rem', borderRadius: 6, border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: '#8A8A8A', cursor: 'pointer',
               }}>Cancel</button>
             </div>
           </motion.div>
@@ -525,28 +525,28 @@ export const PolicyConflicts = () => {
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             style={{ background: '#1a1f2e', borderRadius: 16, padding: '2rem', maxWidth: 500, width: '90%', border: '1px solid rgba(255,255,255,0.1)' }}
             onClick={e => e.stopPropagation()}>
-            <h2 style={{ color: '#e8eaed', marginBottom: '0.5rem' }}>
+            <h2 style={{ color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>
               {showDecisionForm.action === 'approve' ? 'Approve' : 'Reject'} Exception #{showDecisionForm.id}
             </h2>
-            <p style={{ color: '#9ca3af', fontSize: '0.85rem', marginBottom: '1rem' }}>{showDecisionForm.policy_title}</p>
+            <p style={{ color: '#8A8A8A', fontSize: '0.85rem', marginBottom: '1rem' }}>{showDecisionForm.policy_title}</p>
 
-            <label style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Board Comments *</label>
+            <label style={{ color: '#8A8A8A', fontSize: '0.85rem' }}>Board Comments *</label>
             <textarea value={decisionComments} onChange={e => setDecisionComments(e.target.value)}
               rows={3} placeholder="Provide reasoning for this decision..."
-              style={{ width: '100%', padding: '0.5rem', borderRadius: 6, background: '#0f1419', color: '#e8eaed', border: '1px solid rgba(255,255,255,0.15)', resize: 'vertical', marginBottom: '1rem' }} />
+              style={{ width: '100%', padding: '0.5rem', borderRadius: 6, background: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)', border: '1px solid rgba(255,255,255,0.15)', resize: 'vertical', marginBottom: '1rem' }} />
 
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button onClick={() => handleDecision(showDecisionForm.id, showDecisionForm.action)}
                 disabled={!decisionComments.trim()}
                 style={{
                   padding: '0.5rem 1.5rem', borderRadius: 8, border: 'none',
-                  background: !decisionComments.trim() ? '#374151' : showDecisionForm.action === 'approve' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  background: !decisionComments.trim() ? '#374151' : showDecisionForm.action === 'approve' ? 'linear-gradient(135deg, #16a34a, #059669)' : 'linear-gradient(135deg, #dc2626, #b91c1c)',
                   color: '#fff', cursor: decisionComments.trim() ? 'pointer' : 'not-allowed', fontWeight: 600,
                 }}>
                 Confirm {showDecisionForm.action === 'approve' ? 'Approval' : 'Rejection'}
               </button>
               <button onClick={() => setShowDecisionForm(null)} style={{
-                padding: '0.5rem 1rem', borderRadius: 6, border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: '#9ca3af', cursor: 'pointer',
+                padding: '0.5rem 1rem', borderRadius: 6, border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: '#8A8A8A', cursor: 'pointer',
               }}>Cancel</button>
             </div>
           </motion.div>

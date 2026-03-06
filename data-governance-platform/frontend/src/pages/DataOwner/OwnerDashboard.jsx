@@ -69,135 +69,299 @@ export function OwnerDashboard() {
     }
   };
 
-  const getSeverityColor = (severity) => {
+  const getSeverityStyle = (severity) => {
     switch (severity?.toLowerCase()) {
       case 'critical':
-        return 'text-red-400 bg-red-500/10';
+        return { color: 'var(--color-error)', backgroundColor: 'rgba(220, 38, 38, 0.1)' };
       case 'warning':
-        return 'text-yellow-400 bg-yellow-500/10';
+        return { color: 'var(--color-warning)', backgroundColor: 'rgba(217, 119, 6, 0.1)' };
       default:
-        return 'text-blue-400 bg-blue-500/10';
+        return { color: 'var(--color-accent-primary)', backgroundColor: 'rgba(0, 112, 173, 0.1)' };
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusStyle = (status) => {
     switch (status) {
       case 'published':
-        return 'text-green-400 bg-green-500/10';
+        return { color: 'var(--color-success)', backgroundColor: 'rgba(22, 163, 74, 0.1)' };
       case 'draft':
-        return 'text-gray-400 bg-gray-500/10';
+        return { color: 'var(--color-text-tertiary)', backgroundColor: 'var(--color-bg-tertiary)' };
       default:
-        return 'text-yellow-400 bg-yellow-500/10';
+        return { color: 'var(--color-warning)', backgroundColor: 'rgba(217, 119, 6, 0.1)' };
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <div className="text-white">Loading...</div>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        backgroundColor: 'var(--color-bg-primary)',
+      }}>
+        <div style={{ color: 'var(--color-text-primary)' }}>Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: 'var(--color-bg-primary)',
+      padding: 'var(--space-2xl)',
+    }}>
+      <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 'var(--space-2xl)',
+        }}>
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 style={{
+              fontSize: '1.875rem',
+              fontWeight: 700,
+              color: 'var(--color-text-primary)',
+              marginBottom: 'var(--space-sm)',
+              fontFamily: 'var(--font-display)',
+            }}>
               Data Owner Dashboard
             </h1>
-            <p className="text-gray-400">
+            <p style={{ color: 'var(--color-text-tertiary)' }}>
               Manage your datasets and track governance compliance
             </p>
           </div>
 
           <button
             onClick={() => navigate('/owner/register')}
-            className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all flex items-center gap-2"
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: 'var(--color-accent-primary)',
+              color: '#FFFFFF',
+              borderRadius: 'var(--radius-md)',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-sm)',
+              fontWeight: 500,
+              fontSize: '0.875rem',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#005a8a'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-accent-primary)'}
           >
-            <Plus className="w-5 h-5" />
+            <Plus style={{ width: '1.25rem', height: '1.25rem' }} />
             Register Dataset
           </button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <Database className="w-8 h-8 text-blue-400" />
-              <span className="text-3xl font-bold text-white">{stats.total}</span>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 'var(--space-lg)',
+          marginBottom: 'var(--space-2xl)',
+        }}>
+          <div style={{
+            backgroundColor: 'var(--color-bg-secondary)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--color-border-default)',
+            padding: 'var(--space-lg)',
+            boxShadow: 'var(--shadow-sm)',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 'var(--space-md)',
+            }}>
+              <Database style={{ width: '2rem', height: '2rem', color: 'var(--color-accent-primary)' }} />
+              <span style={{
+                fontSize: '1.875rem',
+                fontWeight: 700,
+                color: 'var(--color-text-primary)',
+              }}>{stats.total}</span>
             </div>
-            <p className="text-gray-400 text-sm">Total Datasets</p>
+            <p style={{ color: 'var(--color-text-tertiary)', fontSize: '0.875rem' }}>Total Datasets</p>
           </div>
 
-          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <AlertTriangle className="w-8 h-8 text-red-400" />
-              <span className="text-3xl font-bold text-white">{stats.withViolations}</span>
+          <div style={{
+            backgroundColor: 'var(--color-bg-secondary)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--color-border-default)',
+            padding: 'var(--space-lg)',
+            boxShadow: 'var(--shadow-sm)',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 'var(--space-md)',
+            }}>
+              <AlertTriangle style={{ width: '2rem', height: '2rem', color: 'var(--color-error)' }} />
+              <span style={{
+                fontSize: '1.875rem',
+                fontWeight: 700,
+                color: 'var(--color-text-primary)',
+              }}>{stats.withViolations}</span>
             </div>
-            <p className="text-gray-400 text-sm">With Violations</p>
+            <p style={{ color: 'var(--color-text-tertiary)', fontSize: '0.875rem' }}>With Violations</p>
           </div>
 
-          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <CheckCircle className="w-8 h-8 text-green-400" />
-              <span className="text-3xl font-bold text-white">{stats.active}</span>
+          <div style={{
+            backgroundColor: 'var(--color-bg-secondary)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--color-border-default)',
+            padding: 'var(--space-lg)',
+            boxShadow: 'var(--shadow-sm)',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 'var(--space-md)',
+            }}>
+              <CheckCircle style={{ width: '2rem', height: '2rem', color: 'var(--color-success)' }} />
+              <span style={{
+                fontSize: '1.875rem',
+                fontWeight: 700,
+                color: 'var(--color-text-primary)',
+              }}>{stats.active}</span>
             </div>
-            <p className="text-gray-400 text-sm">Active Datasets</p>
+            <p style={{ color: 'var(--color-text-tertiary)', fontSize: '0.875rem' }}>Active Datasets</p>
           </div>
 
-          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <Users className="w-8 h-8 text-purple-400" />
-              <span className="text-3xl font-bold text-white">{stats.subscribers}</span>
+          <div style={{
+            backgroundColor: 'var(--color-bg-secondary)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--color-border-default)',
+            padding: 'var(--space-lg)',
+            boxShadow: 'var(--shadow-sm)',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 'var(--space-md)',
+            }}>
+              <Users style={{ width: '2rem', height: '2rem', color: 'var(--color-accent-primary)' }} />
+              <span style={{
+                fontSize: '1.875rem',
+                fontWeight: 700,
+                color: 'var(--color-text-primary)',
+              }}>{stats.subscribers}</span>
             </div>
-            <p className="text-gray-400 text-sm">Total Subscribers</p>
+            <p style={{ color: 'var(--color-text-tertiary)', fontSize: '0.875rem' }}>Total Subscribers</p>
           </div>
         </div>
 
         {/* Violations Alert */}
         {violations.length > 0 && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 mb-8">
-            <div className="flex items-start gap-4">
-              <AlertTriangle className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-red-400 mb-2">
+          <div style={{
+            backgroundColor: 'rgba(220, 38, 38, 0.08)',
+            border: '1px solid rgba(220, 38, 38, 0.25)',
+            borderRadius: 'var(--radius-lg)',
+            padding: 'var(--space-lg)',
+            marginBottom: 'var(--space-2xl)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-md)' }}>
+              <AlertTriangle style={{
+                width: '1.5rem',
+                height: '1.5rem',
+                color: 'var(--color-error)',
+                flexShrink: 0,
+                marginTop: '0.25rem',
+              }} />
+              <div style={{ flex: 1 }}>
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: 600,
+                  color: 'var(--color-error)',
+                  marginBottom: 'var(--space-sm)',
+                }}>
                   Active Policy Violations
                 </h3>
-                <p className="text-gray-300 mb-4">
+                <p style={{
+                  color: 'var(--color-text-secondary)',
+                  marginBottom: 'var(--space-md)',
+                }}>
                   You have {violations.length} policy violation(s) across your datasets that need attention.
                 </p>
 
-                <div className="space-y-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {violations.slice(0, 5).map((violation, index) => (
                     <div
                       key={index}
-                      className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-all cursor-pointer"
+                      style={{
+                        backgroundColor: 'var(--color-bg-secondary)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: 'var(--space-md)',
+                        cursor: 'pointer',
+                        border: '1px solid var(--color-border-default)',
+                        transition: 'background-color 0.2s',
+                      }}
                       onClick={() => navigate(`/owner/datasets/${violation.datasetId}`)}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-tertiary)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-secondary)'}
                     >
-                      <div className="flex items-start justify-between mb-2">
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        marginBottom: 'var(--space-sm)',
+                      }}>
                         <div>
-                          <span className="text-xs text-gray-500">Dataset:</span>
-                          <span className="text-white font-medium ml-2">
+                          <span style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--color-text-muted)',
+                          }}>Dataset:</span>
+                          <span style={{
+                            color: 'var(--color-text-primary)',
+                            fontWeight: 500,
+                            marginLeft: 'var(--space-sm)',
+                          }}>
                             {violation.dataset}
                           </span>
                         </div>
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getSeverityColor(
-                            violation.type
-                          )}`}
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            ...getSeverityStyle(violation.type),
+                          }}
                         >
                           {violation.type?.toUpperCase()}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-300 mb-2">{violation.policy}</p>
-                      <p className="text-sm text-gray-400">{violation.message}</p>
+                      <p style={{
+                        fontSize: '0.875rem',
+                        color: 'var(--color-text-secondary)',
+                        marginBottom: 'var(--space-sm)',
+                      }}>{violation.policy}</p>
+                      <p style={{
+                        fontSize: '0.875rem',
+                        color: 'var(--color-text-tertiary)',
+                      }}>{violation.message}</p>
                       {violation.remediation && (
-                        <div className="mt-3 pt-3 border-t border-gray-700">
-                          <p className="text-xs text-gray-500 mb-1">How to fix:</p>
-                          <p className="text-xs text-gray-400">{violation.remediation}</p>
+                        <div style={{
+                          marginTop: '0.75rem',
+                          paddingTop: '0.75rem',
+                          borderTop: '1px solid var(--color-border-default)',
+                        }}>
+                          <p style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--color-text-muted)',
+                            marginBottom: '0.25rem',
+                          }}>How to fix:</p>
+                          <p style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--color-text-tertiary)',
+                          }}>{violation.remediation}</p>
                         </div>
                       )}
                     </div>
@@ -207,7 +371,17 @@ export function OwnerDashboard() {
                 {violations.length > 5 && (
                   <button
                     onClick={() => navigate('/owner/violations')}
-                    className="mt-4 text-sm text-red-400 hover:text-red-300"
+                    style={{
+                      marginTop: 'var(--space-md)',
+                      fontSize: '0.875rem',
+                      color: 'var(--color-error)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
                     View all {violations.length} violations →
                   </button>
@@ -218,77 +392,160 @@ export function OwnerDashboard() {
         )}
 
         {/* Datasets List */}
-        <div className="bg-gray-800 rounded-xl border border-gray-700">
-          <div className="p-6 border-b border-gray-700">
-            <h2 className="text-xl font-semibold text-white">Your Datasets</h2>
+        <div style={{
+          backgroundColor: 'var(--color-bg-secondary)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--color-border-default)',
+          boxShadow: 'var(--shadow-sm)',
+        }}>
+          <div style={{
+            padding: 'var(--space-lg)',
+            borderBottom: '1px solid var(--color-border-default)',
+          }}>
+            <h2 style={{
+              fontSize: '1.25rem',
+              fontWeight: 600,
+              color: 'var(--color-text-primary)',
+              fontFamily: 'var(--font-display)',
+            }}>Your Datasets</h2>
           </div>
 
-          <div className="divide-y divide-gray-700">
+          <div>
             {datasets.length === 0 ? (
-              <div className="p-12 text-center">
-                <Database className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-400 mb-2">
+              <div style={{
+                padding: '3rem',
+                textAlign: 'center',
+              }}>
+                <Database style={{
+                  width: '4rem',
+                  height: '4rem',
+                  color: 'var(--color-text-muted)',
+                  margin: '0 auto 1rem',
+                  display: 'block',
+                }} />
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: 600,
+                  color: 'var(--color-text-tertiary)',
+                  marginBottom: 'var(--space-sm)',
+                }}>
                   No datasets yet
                 </h3>
-                <p className="text-gray-500 mb-6">
+                <p style={{
+                  color: 'var(--color-text-muted)',
+                  marginBottom: 'var(--space-lg)',
+                }}>
                   Start by registering your first dataset
                 </p>
                 <button
                   onClick={() => navigate('/owner/register')}
-                  className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all"
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    backgroundColor: 'var(--color-accent-primary)',
+                    color: '#FFFFFF',
+                    borderRadius: 'var(--radius-md)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                    transition: 'background-color 0.2s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#005a8a'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-accent-primary)'}
                 >
                   Register Dataset
                 </button>
               </div>
             ) : (
-              datasets.map((dataset) => (
+              datasets.map((dataset, index) => (
                 <div
                   key={dataset.id}
-                  className="p-6 hover:bg-gray-750 transition-all cursor-pointer"
+                  style={{
+                    padding: 'var(--space-lg)',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                    borderTop: index > 0 ? '1px solid var(--color-border-default)' : 'none',
+                  }}
                   onClick={() => navigate(`/owner/datasets/${dataset.id}`)}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-tertiary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-white">
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    marginBottom: '0.75rem',
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        marginBottom: 'var(--space-sm)',
+                      }}>
+                        <h3 style={{
+                          fontSize: '1.125rem',
+                          fontWeight: 600,
+                          color: 'var(--color-text-primary)',
+                        }}>
                           {dataset.name}
                         </h3>
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                            dataset.status
-                          )}`}
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            ...getStatusStyle(dataset.status),
+                          }}
                         >
                           {dataset.status}
                         </span>
                         {dataset.contract?.validation_result?.status === 'failed' && (
-                          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400">
+                          <span style={{
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                            color: 'var(--color-error)',
+                          }}>
                             Has Violations
                           </span>
                         )}
                       </div>
-                      <p className="text-gray-400 text-sm mb-3">
+                      <p style={{
+                        color: 'var(--color-text-tertiary)',
+                        fontSize: '0.875rem',
+                        marginBottom: '0.75rem',
+                      }}>
                         {dataset.description}
                       </p>
 
-                      <div className="flex items-center gap-6 text-sm text-gray-500">
-                        <div className="flex items-center gap-2">
-                          <Database className="w-4 h-4" />
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1.5rem',
+                        fontSize: '0.875rem',
+                        color: 'var(--color-text-muted)',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+                          <Database style={{ width: '1rem', height: '1rem' }} />
                           <span>{dataset.source_system}</span>
                         </div>
                         {dataset.classification && (
-                          <div className="flex items-center gap-2">
-                            <span className="capitalize">{dataset.classification}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+                            <span style={{ textTransform: 'capitalize' }}>{dataset.classification}</span>
                           </div>
                         )}
                         {dataset.subscriber_count > 0 && (
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4" />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+                            <Users style={{ width: '1rem', height: '1rem' }} />
                             <span>{dataset.subscriber_count} subscribers</span>
                           </div>
                         )}
                         {dataset.created_at && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+                            <Clock style={{ width: '1rem', height: '1rem' }} />
                             <span>{new Date(dataset.created_at).toLocaleDateString()}</span>
                           </div>
                         )}
@@ -296,18 +553,23 @@ export function OwnerDashboard() {
                     </div>
 
                     {dataset.contract?.validation_result && (
-                      <div className="text-right">
+                      <div style={{ textAlign: 'right' }}>
                         {dataset.contract.validation_result.status === 'passed' ? (
-                          <div className="flex items-center gap-2 text-green-400">
-                            <CheckCircle className="w-5 h-5" />
-                            <span className="text-sm font-medium">Compliant</span>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--space-sm)',
+                            color: 'var(--color-success)',
+                          }}>
+                            <CheckCircle style={{ width: '1.25rem', height: '1.25rem' }} />
+                            <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Compliant</span>
                           </div>
                         ) : (
-                          <div className="text-red-400">
-                            <div className="text-2xl font-bold">
+                          <div style={{ color: 'var(--color-error)' }}>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
                               {dataset.contract.validation_result.failures || 0}
                             </div>
-                            <div className="text-xs">violations</div>
+                            <div style={{ fontSize: '0.75rem' }}>violations</div>
                           </div>
                         )}
                       </div>

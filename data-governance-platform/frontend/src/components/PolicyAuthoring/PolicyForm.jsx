@@ -17,9 +17,9 @@ const CATEGORIES = [
 ];
 
 const SEVERITIES = [
-  { value: 'CRITICAL', label: 'Critical', color: '#ef4444', desc: 'Must fix before approval' },
-  { value: 'WARNING', label: 'Warning', color: '#f59e0b', desc: 'Should fix; blocks recommended' },
-  { value: 'INFO', label: 'Info', color: '#10b981', desc: 'Advisory; does not block' },
+  { value: 'CRITICAL', label: 'Critical', color: '#dc2626', desc: 'Must fix before approval' },
+  { value: 'WARNING', label: 'Warning', color: '#d97706', desc: 'Should fix; blocks recommended' },
+  { value: 'INFO', label: 'Info', color: '#16a34a', desc: 'Advisory; does not block' },
 ];
 
 const SCANNER_HINTS = [

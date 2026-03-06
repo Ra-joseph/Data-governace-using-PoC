@@ -29,11 +29,11 @@ import { datasetAPI, subscriptionAPI } from '../../services/api';
 import './ComplianceDashboard.css';
 
 const TOOLTIP_STYLE = {
-  background: 'var(--color-bg-elevated)',
-  border: '1px solid rgba(139, 92, 246, 0.2)',
+  background: '#FFFFFF',
+  border: '1px solid #E5E2DB',
   borderRadius: '0.5rem',
   fontSize: '0.875rem',
-  color: 'var(--color-text-primary)',
+  color: '#1A1A1A',
 };
 
 export function ComplianceDashboard() {
@@ -116,9 +116,9 @@ export function ComplianceDashboard() {
       if (counts[type] !== undefined) counts[type]++;
     });
     return [
-      { name: 'Critical', value: counts.critical, color: '#ef4444' },
-      { name: 'Warning',  value: counts.warning,  color: '#f59e0b' },
-      { name: 'Info',     value: counts.info,     color: '#3b82f6' },
+      { name: 'Critical', value: counts.critical, color: '#dc2626' },
+      { name: 'Warning',  value: counts.warning,  color: '#d97706' },
+      { name: 'Info',     value: counts.info,     color: '#0070AD' },
     ];
   };
 
@@ -229,15 +229,15 @@ export function ComplianceDashboard() {
           <div className="compliance-chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={violationTrends}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(139, 92, 246, 0.1)" />
-                <XAxis dataKey="month" stroke="#6b7280" style={{ fontSize: '0.75rem' }} />
-                <YAxis stroke="#6b7280" style={{ fontSize: '0.75rem' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 112, 173, 0.08)" />
+                <XAxis dataKey="month" stroke="#B0ADA6" style={{ fontSize: '0.75rem' }} />
+                <YAxis stroke="#B0ADA6" style={{ fontSize: '0.75rem' }} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} />
                 <Legend />
                 <Line
                   type="monotone"
                   dataKey="violations"
-                  stroke="#8b5cf6"
+                  stroke="#0070AD"
                   strokeWidth={2}
                   name="Total Violations"
                   dot={false}
@@ -245,7 +245,7 @@ export function ComplianceDashboard() {
                 <Line
                   type="monotone"
                   dataKey="critical"
-                  stroke="#ef4444"
+                  stroke="#dc2626"
                   strokeWidth={2}
                   name="Critical"
                   dot={false}
@@ -295,17 +295,17 @@ export function ComplianceDashboard() {
           <div className="compliance-chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={violationsByPolicy} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(139, 92, 246, 0.1)" />
-                <XAxis type="number" stroke="#6b7280" style={{ fontSize: '0.75rem' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 112, 173, 0.08)" />
+                <XAxis type="number" stroke="#B0ADA6" style={{ fontSize: '0.75rem' }} />
                 <YAxis
                   dataKey="name"
                   type="category"
-                  stroke="#6b7280"
+                  stroke="#B0ADA6"
                   style={{ fontSize: '0.75rem' }}
                   width={80}
                 />
                 <Tooltip contentStyle={TOOLTIP_STYLE} />
-                <Bar dataKey="count" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="count" fill="#0070AD" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -320,13 +320,13 @@ export function ComplianceDashboard() {
           <div className="compliance-chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={complianceByClassification}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(139, 92, 246, 0.1)" />
-                <XAxis dataKey="classification" stroke="#6b7280" style={{ fontSize: '0.75rem' }} />
-                <YAxis stroke="#6b7280" style={{ fontSize: '0.75rem' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 112, 173, 0.08)" />
+                <XAxis dataKey="classification" stroke="#B0ADA6" style={{ fontSize: '0.75rem' }} />
+                <YAxis stroke="#B0ADA6" style={{ fontSize: '0.75rem' }} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} />
                 <Legend />
-                <Bar dataKey="compliant"    stackId="a" fill="#10b981" name="Compliant"     radius={[4, 4, 0, 0]} />
-                <Bar dataKey="nonCompliant" stackId="a" fill="#ef4444" name="Non-Compliant" />
+                <Bar dataKey="compliant"    stackId="a" fill="#16a34a" name="Compliant"     radius={[4, 4, 0, 0]} />
+                <Bar dataKey="nonCompliant" stackId="a" fill="#dc2626" name="Non-Compliant" />
               </BarChart>
             </ResponsiveContainer>
           </div>

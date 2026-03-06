@@ -95,7 +95,7 @@
 }
 
 .nav-link.active {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(0, 112, 173, 0.08);
   color: var(--color-accent-primary);
   font-weight: 600;
 }
@@ -194,7 +194,7 @@
 }
 
 .switch-role-btn:hover {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(0, 112, 173, 0.08);
   border-color: var(--color-accent-primary);
   color: var(--color-accent-primary);
 }

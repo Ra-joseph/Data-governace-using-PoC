@@ -6,17 +6,17 @@ import { policyAuthoringAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const SEVERITY_CONFIG = {
-  CRITICAL: { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.2)' },
-  WARNING: { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.2)' },
-  INFO: { color: '#10b981', bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.2)' },
+  CRITICAL: { color: '#dc2626', bg: 'rgba(220,38,38,0.1)', border: 'rgba(220,38,38,0.2)' },
+  WARNING: { color: '#d97706', bg: 'rgba(217,119,6,0.1)', border: 'rgba(217,119,6,0.2)' },
+  INFO: { color: '#16a34a', bg: 'rgba(22,163,74,0.1)', border: 'rgba(22,163,74,0.2)' },
 };
 
 const STATUS_CONFIG = {
-  draft: { color: '#9ca3af', bg: 'rgba(156,163,175,0.1)', border: 'rgba(156,163,175,0.2)', label: 'Draft' },
+  draft: { color: '#8A8A8A', bg: 'rgba(138,138,138,0.1)', border: 'rgba(138,138,138,0.2)', label: 'Draft' },
   pending_approval: { color: '#0070AD', bg: 'rgba(0,112,173,0.1)', border: 'rgba(0,112,173,0.2)', label: 'Pending' },
-  approved: { color: '#10b981', bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.2)', label: 'Approved' },
-  rejected: { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.2)', label: 'Rejected' },
-  deprecated: { color: '#6b7280', bg: 'rgba(107,114,128,0.1)', border: 'rgba(107,114,128,0.2)', label: 'Deprecated' },
+  approved: { color: '#16a34a', bg: 'rgba(22,163,74,0.1)', border: 'rgba(22,163,74,0.2)', label: 'Approved' },
+  rejected: { color: '#dc2626', bg: 'rgba(220,38,38,0.1)', border: 'rgba(220,38,38,0.2)', label: 'Rejected' },
+  deprecated: { color: '#8A8A8A', bg: 'rgba(138,138,138,0.1)', border: 'rgba(138,138,138,0.2)', label: 'Deprecated' },
 };
 
 const CATEGORY_LABELS = {

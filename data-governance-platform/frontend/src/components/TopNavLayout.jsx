@@ -56,10 +56,10 @@ const navGroups = [
 ];
 
 const roleMeta = {
-  owner:    { label: 'Data Owner',     color: '#3b82f6' },
-  consumer: { label: 'Data Consumer',  color: '#22c55e' },
-  steward:  { label: 'Data Steward',   color: '#a855f7' },
-  admin:    { label: 'Platform Admin', color: '#f97316' },
+  owner:    { label: 'Data Owner',     color: '#0070AD' },
+  consumer: { label: 'Data Consumer',  color: '#16a34a' },
+  steward:  { label: 'Data Steward',   color: '#7c3aed' },
+  admin:    { label: 'Platform Admin', color: '#d97706' },
 };
 
 function DropdownGroup({ group, onClose }) {

@@ -39,10 +39,10 @@ const roleNavigation = {
 };
 
 const roleMeta = {
-  owner:    { label: 'Data Owner',     color: '#3b82f6', bg: 'rgba(59,130,246,0.15)' },
-  consumer: { label: 'Data Consumer',  color: '#22c55e', bg: 'rgba(34,197,94,0.15)'  },
-  steward:  { label: 'Data Steward',   color: '#a855f7', bg: 'rgba(168,85,247,0.15)' },
-  admin:    { label: 'Platform Admin', color: '#f97316', bg: 'rgba(249,115,22,0.15)' },
+  owner:    { label: 'Data Owner',     color: '#0070AD', bg: 'rgba(0,112,173,0.1)'  },
+  consumer: { label: 'Data Consumer',  color: '#16a34a', bg: 'rgba(22,163,74,0.1)'  },
+  steward:  { label: 'Data Steward',   color: '#7c3aed', bg: 'rgba(124,58,237,0.1)' },
+  admin:    { label: 'Platform Admin', color: '#d97706', bg: 'rgba(217,119,6,0.1)'  },
 };
 
 export const Layout = () => {
@@ -118,9 +118,9 @@ export const Layout = () => {
               className="logo-icon"
               animate={{
                 boxShadow: [
-                  '0 0 20px rgba(139, 92, 246, 0.3)',
-                  '0 0 30px rgba(139, 92, 246, 0.5)',
-                  '0 0 20px rgba(139, 92, 246, 0.3)',
+                  '0 0 20px rgba(0, 112, 173, 0.2)',
+                  '0 0 30px rgba(0, 112, 173, 0.35)',
+                  '0 0 20px rgba(0, 112, 173, 0.2)',
                 ],
               }}
               transition={{

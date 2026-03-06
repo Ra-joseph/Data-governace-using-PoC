@@ -1,10 +1,19 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Database, ShoppingCart, Shield, BarChart3 } from 'lucide-react';
 
+const roleColors = {
+  owner: '#0070AD',
+  consumer: '#16a34a',
+  steward: '#7c3aed',
+  admin: '#d97706',
+};
+
 export function RoleSelector() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [hoveredRole, setHoveredRole] = useState(null);
 
   const roles = [
     {
@@ -12,7 +21,6 @@ export function RoleSelector() {
       name: 'Data Owner',
       description: 'Register and manage datasets, view violations',
       icon: Database,
-      color: 'from-blue-500 to-blue-600',
       path: '/owner/register',
     },
     {
@@ -20,7 +28,6 @@ export function RoleSelector() {
       name: 'Data Consumer',
       description: 'Browse catalog and subscribe to datasets',
       icon: ShoppingCart,
-      color: 'from-green-500 to-green-600',
       path: '/consumer/catalog',
     },
     {
@@ -28,7 +35,6 @@ export function RoleSelector() {
       name: 'Data Steward',
       description: 'Review and approve subscription requests',
       icon: Shield,
-      color: 'from-purple-500 to-purple-600',
       path: '/steward/approvals',
     },
     {
@@ -36,7 +42,6 @@ export function RoleSelector() {
       name: 'Platform Admin',
       description: 'View compliance metrics and violation trends',
       icon: BarChart3,
-      color: 'from-orange-500 to-orange-600',
       path: '/admin/dashboard',
     },
   ];
@@ -53,46 +58,126 @@ export function RoleSelector() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-6">
-      <div className="max-w-6xl w-full">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-white mb-4">
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--color-bg-primary)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 'var(--space-lg)',
+      }}
+    >
+      <div style={{ maxWidth: '72rem', width: '100%' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'var(--space-2xl)' }}>
+          <h1
+            style={{
+              fontSize: '2.5rem',
+              fontWeight: 700,
+              color: 'var(--color-text-primary)',
+              marginBottom: 'var(--space-md)',
+              fontFamily: 'var(--font-display)',
+            }}
+          >
             Data Governance Platform
           </h1>
-          <p className="text-xl text-gray-400">
+          <p
+            style={{
+              fontSize: '1.25rem',
+              color: 'var(--color-text-secondary)',
+              fontFamily: 'var(--font-body)',
+            }}
+          >
             Select your role to continue
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 'var(--space-lg)',
+          }}
+        >
           {roles.map((role) => {
             const Icon = role.icon;
+            const color = roleColors[role.id];
+            const isHovered = hoveredRole === role.id;
             return (
               <button
                 key={role.id}
                 onClick={() => selectRole(role)}
-                className="group relative bg-gray-800 rounded-2xl p-8 hover:bg-gray-750 transition-all duration-300 border border-gray-700 hover:border-gray-600 hover:shadow-2xl hover:scale-105"
+                onMouseEnter={() => setHoveredRole(role.id)}
+                onMouseLeave={() => setHoveredRole(null)}
+                style={{
+                  position: 'relative',
+                  background: isHovered
+                    ? 'var(--color-bg-elevated)'
+                    : 'var(--color-bg-secondary)',
+                  borderRadius: 'var(--radius-xl)',
+                  padding: 'var(--space-xl)',
+                  transition: 'all 0.3s ease',
+                  border: `1px solid ${isHovered ? color : 'var(--color-border-default)'}`,
+                  boxShadow: isHovered ? 'var(--shadow-lg)' : 'var(--shadow-sm)',
+                  transform: isHovered ? 'scale(1.03)' : 'scale(1)',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                }}
               >
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${role.color} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-300`}
-                />
-
-                <div className="relative">
+                <div>
                   <div
-                    className={`w-16 h-16 mx-auto mb-6 bg-gradient-to-br ${role.color} rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300`}
+                    style={{
+                      width: '4rem',
+                      height: '4rem',
+                      margin: '0 auto',
+                      marginBottom: 'var(--space-lg)',
+                      background: color,
+                      borderRadius: 'var(--radius-lg)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transform: isHovered ? 'scale(1.1)' : 'scale(1)',
+                      transition: 'transform 0.3s ease',
+                    }}
                   >
-                    <Icon className="w-8 h-8 text-white" />
+                    <Icon
+                      style={{ width: '2rem', height: '2rem', color: '#FFFFFF' }}
+                    />
                   </div>
 
-                  <h3 className="text-xl font-bold text-white mb-3">
+                  <h3
+                    style={{
+                      fontSize: '1.25rem',
+                      fontWeight: 700,
+                      color: 'var(--color-text-primary)',
+                      marginBottom: 'var(--space-sm)',
+                      fontFamily: 'var(--font-display)',
+                    }}
+                  >
                     {role.name}
                   </h3>
 
-                  <p className="text-gray-400 text-sm leading-relaxed">
+                  <p
+                    style={{
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '0.875rem',
+                      lineHeight: 1.6,
+                      fontFamily: 'var(--font-body)',
+                    }}
+                  >
                     {role.description}
                   </p>
 
-                  <div className="mt-6 text-sm font-semibold text-gray-500 group-hover:text-white transition-colors">
+                  <div
+                    style={{
+                      marginTop: 'var(--space-lg)',
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      color: isHovered ? color : 'var(--color-text-tertiary)',
+                      transition: 'color 0.3s ease',
+                      fontFamily: 'var(--font-body)',
+                    }}
+                  >
                     Continue as {role.name} →
                   </div>
                 </div>
@@ -101,8 +186,14 @@ export function RoleSelector() {
           })}
         </div>
 
-        <div className="mt-12 text-center">
-          <p className="text-gray-500 text-sm">
+        <div style={{ marginTop: 'var(--space-2xl)', textAlign: 'center' }}>
+          <p
+            style={{
+              color: 'var(--color-text-muted)',
+              fontSize: '0.875rem',
+              fontFamily: 'var(--font-body)',
+            }}
+          >
             Demo Mode - No authentication required
           </p>
         </div>
