@@ -243,3 +243,66 @@ class TestSemanticModelsEndpoint:
 
         response = client.get("/api/v1/semantic/models")
         assert response.status_code == 503
+
+
+@pytest.mark.api
+class TestLLMValidationDisabled:
+    """Test semantic endpoints when ENABLE_LLM_VALIDATION is False (default)."""
+
+    def test_health_returns_disabled_message(self, client):
+        """Health endpoint returns disabled status when LLM validation is off."""
+        response = client.get("/api/v1/semantic/health")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["available"] is False
+        assert data["current_model"] == "disabled"
+        assert data["policies_loaded"] == 0
+        assert "disabled by configuration" in data["message"]
+        assert "ENABLE_LLM_VALIDATION" in data["message"]
+
+    def test_models_returns_disabled_message(self, client):
+        """Models endpoint returns empty list when LLM validation is off."""
+        response = client.get("/api/v1/semantic/models")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total"] == 0
+        assert data["current_model"] == "disabled"
+        assert data["models"] == []
+        assert "disabled by configuration" in data["message"]
+
+    def test_pull_model_returns_disabled_message(self, client):
+        """Pull model endpoint returns disabled message when LLM validation is off."""
+        response = client.post("/api/v1/semantic/models/pull/mistral:7b")
+        assert response.status_code == 200
+        data = response.json()
+        assert "disabled by configuration" in data["message"]
+        assert data["model"] == "mistral:7b"
+        assert "ENABLE_LLM_VALIDATION" in data["note"]
+
+    def test_validate_returns_503_when_disabled(self, client, db, sample_dataset):
+        """Validate endpoint returns 503 when LLM validation is disabled."""
+        contract = Contract(
+            dataset_id=sample_dataset.id,
+            version="1.0.0",
+            human_readable="# Test",
+            machine_readable={"dataset": {"name": "test"}, "schema": []},
+            schema_hash="test",
+            governance_rules={},
+            validation_status="passed"
+        )
+        db.add(contract)
+        db.commit()
+
+        response = client.post("/api/v1/semantic/validate", json={
+            "contract_id": contract.id
+        })
+        assert response.status_code == 503
+
+    def test_policies_list_works_regardless_of_flag(self, client):
+        """Policies listing works even when LLM validation is disabled."""
+        response = client.get("/api/v1/semantic/policies")
+        assert response.status_code == 200
+        data = response.json()
+        assert "total" in data
+        assert "policies" in data
+        # Policies should still be listed (they come from YAML, not Ollama)

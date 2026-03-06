@@ -1000,21 +1000,32 @@ cat frontend/vite.config.js
 
 ### Optional: Enable Semantic Scanning
 
-To enable the 8 LLM-powered semantic policies:
+LLM-based semantic validation is **disabled by default** (`ENABLE_LLM_VALIDATION=false`). The platform runs all 17 deterministic rule-based policies without any LLM dependency. To enable the 8 additional AI-powered semantic policies:
 
 ```bash
-# Install Ollama (macOS)
-brew install ollama
+# 1. Enable LLM validation in configuration
+echo "ENABLE_LLM_VALIDATION=true" >> backend/.env
 
+# 2. Install Ollama (macOS)
+brew install ollama
 # Or download from ollama.com for other platforms
 
-# Start Ollama and pull a model
+# 3. Start Ollama and pull a model
 ollama serve &
 ollama pull llama3.2
 
-# The backend auto-detects Ollama at http://localhost:11434
-# Verify: curl http://localhost:8000/api/v1/semantic/status
+# 4. Restart the backend to pick up the config change
+# 5. Verify: curl http://localhost:8000/api/v1/semantic/health
 ```
+
+You can also configure the Ollama connection in `backend/.env`:
+```bash
+OLLAMA_BASE_URL=http://localhost:11434   # Ollama server URL
+OLLAMA_MODEL=mistral:7b                  # Model to use
+OLLAMA_TIMEOUT=30                        # Request timeout (seconds)
+```
+
+To disable LLM validation again (e.g., for environments with AI restrictions), remove or set `ENABLE_LLM_VALIDATION=false` in `backend/.env` and restart the backend. See `SEMANTIC_SCANNING.md` for the full setup guide.
 
 ---
 
