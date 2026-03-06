@@ -13,10 +13,7 @@
 
 .page-header h1 {
   margin: 0 0 var(--space-xs) 0;
-  background: linear-gradient(135deg, var(--color-text-primary), var(--color-accent-primary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-text-primary);
 }
 
 .page-subtitle {
@@ -135,22 +132,22 @@
 }
 
 .trend-accent {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(0, 112, 173, 0.1);
   color: var(--color-accent-primary);
 }
 
 .trend-success {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(22, 163, 74, 0.1);
   color: var(--color-success);
 }
 
 .trend-warning {
-  background: rgba(245, 158, 11, 0.1);
+  background: rgba(217, 119, 6, 0.1);
   color: var(--color-warning);
 }
 
 .trend-error {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(220, 38, 38, 0.1);
   color: var(--color-error);
 }
 
@@ -271,12 +268,12 @@
 }
 
 .activity-icon.success {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(22, 163, 74, 0.1);
   color: var(--color-success);
 }
 
 .activity-icon.warning {
-  background: rgba(245, 158, 11, 0.1);
+  background: rgba(217, 119, 6, 0.1);
   color: var(--color-warning);
 }
 
@@ -371,7 +368,7 @@
 }
 
 .btn-text:hover {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(0, 112, 173, 0.08);
 }
 
 @media (max-width: 1200px) {

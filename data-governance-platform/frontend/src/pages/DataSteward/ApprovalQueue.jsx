@@ -15,6 +15,23 @@ import {
 } from 'lucide-react';
 import { subscriptionAPI, contractAPI } from '../../services/api';
 
+const statusStyles = {
+  pending: { color: '#d97706', background: 'rgba(217,119,6,0.08)' },
+  approved: { color: '#16a34a', background: 'rgba(22,163,74,0.08)' },
+  rejected: { color: '#dc2626', background: 'rgba(220,38,38,0.08)' },
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '0.75rem 1rem',
+  background: 'var(--color-bg-tertiary)',
+  border: '1px solid var(--color-border-default)',
+  borderRadius: 'var(--radius-md)',
+  color: 'var(--color-text-primary)',
+  fontSize: '0.9375rem',
+  outline: 'none',
+};
+
 export function ApprovalQueue() {
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -82,17 +99,17 @@ export function ApprovalQueue() {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending':
-        return 'text-yellow-400 bg-yellow-500/10';
-      case 'approved':
-        return 'text-green-400 bg-green-500/10';
-      case 'rejected':
-        return 'text-red-400 bg-red-500/10';
-      default:
-        return 'text-gray-400 bg-gray-500/10';
-    }
+  const getStatusBadgeStyle = (status) => {
+    const base = statusStyles[status] || { color: 'var(--color-text-tertiary)', background: 'var(--color-bg-tertiary)' };
+    return {
+      padding: '0.25rem 0.75rem',
+      borderRadius: '9999px',
+      fontSize: '0.75rem',
+      fontWeight: 600,
+      textTransform: 'capitalize',
+      color: base.color,
+      background: base.background,
+    };
   };
 
   const stats = {
@@ -103,67 +120,149 @@ export function ApprovalQueue() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <div className="text-white">Loading approvals...</div>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        background: 'var(--color-bg-primary)',
+      }}>
+        <div style={{ color: 'var(--color-text-primary)' }}>Loading approvals...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div style={{
+      minHeight: '100vh',
+      background: 'var(--color-bg-primary)',
+      padding: '2rem',
+    }}>
+      <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
+        <div style={{ marginBottom: '2rem' }}>
+          <h1 style={{
+            fontSize: '1.875rem',
+            fontWeight: 700,
+            color: 'var(--color-text-primary)',
+            marginBottom: '0.5rem',
+          }}>
             Data Steward Approval Queue
           </h1>
-          <p className="text-gray-400">
+          <p style={{ color: 'var(--color-text-secondary)' }}>
             Review and approve data access requests
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <Clock className="w-8 h-8 text-yellow-400" />
-              <span className="text-3xl font-bold text-white">{stats.pending}</span>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '1.5rem',
+          marginBottom: '2rem',
+        }}>
+          <div style={{
+            background: 'var(--color-bg-secondary)',
+            borderRadius: 'var(--radius-xl)',
+            border: '1px solid var(--color-border-default)',
+            padding: '1.5rem',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '1rem',
+            }}>
+              <Clock style={{ width: '2rem', height: '2rem', color: '#d97706' }} />
+              <span style={{
+                fontSize: '1.875rem',
+                fontWeight: 700,
+                color: 'var(--color-text-primary)',
+              }}>{stats.pending}</span>
             </div>
-            <p className="text-gray-400 text-sm">Pending Reviews</p>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Pending Reviews</p>
           </div>
 
-          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <CheckCircle className="w-8 h-8 text-green-400" />
-              <span className="text-3xl font-bold text-white">{stats.approved}</span>
+          <div style={{
+            background: 'var(--color-bg-secondary)',
+            borderRadius: 'var(--radius-xl)',
+            border: '1px solid var(--color-border-default)',
+            padding: '1.5rem',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '1rem',
+            }}>
+              <CheckCircle style={{ width: '2rem', height: '2rem', color: '#16a34a' }} />
+              <span style={{
+                fontSize: '1.875rem',
+                fontWeight: 700,
+                color: 'var(--color-text-primary)',
+              }}>{stats.approved}</span>
             </div>
-            <p className="text-gray-400 text-sm">Approved</p>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Approved</p>
           </div>
 
-          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <XCircle className="w-8 h-8 text-red-400" />
-              <span className="text-3xl font-bold text-white">{stats.rejected}</span>
+          <div style={{
+            background: 'var(--color-bg-secondary)',
+            borderRadius: 'var(--radius-xl)',
+            border: '1px solid var(--color-border-default)',
+            padding: '1.5rem',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '1rem',
+            }}>
+              <XCircle style={{ width: '2rem', height: '2rem', color: '#dc2626' }} />
+              <span style={{
+                fontSize: '1.875rem',
+                fontWeight: 700,
+                color: 'var(--color-text-primary)',
+              }}>{stats.rejected}</span>
             </div>
-            <p className="text-gray-400 text-sm">Rejected</p>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Rejected</p>
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
           {['pending', 'approved', 'rejected'].map((status) => (
             <button
               key={status}
               onClick={() => setFilter(status)}
-              className={`px-6 py-3 rounded-lg font-medium capitalize transition-all ${
-                filter === status
-                  ? 'bg-purple-500 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-              }`}
+              style={{
+                padding: '0.75rem 1.5rem',
+                borderRadius: 'var(--radius-md)',
+                fontWeight: 500,
+                textTransform: 'capitalize',
+                transition: 'all 0.2s',
+                border: 'none',
+                cursor: 'pointer',
+                ...(filter === status
+                  ? {
+                      background: '#0070AD',
+                      color: '#FFFFFF',
+                    }
+                  : {
+                      background: 'var(--color-bg-secondary)',
+                      color: 'var(--color-text-secondary)',
+                      border: '1px solid var(--color-border-default)',
+                    }),
+              }}
             >
               {status}
               {stats[status] > 0 && (
-                <span className="ml-2 px-2 py-0.5 bg-gray-900 rounded text-xs">
+                <span style={{
+                  marginLeft: '0.5rem',
+                  padding: '0.125rem 0.5rem',
+                  background: 'var(--color-bg-tertiary)',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.75rem',
+                }}>
                   {stats[status]}
                 </span>
               )}
@@ -172,51 +271,90 @@ export function ApprovalQueue() {
         </div>
 
         {/* Subscriptions List */}
-        <div className="bg-gray-800 rounded-xl border border-gray-700">
+        <div style={{
+          background: 'var(--color-bg-secondary)',
+          borderRadius: 'var(--radius-xl)',
+          border: '1px solid var(--color-border-default)',
+        }}>
           {subscriptions.length === 0 ? (
-            <div className="p-12 text-center">
-              <Clock className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-400 mb-2">
+            <div style={{ padding: '3rem', textAlign: 'center' }}>
+              <Clock style={{
+                width: '4rem',
+                height: '4rem',
+                color: 'var(--color-text-muted)',
+                margin: '0 auto 1rem',
+              }} />
+              <h3 style={{
+                fontSize: '1.125rem',
+                fontWeight: 600,
+                color: 'var(--color-text-secondary)',
+                marginBottom: '0.5rem',
+              }}>
                 No subscriptions found
               </h3>
-              <p className="text-gray-500">
+              <p style={{ color: 'var(--color-text-tertiary)' }}>
                 No {filter} subscription requests at the moment
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-700">
-              {subscriptions.map((subscription) => (
-                <div key={subscription.id} className="p-6 hover:bg-gray-750 transition-all">
+            <div>
+              {subscriptions.map((subscription, index) => (
+                <div
+                  key={subscription.id}
+                  style={{
+                    padding: '1.5rem',
+                    transition: 'all 0.2s',
+                    ...(index < subscriptions.length - 1
+                      ? { borderBottom: '1px solid var(--color-border-default)' }
+                      : {}),
+                  }}
+                >
                   {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-white">
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    marginBottom: '1rem',
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        marginBottom: '0.5rem',
+                      }}>
+                        <h3 style={{
+                          fontSize: '1.125rem',
+                          fontWeight: 600,
+                          color: 'var(--color-text-primary)',
+                        }}>
                           {subscription.dataset?.name || 'Unknown Dataset'}
                         </h3>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${getStatusColor(
-                            subscription.status
-                          )}`}
-                        >
+                        <span style={getStatusBadgeStyle(subscription.status)}>
                           {subscription.status}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-6 text-sm text-gray-400">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4" />
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1.5rem',
+                        fontSize: '0.875rem',
+                        color: 'var(--color-text-secondary)',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <User style={{ width: '1rem', height: '1rem' }} />
                           <span>{subscription.consumer_name}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <Calendar style={{ width: '1rem', height: '1rem' }} />
                           <span>
                             {new Date(subscription.created_at).toLocaleDateString()}
                           </span>
                         </div>
                         {subscription.access_duration_days && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Clock style={{ width: '1rem', height: '1rem' }} />
                             <span>{subscription.access_duration_days} days</span>
                           </div>
                         )}
@@ -226,32 +364,77 @@ export function ApprovalQueue() {
                     {subscription.status === 'pending' && (
                       <button
                         onClick={() => openReviewModal(subscription)}
-                        className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all flex items-center gap-2"
+                        style={{
+                          padding: '0.5rem 1rem',
+                          background: '#0070AD',
+                          color: '#FFFFFF',
+                          borderRadius: 'var(--radius-md)',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontWeight: 500,
+                        }}
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye style={{ width: '1rem', height: '1rem' }} />
                         Review
                       </button>
                     )}
                   </div>
 
                   {/* Details Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: '1rem',
+                    marginBottom: '1rem',
+                  }}>
                     {/* Use Case */}
-                    <div className="bg-gray-900 rounded-lg p-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                        <FileText className="w-4 h-4" />
+                    <div style={{
+                      background: 'var(--color-bg-tertiary)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '1rem',
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.875rem',
+                        color: 'var(--color-text-tertiary)',
+                        marginBottom: '0.5rem',
+                      }}>
+                        <FileText style={{ width: '1rem', height: '1rem' }} />
                         <span>Use Case</span>
                       </div>
-                      <p className="text-white text-sm">{subscription.use_case}</p>
+                      <p style={{
+                        color: 'var(--color-text-primary)',
+                        fontSize: '0.875rem',
+                      }}>{subscription.use_case}</p>
                     </div>
 
                     {/* Business Justification */}
-                    <div className="bg-gray-900 rounded-lg p-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                        <Shield className="w-4 h-4" />
+                    <div style={{
+                      background: 'var(--color-bg-tertiary)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '1rem',
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.875rem',
+                        color: 'var(--color-text-tertiary)',
+                        marginBottom: '0.5rem',
+                      }}>
+                        <Shield style={{ width: '1rem', height: '1rem' }} />
                         <span>Business Justification</span>
                       </div>
-                      <p className="text-white text-sm">
+                      <p style={{
+                        color: 'var(--color-text-primary)',
+                        fontSize: '0.875rem',
+                      }}>
                         {subscription.business_justification}
                       </p>
                     </div>
@@ -259,27 +442,44 @@ export function ApprovalQueue() {
 
                   {/* SLA Requirements */}
                   {subscription.sla_requirements && (
-                    <div className="bg-gray-900 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                        <TrendingUp className="w-4 h-4" />
+                    <div style={{
+                      background: 'var(--color-bg-tertiary)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '1rem',
+                      marginBottom: '1rem',
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.875rem',
+                        color: 'var(--color-text-tertiary)',
+                        marginBottom: '0.75rem',
+                      }}>
+                        <TrendingUp style={{ width: '1rem', height: '1rem' }} />
                         <span>SLA Requirements</span>
                       </div>
-                      <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: '1rem',
+                        fontSize: '0.875rem',
+                      }}>
                         <div>
-                          <p className="text-gray-500 mb-1">Max Latency</p>
-                          <p className="text-white font-medium">
+                          <p style={{ color: 'var(--color-text-tertiary)', marginBottom: '0.25rem' }}>Max Latency</p>
+                          <p style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>
                             {subscription.sla_requirements.max_latency_ms}ms
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-500 mb-1">Min Availability</p>
-                          <p className="text-white font-medium">
+                          <p style={{ color: 'var(--color-text-tertiary)', marginBottom: '0.25rem' }}>Min Availability</p>
+                          <p style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>
                             {subscription.sla_requirements.min_availability_pct}%
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-500 mb-1">Max Staleness</p>
-                          <p className="text-white font-medium">
+                          <p style={{ color: 'var(--color-text-tertiary)', marginBottom: '0.25rem' }}>Max Staleness</p>
+                          <p style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>
                             {subscription.sla_requirements.max_staleness_minutes}min
                           </p>
                         </div>
@@ -289,13 +489,27 @@ export function ApprovalQueue() {
 
                   {/* Required Fields */}
                   {subscription.required_fields && subscription.required_fields.length > 0 && (
-                    <div className="bg-gray-900 rounded-lg p-4">
-                      <p className="text-sm text-gray-500 mb-2">Required Fields:</p>
-                      <div className="flex flex-wrap gap-2">
+                    <div style={{
+                      background: 'var(--color-bg-tertiary)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '1rem',
+                    }}>
+                      <p style={{
+                        fontSize: '0.875rem',
+                        color: 'var(--color-text-tertiary)',
+                        marginBottom: '0.5rem',
+                      }}>Required Fields:</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                         {subscription.required_fields.map((field) => (
                           <span
                             key={field}
-                            className="px-3 py-1 bg-gray-800 text-gray-300 rounded text-xs"
+                            style={{
+                              padding: '0.25rem 0.75rem',
+                              background: 'var(--color-bg-elevated)',
+                              color: 'var(--color-text-secondary)',
+                              borderRadius: 'var(--radius-sm)',
+                              fontSize: '0.75rem',
+                            }}
                           >
                             {field}
                           </span>
@@ -306,11 +520,26 @@ export function ApprovalQueue() {
 
                   {/* Review Notes (if approved/rejected) */}
                   {subscription.reviewer_notes && (
-                    <div className="mt-4 pt-4 border-t border-gray-700">
-                      <p className="text-sm text-gray-500 mb-2">Reviewer Notes:</p>
-                      <p className="text-sm text-gray-300">{subscription.reviewer_notes}</p>
+                    <div style={{
+                      marginTop: '1rem',
+                      paddingTop: '1rem',
+                      borderTop: '1px solid var(--color-border-default)',
+                    }}>
+                      <p style={{
+                        fontSize: '0.875rem',
+                        color: 'var(--color-text-tertiary)',
+                        marginBottom: '0.5rem',
+                      }}>Reviewer Notes:</p>
+                      <p style={{
+                        fontSize: '0.875rem',
+                        color: 'var(--color-text-secondary)',
+                      }}>{subscription.reviewer_notes}</p>
                       {subscription.reviewed_by && (
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--color-text-tertiary)',
+                          marginTop: '0.5rem',
+                        }}>
                           Reviewed by {subscription.reviewed_by} on{' '}
                           {new Date(subscription.reviewed_at).toLocaleString()}
                         </p>
@@ -326,15 +555,46 @@ export function ApprovalQueue() {
 
       {/* Review Modal */}
       {showReviewModal && selectedSubscription && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-xl border border-gray-700 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem',
+          zIndex: 50,
+        }}>
+          <div style={{
+            background: 'var(--color-bg-secondary)',
+            borderRadius: 'var(--radius-xl)',
+            border: '1px solid var(--color-border-default)',
+            maxWidth: '48rem',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+          }}>
             {/* Modal Header */}
-            <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-6 flex items-center justify-between">
+            <div style={{
+              position: 'sticky',
+              top: 0,
+              background: 'var(--color-bg-secondary)',
+              borderBottom: '1px solid var(--color-border-default)',
+              padding: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
               <div>
-                <h2 className="text-2xl font-bold text-white mb-1">
+                <h2 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 700,
+                  color: 'var(--color-text-primary)',
+                  marginBottom: '0.25rem',
+                }}>
                   Review Subscription Request
                 </h2>
-                <p className="text-gray-400">
+                <p style={{ color: 'var(--color-text-secondary)' }}>
                   {selectedSubscription.dataset?.name} - {selectedSubscription.consumer_name}
                 </p>
               </div>
@@ -343,53 +603,99 @@ export function ApprovalQueue() {
                   setShowReviewModal(false);
                   setSelectedSubscription(null);
                 }}
-                className="text-gray-400 hover:text-white"
+                style={{
+                  color: 'var(--color-text-secondary)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
               >
-                <X className="w-6 h-6" />
+                <X style={{ width: '1.5rem', height: '1.5rem' }} />
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 space-y-6">
+            <div style={{
+              padding: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.5rem',
+            }}>
               {/* Decision */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-3">
+                <label style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: 'var(--color-text-secondary)',
+                  marginBottom: '0.75rem',
+                }}>
                   Decision *
                 </label>
-                <div className="flex gap-4">
+                <div style={{ display: 'flex', gap: '1rem' }}>
                   <button
                     onClick={() =>
                       setReviewDecision({ ...reviewDecision, status: 'approved' })
                     }
-                    className={`flex-1 px-6 py-4 rounded-lg border-2 transition-all ${
-                      reviewDecision.status === 'approved'
-                        ? 'border-green-500 bg-green-500/10 text-white'
-                        : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                    }`}
+                    style={{
+                      flex: 1,
+                      padding: '1rem 1.5rem',
+                      borderRadius: 'var(--radius-md)',
+                      transition: 'all 0.2s',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      background: reviewDecision.status === 'approved'
+                        ? 'rgba(22,163,74,0.08)'
+                        : 'var(--color-bg-primary)',
+                      border: reviewDecision.status === 'approved'
+                        ? '2px solid #16a34a'
+                        : '2px solid var(--color-border-default)',
+                      color: reviewDecision.status === 'approved'
+                        ? '#16a34a'
+                        : 'var(--color-text-secondary)',
+                    }}
                   >
-                    <CheckCircle className="w-6 h-6 mx-auto mb-2" />
-                    <div className="font-semibold">Approve</div>
+                    <CheckCircle style={{ width: '1.5rem', height: '1.5rem', margin: '0 auto 0.5rem' }} />
+                    <div style={{ fontWeight: 600 }}>Approve</div>
                   </button>
 
                   <button
                     onClick={() =>
                       setReviewDecision({ ...reviewDecision, status: 'rejected' })
                     }
-                    className={`flex-1 px-6 py-4 rounded-lg border-2 transition-all ${
-                      reviewDecision.status === 'rejected'
-                        ? 'border-red-500 bg-red-500/10 text-white'
-                        : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                    }`}
+                    style={{
+                      flex: 1,
+                      padding: '1rem 1.5rem',
+                      borderRadius: 'var(--radius-md)',
+                      transition: 'all 0.2s',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      background: reviewDecision.status === 'rejected'
+                        ? 'rgba(220,38,38,0.08)'
+                        : 'var(--color-bg-primary)',
+                      border: reviewDecision.status === 'rejected'
+                        ? '2px solid #dc2626'
+                        : '2px solid var(--color-border-default)',
+                      color: reviewDecision.status === 'rejected'
+                        ? '#dc2626'
+                        : 'var(--color-text-secondary)',
+                    }}
                   >
-                    <XCircle className="w-6 h-6 mx-auto mb-2" />
-                    <div className="font-semibold">Reject</div>
+                    <XCircle style={{ width: '1.5rem', height: '1.5rem', margin: '0 auto 0.5rem' }} />
+                    <div style={{ fontWeight: 600 }}>Reject</div>
                   </button>
                 </div>
               </div>
 
               {/* Reviewer Notes */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: 'var(--color-text-secondary)',
+                  marginBottom: '0.5rem',
+                }}>
                   Reviewer Notes *
                 </label>
                 <textarea
@@ -402,7 +708,10 @@ export function ApprovalQueue() {
                   }
                   placeholder="Provide feedback on this request..."
                   rows={4}
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                  style={{
+                    ...inputStyle,
+                    resize: 'vertical',
+                  }}
                 />
               </div>
 
@@ -410,14 +719,34 @@ export function ApprovalQueue() {
               {reviewDecision.status === 'approved' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label style={{
+                      display: 'block',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      color: 'var(--color-text-secondary)',
+                      marginBottom: '0.5rem',
+                    }}>
                       Approved Fields
                     </label>
-                    <div className="bg-gray-900 rounded-lg p-4 max-h-48 overflow-y-auto">
+                    <div style={{
+                      background: 'var(--color-bg-tertiary)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '1rem',
+                      maxHeight: '12rem',
+                      overflowY: 'auto',
+                    }}>
                       {selectedSubscription.required_fields?.map((field) => (
                         <label
                           key={field}
-                          className="flex items-center gap-2 py-2 text-sm text-gray-300 hover:text-white cursor-pointer"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.5rem 0',
+                            fontSize: '0.875rem',
+                            color: 'var(--color-text-secondary)',
+                            cursor: 'pointer',
+                          }}
                         >
                           <input
                             type="checkbox"
@@ -431,7 +760,7 @@ export function ApprovalQueue() {
                                 approved_fields: fields,
                               });
                             }}
-                            className="rounded"
+                            style={{ borderRadius: 'var(--radius-sm)' }}
                           />
                           <span>{field}</span>
                         </label>
@@ -440,13 +769,29 @@ export function ApprovalQueue() {
                   </div>
 
                   {/* Access Credentials */}
-                  <div className="bg-gray-900 rounded-lg p-4 space-y-3">
-                    <h3 className="text-sm font-semibold text-gray-300">
+                  <div style={{
+                    background: 'var(--color-bg-tertiary)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '1rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                  }}>
+                    <h3 style={{
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      color: 'var(--color-text-secondary)',
+                    }}>
                       Access Credentials
                     </h3>
 
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">
+                      <label style={{
+                        display: 'block',
+                        fontSize: '0.75rem',
+                        color: 'var(--color-text-tertiary)',
+                        marginBottom: '0.25rem',
+                      }}>
                         Username
                       </label>
                       <input
@@ -461,12 +806,17 @@ export function ApprovalQueue() {
                             },
                           })
                         }
-                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-purple-500"
+                        style={inputStyle}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">
+                      <label style={{
+                        display: 'block',
+                        fontSize: '0.75rem',
+                        color: 'var(--color-text-tertiary)',
+                        marginBottom: '0.25rem',
+                      }}>
                         API Key
                       </label>
                       <input
@@ -481,12 +831,17 @@ export function ApprovalQueue() {
                             },
                           })
                         }
-                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-purple-500"
+                        style={inputStyle}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">
+                      <label style={{
+                        display: 'block',
+                        fontSize: '0.75rem',
+                        color: 'var(--color-text-tertiary)',
+                        marginBottom: '0.25rem',
+                      }}>
                         Connection String (optional)
                       </label>
                       <input
@@ -502,18 +857,40 @@ export function ApprovalQueue() {
                           })
                         }
                         placeholder="jdbc:postgresql://host:port/db"
-                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-purple-500"
+                        style={inputStyle}
                       />
                     </div>
                   </div>
 
-                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div style={{
+                    background: 'rgba(0,112,173,0.06)',
+                    border: '1px solid rgba(0,112,173,0.2)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '1rem',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.75rem',
+                  }}>
+                    <AlertCircle style={{
+                      width: '1.25rem',
+                      height: '1.25rem',
+                      color: '#0070AD',
+                      flexShrink: 0,
+                      marginTop: '0.125rem',
+                    }} />
                     <div>
-                      <h4 className="text-sm font-semibold text-blue-400 mb-1">
+                      <h4 style={{
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                        color: '#0070AD',
+                        marginBottom: '0.25rem',
+                      }}>
                         Contract Update
                       </h4>
-                      <p className="text-sm text-gray-400">
+                      <p style={{
+                        fontSize: '0.875rem',
+                        color: 'var(--color-text-secondary)',
+                      }}>
                         Approving this request will generate a new version of the data contract
                         with the subscription details and SLA requirements.
                       </p>
@@ -524,23 +901,46 @@ export function ApprovalQueue() {
             </div>
 
             {/* Modal Footer */}
-            <div className="sticky bottom-0 bg-gray-800 border-t border-gray-700 p-6 flex justify-end gap-4">
+            <div style={{
+              position: 'sticky',
+              bottom: 0,
+              background: 'var(--color-bg-secondary)',
+              borderTop: '1px solid var(--color-border-default)',
+              padding: '1.5rem',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '1rem',
+            }}>
               <button
                 onClick={() => {
                   setShowReviewModal(false);
                   setSelectedSubscription(null);
                 }}
-                className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all"
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: 'var(--color-bg-tertiary)',
+                  color: 'var(--color-text-primary)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--color-border-default)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontWeight: 500,
+                }}
               >
                 Cancel
               </button>
               <button
                 onClick={submitReview}
-                className={`px-6 py-3 rounded-lg transition-all font-medium ${
-                  reviewDecision.status === 'approved'
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-red-500 hover:bg-red-600 text-white'
-                }`}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: 'var(--radius-md)',
+                  transition: 'all 0.2s',
+                  fontWeight: 500,
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#FFFFFF',
+                  background: reviewDecision.status === 'approved' ? '#16a34a' : '#dc2626',
+                }}
               >
                 {reviewDecision.status === 'approved' ? 'Approve Request' : 'Reject Request'}
               </button>

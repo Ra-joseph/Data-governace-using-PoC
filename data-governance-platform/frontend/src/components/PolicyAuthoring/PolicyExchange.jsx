@@ -8,7 +8,7 @@ import {
 import { policyExchangeAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
-const TAG_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#0070AD'];
+const TAG_COLORS = ['#0070AD', '#16a34a', '#d97706', '#dc2626', '#12ABDB', '#0070AD'];
 
 export const PolicyExchange = () => {
   const navigate = useNavigate();
@@ -144,7 +144,7 @@ export const PolicyExchange = () => {
                     padding: '1px 6px', borderRadius: 4, marginTop: 4, display: 'inline-block',
                   }}>{tmpl.category}</span>
                 </div>
-                <Sparkles size={18} style={{ color: '#f59e0b', flexShrink: 0 }} />
+                <Sparkles size={18} style={{ color: '#d97706', flexShrink: 0 }} />
               </div>
               <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-text-secondary)', flex: 1 }}>
                 {tmpl.description}
@@ -164,8 +164,8 @@ export const PolicyExchange = () => {
                 onClick={() => instantiate(tmpl.id)}
                 style={{
                   padding: '6px 12px', fontSize: '0.8125rem', fontWeight: 600,
-                  background: 'rgba(16,185,129,0.1)', color: '#10b981',
-                  borderRadius: 'var(--radius-md)', border: '1px solid rgba(16,185,129,0.2)',
+                  background: 'rgba(22,163,74,0.1)', color: '#16a34a',
+                  borderRadius: 'var(--radius-md)', border: '1px solid rgba(22,163,74,0.2)',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                 }}
               >
@@ -220,19 +220,19 @@ export const PolicyExchange = () => {
                 style={{ marginTop: 'var(--space-lg)', overflow: 'hidden' }}
               >
                 <div style={{ display: 'flex', gap: 'var(--space-lg)', marginBottom: 'var(--space-md)' }}>
-                  <span style={{ color: '#10b981', fontWeight: 600 }}>
+                  <span style={{ color: '#16a34a', fontWeight: 600 }}>
                     <CheckCircle size={14} style={{ verticalAlign: -2 }} /> {importResult.created} created
                   </span>
-                  <span style={{ color: '#f59e0b', fontWeight: 600 }}>
+                  <span style={{ color: '#d97706', fontWeight: 600 }}>
                     <AlertTriangle size={14} style={{ verticalAlign: -2 }} /> {importResult.skipped} skipped
                   </span>
-                  <span style={{ color: '#ef4444', fontWeight: 600 }}>
+                  <span style={{ color: '#dc2626', fontWeight: 600 }}>
                     <XCircle size={14} style={{ verticalAlign: -2 }} /> {importResult.errors} errors
                   </span>
                 </div>
                 {importResult.created_policies?.map(p => (
                   <div key={p.id} style={{
-                    padding: '6px 10px', background: 'rgba(16,185,129,0.05)', borderRadius: 'var(--radius-sm)',
+                    padding: '6px 10px', background: 'rgba(22,163,74,0.05)', borderRadius: 'var(--radius-sm)',
                     marginBottom: 4, fontSize: '0.8125rem', display: 'flex', justifyContent: 'space-between',
                   }}>
                     <span>{p.title}</span>
@@ -296,8 +296,8 @@ export const PolicyExchange = () => {
                 onClick={() => { navigator.clipboard.writeText(JSON.stringify(exportResult, null, 2)); toast.success('Copied to clipboard'); }}
                 style={{
                   marginTop: 'var(--space-sm)', padding: '6px 14px', fontSize: '0.8125rem', fontWeight: 600,
-                  background: 'rgba(139,92,246,0.1)', color: '#8b5cf6',
-                  borderRadius: 'var(--radius-md)', border: '1px solid rgba(139,92,246,0.2)',
+                  background: 'rgba(0,112,173,0.1)', color: '#12ABDB',
+                  borderRadius: 'var(--radius-md)', border: '1px solid rgba(0,112,173,0.2)',
                   cursor: 'pointer',
                 }}
               >

@@ -83,10 +83,10 @@ export const Dashboard = () => {
 
   // Derive classification distribution from real dataset data
   const classificationColors = {
-    public: '#3b82f6',
-    internal: '#8b5cf6',
-    confidential: '#f59e0b',
-    restricted: '#ef4444',
+    public: '#0070AD',
+    internal: '#12ABDB',
+    confidential: '#d97706',
+    restricted: '#dc2626',
   };
 
   const classificationData = Object.entries(
@@ -98,7 +98,7 @@ export const Dashboard = () => {
   ).map(([name, value]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
     value,
-    color: classificationColors[name] || '#6b7280',
+    color: classificationColors[name] || '#8A8A8A',
   }));
 
   // Derive policy compliance counts from contract validation results
@@ -239,36 +239,37 @@ export const Dashboard = () => {
               <AreaChart data={trendData}>
                 <defs>
                   <linearGradient id="colorDatasets" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#0070AD" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#0070AD" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorViolations" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#dc2626" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(139, 92, 246, 0.1)" />
-                <XAxis 
-                  dataKey="month" 
-                  stroke="#6b7280"
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 112, 173, 0.1)" />
+                <XAxis
+                  dataKey="month"
+                  stroke="#B0ADA6"
                   style={{ fontSize: '0.75rem' }}
                 />
-                <YAxis 
-                  stroke="#6b7280"
+                <YAxis
+                  stroke="#B0ADA6"
                   style={{ fontSize: '0.75rem' }}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#0f1419',
-                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                    background: '#FFFFFF',
+                    border: '1px solid #E5E2DB',
                     borderRadius: '0.5rem',
                     fontSize: '0.875rem',
+                    color: '#1A1A1A',
                   }}
                 />
                 <Area
                   type="monotone"
                   dataKey="datasets"
-                  stroke="#8b5cf6"
+                  stroke="#0070AD"
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorDatasets)"
@@ -276,7 +277,7 @@ export const Dashboard = () => {
                 <Area
                   type="monotone"
                   dataKey="violations"
-                  stroke="#ef4444"
+                  stroke="#dc2626"
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorViolations)"
@@ -315,10 +316,11 @@ export const Dashboard = () => {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    background: '#0f1419',
-                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                    background: '#FFFFFF',
+                    border: '1px solid #E5E2DB',
                     borderRadius: '0.5rem',
                     fontSize: '0.875rem',
+                    color: '#1A1A1A',
                   }}
                 />
                 <Legend />
@@ -340,29 +342,30 @@ export const Dashboard = () => {
           <div className="chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={policyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(139, 92, 246, 0.1)" />
-                <XAxis 
-                  dataKey="policy" 
-                  stroke="#6b7280"
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 112, 173, 0.1)" />
+                <XAxis
+                  dataKey="policy"
+                  stroke="#B0ADA6"
                   style={{ fontSize: '0.7rem' }}
                   angle={-15}
                   textAnchor="end"
                   height={60}
                 />
-                <YAxis 
-                  stroke="#6b7280"
+                <YAxis
+                  stroke="#B0ADA6"
                   style={{ fontSize: '0.75rem' }}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#0f1419',
-                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                    background: '#FFFFFF',
+                    border: '1px solid #E5E2DB',
                     borderRadius: '0.5rem',
                     fontSize: '0.875rem',
+                    color: '#1A1A1A',
                   }}
                 />
-                <Bar dataKey="violations" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="passed" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="violations" fill="#dc2626" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="passed" fill="#16a34a" radius={[4, 4, 0, 0]} />
                 <Legend />
               </BarChart>
             </ResponsiveContainer>

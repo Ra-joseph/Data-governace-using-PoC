@@ -40,21 +40,21 @@ function App() {
           toastOptions={{
             duration: 4000,
             style: {
-              background: '#0f1419',
-              color: '#e8eaed',
-              border: '1px solid rgba(139, 92, 246, 0.2)',
-              fontFamily: "'Outfit', sans-serif",
+              background: '#FFFFFF',
+              color: '#1A1A1A',
+              border: '1px solid #E5E2DB',
+              fontFamily: "'Inter', sans-serif",
             },
             success: {
               iconTheme: {
-                primary: '#10b981',
-                secondary: '#0f1419',
+                primary: '#16a34a',
+                secondary: '#FFFFFF',
               },
             },
             error: {
               iconTheme: {
-                primary: '#ef4444',
-                secondary: '#0f1419',
+                primary: '#dc2626',
+                secondary: '#FFFFFF',
               },
             },
           }}

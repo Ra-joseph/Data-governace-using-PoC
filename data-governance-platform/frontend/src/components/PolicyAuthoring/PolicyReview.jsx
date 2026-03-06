@@ -8,9 +8,9 @@ import { policyAuthoringAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const SEVERITY_COLORS = {
-  CRITICAL: '#ef4444',
-  WARNING: '#f59e0b',
-  INFO: '#10b981',
+  CRITICAL: '#dc2626',
+  WARNING: '#d97706',
+  INFO: '#16a34a',
 };
 
 const CATEGORY_LABELS = {
@@ -121,7 +121,7 @@ export const PolicyReview = () => {
           {/* Policy List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
             {policies.map((policy, index) => {
-              const sevColor = SEVERITY_COLORS[policy.severity] || '#9ca3af';
+              const sevColor = SEVERITY_COLORS[policy.severity] || '#8A8A8A';
               return (
                 <motion.div
                   key={policy.id}
@@ -161,8 +161,8 @@ export const PolicyReview = () => {
                     <div style={{ display: 'flex', gap: 'var(--space-sm)', marginTop: 'var(--space-xs)', flexWrap: 'wrap' }}>
                       <span style={{
                         padding: '2px 8px', borderRadius: 9999, fontSize: '0.7rem', fontWeight: 600,
-                        background: `${SEVERITY_COLORS[selectedPolicy.severity] || '#9ca3af'}15`,
-                        color: SEVERITY_COLORS[selectedPolicy.severity] || '#9ca3af',
+                        background: `${SEVERITY_COLORS[selectedPolicy.severity] || '#8A8A8A'}15`,
+                        color: SEVERITY_COLORS[selectedPolicy.severity] || '#8A8A8A',
                         textTransform: 'uppercase',
                       }}>{selectedPolicy.severity}</span>
                       <span style={{
@@ -178,9 +178,9 @@ export const PolicyReview = () => {
                       style={{
                         display: 'flex', alignItems: 'center', gap: 4,
                         padding: 'var(--space-sm) var(--space-md)',
-                        background: 'rgba(16,185,129,0.1)', color: '#10b981',
+                        background: 'rgba(22,163,74,0.1)', color: '#16a34a',
                         borderRadius: 'var(--radius-md)', fontWeight: 600, fontSize: '0.8125rem',
-                        border: '1px solid rgba(16,185,129,0.2)',
+                        border: '1px solid rgba(22,163,74,0.2)',
                       }}
                     >
                       <CheckCircle size={14} /> Approve
@@ -191,9 +191,9 @@ export const PolicyReview = () => {
                       style={{
                         display: 'flex', alignItems: 'center', gap: 4,
                         padding: 'var(--space-sm) var(--space-md)',
-                        background: 'rgba(239,68,68,0.1)', color: '#ef4444',
+                        background: 'rgba(220,38,38,0.1)', color: '#dc2626',
                         borderRadius: 'var(--radius-md)', fontWeight: 600, fontSize: '0.8125rem',
-                        border: '1px solid rgba(239,68,68,0.2)',
+                        border: '1px solid rgba(220,38,38,0.2)',
                       }}
                     >
                       <XCircle size={14} /> Reject
@@ -243,8 +243,8 @@ export const PolicyReview = () => {
 
               {/* Reject Modal */}
               {showRejectModal && (
-                <div className="card" style={{ border: '1px solid rgba(239,68,68,0.3)' }}>
-                  <h4 style={{ color: '#ef4444', marginBottom: 'var(--space-md)' }}>Reject Policy</h4>
+                <div className="card" style={{ border: '1px solid rgba(220,38,38,0.3)' }}>
+                  <h4 style={{ color: '#dc2626', marginBottom: 'var(--space-md)' }}>Reject Policy</h4>
                   <p style={{ fontSize: '0.8125rem', marginBottom: 'var(--space-sm)' }}>
                     Provide a reason for rejection (minimum 10 characters):
                   </p>
@@ -266,8 +266,8 @@ export const PolicyReview = () => {
                       disabled={rejectComment.length < 10 || processing}
                       style={{
                         padding: 'var(--space-sm) var(--space-md)',
-                        background: rejectComment.length >= 10 ? 'rgba(239,68,68,0.2)' : 'var(--color-bg-tertiary)',
-                        color: rejectComment.length >= 10 ? '#ef4444' : 'var(--color-text-muted)',
+                        background: rejectComment.length >= 10 ? 'rgba(220,38,38,0.2)' : 'var(--color-bg-tertiary)',
+                        color: rejectComment.length >= 10 ? '#dc2626' : 'var(--color-text-muted)',
                         borderRadius: 'var(--radius-md)', fontWeight: 600,
                       }}
                     >

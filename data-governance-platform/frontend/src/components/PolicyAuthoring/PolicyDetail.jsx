@@ -9,17 +9,17 @@ import { policyAuthoringAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const STATUS_CONFIG = {
-  draft: { color: '#9ca3af', label: 'Draft', icon: FileText },
+  draft: { color: '#8A8A8A', label: 'Draft', icon: FileText },
   pending_approval: { color: '#0070AD', label: 'Pending Approval', icon: Clock },
-  approved: { color: '#10b981', label: 'Approved', icon: CheckCircle },
-  rejected: { color: '#ef4444', label: 'Rejected', icon: XCircle },
-  deprecated: { color: '#6b7280', label: 'Deprecated', icon: History },
+  approved: { color: '#16a34a', label: 'Approved', icon: CheckCircle },
+  rejected: { color: '#dc2626', label: 'Rejected', icon: XCircle },
+  deprecated: { color: '#8A8A8A', label: 'Deprecated', icon: History },
 };
 
 const SEVERITY_COLORS = {
-  CRITICAL: '#ef4444',
-  WARNING: '#f59e0b',
-  INFO: '#10b981',
+  CRITICAL: '#dc2626',
+  WARNING: '#d97706',
+  INFO: '#16a34a',
 };
 
 const CATEGORY_LABELS = {
@@ -104,7 +104,7 @@ export const PolicyDetail = () => {
 
   const st = STATUS_CONFIG[policy.status] || STATUS_CONFIG.draft;
   const StatusIcon = st.icon;
-  const sevColor = SEVERITY_COLORS[policy.severity] || '#9ca3af';
+  const sevColor = SEVERITY_COLORS[policy.severity] || '#8A8A8A';
 
   return (
     <div style={{ padding: 'var(--space-xl)' }}>
@@ -283,8 +283,8 @@ export const PolicyDetail = () => {
                     </div>
                     <span style={{
                       padding: '2px 8px', borderRadius: 9999, fontSize: '0.7rem', fontWeight: 600,
-                      color: v.status === 'approved' ? '#10b981' : '#ef4444',
-                      background: v.status === 'approved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                      color: v.status === 'approved' ? '#16a34a' : '#dc2626',
+                      background: v.status === 'approved' ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.1)',
                       textTransform: 'uppercase',
                     }}>{v.status}</span>
                   </div>
@@ -312,8 +312,8 @@ export const PolicyDetail = () => {
                         <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{log.actor_name}</span>
                         <span style={{
                           padding: '2px 8px', borderRadius: 9999, fontSize: '0.7rem', fontWeight: 600,
-                          background: log.action === 'approved' ? 'rgba(16,185,129,0.1)' : log.action === 'rejected' ? 'rgba(239,68,68,0.1)' : 'rgba(0,112,173,0.1)',
-                          color: log.action === 'approved' ? '#10b981' : log.action === 'rejected' ? '#ef4444' : '#0070AD',
+                          background: log.action === 'approved' ? 'rgba(22,163,74,0.1)' : log.action === 'rejected' ? 'rgba(220,38,38,0.1)' : 'rgba(0,112,173,0.1)',
+                          color: log.action === 'approved' ? '#16a34a' : log.action === 'rejected' ? '#dc2626' : '#0070AD',
                           textTransform: 'uppercase',
                         }}>{log.action}</span>
                       </div>
@@ -342,7 +342,7 @@ export const PolicyDetail = () => {
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 4,
                     padding: '4px 12px', borderRadius: 9999, fontSize: '0.75rem', fontWeight: 600,
-                    background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.2)',
+                    background: 'rgba(217,119,6,0.1)', color: '#d97706', border: '1px solid rgba(217,119,6,0.2)',
                   }}>
                     <Eye size={12} /> Preview — not yet committed
                   </span>
@@ -350,7 +350,7 @@ export const PolicyDetail = () => {
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 4,
                     padding: '4px 12px', borderRadius: 9999, fontSize: '0.75rem', fontWeight: 600,
-                    background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)',
+                    background: 'rgba(22,163,74,0.1)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.2)',
                   }}>
                     <CheckCircle size={12} /> Committed artifact
                   </span>

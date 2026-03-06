@@ -9,12 +9,12 @@ import { policyAuthoringAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const EVENT_CONFIG = {
-  created:    { icon: Edit3,       color: '#3b82f6', label: 'Created' },
+  created:    { icon: Edit3,       color: '#0070AD', label: 'Created' },
   submitted:  { icon: Send,        color: '#0070AD', label: 'Submitted' },
-  approved:   { icon: CheckCircle, color: '#10b981', label: 'Approved' },
-  rejected:   { icon: XCircle,     color: '#ef4444', label: 'Rejected' },
-  revised:    { icon: RefreshCw,   color: '#f59e0b', label: 'Revised' },
-  deprecated: { icon: Archive,     color: '#6b7280', label: 'Deprecated' },
+  approved:   { icon: CheckCircle, color: '#16a34a', label: 'Approved' },
+  rejected:   { icon: XCircle,     color: '#dc2626', label: 'Rejected' },
+  revised:    { icon: RefreshCw,   color: '#d97706', label: 'Revised' },
+  deprecated: { icon: Archive,     color: '#8A8A8A', label: 'Deprecated' },
 };
 
 export const PolicyTimeline = () => {
@@ -107,8 +107,8 @@ export const PolicyTimeline = () => {
             <span style={{
               padding: '2px 8px', borderRadius: 9999, fontSize: '0.7rem', fontWeight: 700,
               textTransform: 'uppercase',
-              background: (EVENT_CONFIG[timeline.current_status]?.color || '#9ca3af') + '20',
-              color: EVENT_CONFIG[timeline.current_status]?.color || '#9ca3af',
+              background: (EVENT_CONFIG[timeline.current_status]?.color || '#8A8A8A') + '20',
+              color: EVENT_CONFIG[timeline.current_status]?.color || '#8A8A8A',
             }}>{timeline.current_status}</span>
             <span style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)' }}>
               v{timeline.current_version} &middot; {timeline.total_events} events
@@ -120,8 +120,8 @@ export const PolicyTimeline = () => {
           {(timeline.current_status === 'approved' || timeline.current_status === 'rejected') && (
             <button onClick={handleRevise} style={{
               padding: '6px 14px', fontSize: '0.8125rem', fontWeight: 600,
-              background: 'rgba(245,158,11,0.1)', color: '#f59e0b',
-              borderRadius: 'var(--radius-md)', border: '1px solid rgba(245,158,11,0.2)',
+              background: 'rgba(217,119,6,0.1)', color: '#d97706',
+              borderRadius: 'var(--radius-md)', border: '1px solid rgba(217,119,6,0.2)',
               cursor: 'pointer',
             }}>
               <RefreshCw size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
@@ -131,8 +131,8 @@ export const PolicyTimeline = () => {
           {timeline.current_status === 'approved' && (
             <button onClick={handleDeprecate} style={{
               padding: '6px 14px', fontSize: '0.8125rem', fontWeight: 600,
-              background: 'rgba(107,114,128,0.1)', color: '#6b7280',
-              borderRadius: 'var(--radius-md)', border: '1px solid rgba(107,114,128,0.2)',
+              background: 'rgba(138,138,138,0.1)', color: '#8A8A8A',
+              borderRadius: 'var(--radius-md)', border: '1px solid rgba(138,138,138,0.2)',
               cursor: 'pointer',
             }}>
               <Archive size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
@@ -212,7 +212,7 @@ export const PolicyTimeline = () => {
             {versions.versions.map(v => {
               const isExpanded = expandedVersion === v.version;
               const diff = diffData[v.version];
-              const statusColor = v.status === 'approved' ? '#10b981' : v.status === 'rejected' ? '#ef4444' : '#9ca3af';
+              const statusColor = v.status === 'approved' ? '#16a34a' : v.status === 'rejected' ? '#dc2626' : '#8A8A8A';
               return (
                 <div key={v.version}>
                   <div
@@ -241,7 +241,7 @@ export const PolicyTimeline = () => {
                       {v.has_artifact && (
                         <span style={{
                           padding: '1px 6px', borderRadius: 4, fontSize: '0.6rem', fontWeight: 700,
-                          background: 'rgba(139,92,246,0.1)', color: '#8b5cf6',
+                          background: 'rgba(0,112,173,0.1)', color: '#12ABDB',
                         }}>YAML</span>
                       )}
                       <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
@@ -280,11 +280,11 @@ export const PolicyTimeline = () => {
                                 }}>
                                   <span style={{ fontWeight: 600, color: '#0070AD' }}>{c.field}</span>
                                   {c.old_value != null && (
-                                    <span style={{ color: '#ef4444', margin: '0 6px' }}>
+                                    <span style={{ color: '#dc2626', margin: '0 6px' }}>
                                       - {typeof c.old_value === 'object' ? JSON.stringify(c.old_value) : String(c.old_value)}
                                     </span>
                                   )}
-                                  <span style={{ color: '#10b981' }}>
+                                  <span style={{ color: '#16a34a' }}>
                                     + {typeof c.new_value === 'object' ? JSON.stringify(c.new_value) : String(c.new_value)}
                                   </span>
                                 </div>

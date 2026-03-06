@@ -101,7 +101,7 @@
   border: 1px solid var(--color-border-default);
   border-radius: 10px;
   padding: 6px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   z-index: 200;
   animation: fadeInDown 0.15s ease;
 }
@@ -130,7 +130,7 @@
 }
 
 .topnav-dropdown-item.active {
-  background: rgba(139, 92, 246, 0.12);
+  background: rgba(0, 112, 173, 0.08);
   color: var(--color-accent-primary);
   font-weight: 600;
 }
@@ -185,7 +185,7 @@
 }
 
 .topnav-switch-btn:hover {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(0, 112, 173, 0.08);
   border-color: var(--color-accent-primary);
   color: var(--color-accent-primary);
 }

@@ -8,11 +8,11 @@ import { policyReportsAPI, policyDashboardAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const CLS_COLORS = {
-  public: '#10b981',
-  internal: '#3b82f6',
-  confidential: '#f59e0b',
-  restricted: '#ef4444',
-  unknown: '#9ca3af',
+  public: '#16a34a',
+  internal: '#0070AD',
+  confidential: '#d97706',
+  restricted: '#dc2626',
+  unknown: '#8A8A8A',
 };
 
 export const ComplianceReport = () => {
@@ -93,10 +93,10 @@ export const ComplianceReport = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 'var(--space-md)', marginBottom: 'var(--space-xl)' }}>
         {[
           { label: 'Total Contracts', value: total_contracts, icon: FileText, color: '#0070AD' },
-          { label: 'Datasets', value: report.total_datasets, icon: Database, color: '#8b5cf6' },
-          { label: 'Active Policies', value: report.total_policies_active, icon: Shield, color: '#10b981' },
-          { label: 'Authored Policies', value: report.total_policies_authored, icon: Layers, color: '#3b82f6' },
-          { label: 'Pass Rate', value: `${report.pass_rate_pct}%`, icon: TrendingUp, color: report.pass_rate_pct >= 80 ? '#10b981' : report.pass_rate_pct >= 50 ? '#f59e0b' : '#ef4444' },
+          { label: 'Datasets', value: report.total_datasets, icon: Database, color: '#12ABDB' },
+          { label: 'Active Policies', value: report.total_policies_active, icon: Shield, color: '#16a34a' },
+          { label: 'Authored Policies', value: report.total_policies_authored, icon: Layers, color: '#0070AD' },
+          { label: 'Pass Rate', value: `${report.pass_rate_pct}%`, icon: TrendingUp, color: report.pass_rate_pct >= 80 ? '#16a34a' : report.pass_rate_pct >= 50 ? '#d97706' : '#dc2626' },
         ].map((card, i) => (
           <motion.div
             key={card.label}
@@ -126,10 +126,10 @@ export const ComplianceReport = () => {
           <h4 style={{ marginBottom: 'var(--space-lg)' }}>Contract Validation Status</h4>
           <div style={{ display: 'flex', gap: 'var(--space-md)', justifyContent: 'center', marginBottom: 'var(--space-lg)' }}>
             {[
-              { label: 'Passing', count: contracts_passing, color: '#10b981', icon: CheckCircle },
-              { label: 'Warning', count: contracts_warning, color: '#f59e0b', icon: AlertTriangle },
-              { label: 'Failing', count: contracts_failing, color: '#ef4444', icon: XCircle },
-              { label: 'Unvalidated', count: contracts_unvalidated, color: '#9ca3af', icon: FileText },
+              { label: 'Passing', count: contracts_passing, color: '#16a34a', icon: CheckCircle },
+              { label: 'Warning', count: contracts_warning, color: '#d97706', icon: AlertTriangle },
+              { label: 'Failing', count: contracts_failing, color: '#dc2626', icon: XCircle },
+              { label: 'Unvalidated', count: contracts_unvalidated, color: '#8A8A8A', icon: FileText },
             ].map(s => (
               <div key={s.label} style={{ textAlign: 'center', flex: 1 }}>
                 <div style={{
@@ -147,10 +147,10 @@ export const ComplianceReport = () => {
           {total_contracts > 0 && (
             <div style={{ height: 10, borderRadius: 5, background: 'var(--color-bg-tertiary)', overflow: 'hidden', display: 'flex' }}>
               {[
-                { pct: (contracts_passing / total_contracts) * 100, color: '#10b981' },
-                { pct: (contracts_warning / total_contracts) * 100, color: '#f59e0b' },
-                { pct: (contracts_failing / total_contracts) * 100, color: '#ef4444' },
-                { pct: (contracts_unvalidated / total_contracts) * 100, color: '#9ca3af' },
+                { pct: (contracts_passing / total_contracts) * 100, color: '#16a34a' },
+                { pct: (contracts_warning / total_contracts) * 100, color: '#d97706' },
+                { pct: (contracts_failing / total_contracts) * 100, color: '#dc2626' },
+                { pct: (contracts_unvalidated / total_contracts) * 100, color: '#8A8A8A' },
               ].map((seg, i) => (
                 <motion.div
                   key={i}
@@ -171,7 +171,7 @@ export const ComplianceReport = () => {
             {Object.entries(report.classification_breakdown || {}).map(([cls, count]) => {
               const total = total_contracts || 1;
               const pct = Math.round((count / total) * 100);
-              const color = CLS_COLORS[cls] || '#9ca3af';
+              const color = CLS_COLORS[cls] || '#8A8A8A';
               return (
                 <div key={cls}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: 4 }}>
@@ -202,13 +202,13 @@ export const ComplianceReport = () => {
           <h4 style={{ marginBottom: 'var(--space-lg)' }}>Violation Severity</h4>
           <div style={{ display: 'flex', gap: 'var(--space-lg)', justifyContent: 'center' }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#ef4444' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#dc2626' }}>
                 {report.severity_summary?.critical || 0}
               </div>
               <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>CRITICAL</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#f59e0b' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#d97706' }}>
                 {report.severity_summary?.warning || 0}
               </div>
               <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>WARNING</div>
@@ -253,24 +253,24 @@ export const ComplianceReport = () => {
             <span style={{ fontSize: '0.875rem' }}>
               <strong>{bulkResult.validated}</strong> validated
             </span>
-            <span style={{ color: '#10b981', fontSize: '0.875rem' }}>
+            <span style={{ color: '#16a34a', fontSize: '0.875rem' }}>
               <strong>{bulkResult.passed}</strong> passed
             </span>
-            <span style={{ color: '#f59e0b', fontSize: '0.875rem' }}>
+            <span style={{ color: '#d97706', fontSize: '0.875rem' }}>
               <strong>{bulkResult.warnings}</strong> warnings
             </span>
-            <span style={{ color: '#ef4444', fontSize: '0.875rem' }}>
+            <span style={{ color: '#dc2626', fontSize: '0.875rem' }}>
               <strong>{bulkResult.failed}</strong> failed
             </span>
             {bulkResult.errors > 0 && (
-              <span style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+              <span style={{ color: '#8A8A8A', fontSize: '0.875rem' }}>
                 <strong>{bulkResult.errors}</strong> errors
               </span>
             )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)', maxHeight: 200, overflow: 'auto' }}>
             {bulkResult.results.map((r, i) => {
-              const color = r.status === 'passed' ? '#10b981' : r.status === 'warning' ? '#f59e0b' : r.status === 'failed' ? '#ef4444' : '#9ca3af';
+              const color = r.status === 'passed' ? '#16a34a' : r.status === 'warning' ? '#d97706' : r.status === 'failed' ? '#dc2626' : '#8A8A8A';
               return (
                 <div key={i} style={{
                   display: 'flex', justifyContent: 'space-between',
