@@ -30,7 +30,8 @@ Data-governace-using-PoC/               ← repo root
 ├── TEST_RESULTS.md                     ← latest test run results
 ├── .claude/
 │   └── skills/
-│       └── test-and-fix.md             ← Claude skill: run tests & suggest fixes
+│       ├── test-and-fix.md             ← Claude skill: run tests & suggest fixes
+│       └── documentation.md            ← Claude skill: document branch changes (multi-agent)
 └── data-governance-platform/           ← main platform directory
     ├── README.md                       ← complete platform guide
     ├── QUICKSTART.md                   ← 5-minute setup
@@ -500,9 +501,10 @@ Interactive API docs: `http://localhost:8000/docs`
 
 ## Claude Skills
 
-A custom Claude Code skill is included at `.claude/skills/test-and-fix.md`:
+Two custom Claude Code skills are included in `.claude/skills/`:
 
 - **test-and-fix**: Runs the backend pytest suite and frontend Vitest suite, analyses any failures, and suggests targeted code fixes. Invoke via `/test-and-fix` in Claude Code.
+- **documentation**: Spawns parallel sub-agents to analyse every changed layer on the current branch (models, schemas, services, routers, policies, frontend, tests). Synthesises findings into `CHANGES_<branch>.md` at the repo root. Invoke via `/documentation` in Claude Code. **Must be run at the end of every feature implementation.**
 
 ---
 
@@ -766,6 +768,7 @@ The platform uses Git to version data contracts. Contracts are committed to `bac
 | `frontend/src/components/TopNavLayout.jsx` | Top navigation layout |
 | `data-governance-platform/docker-compose.yml` | PostgreSQL demo DB setup |
 | `.claude/skills/test-and-fix.md` | Claude skill for running tests |
+| `.claude/skills/documentation.md` | Claude skill for documenting feature changes (multi-agent) |
 
 ---
 
@@ -798,6 +801,17 @@ The platform uses Git to version data contracts. Contracts are committed to `bac
 3. Update `database.py` if seed data needs to change.
 4. Drop and recreate the SQLite DB in development (`rm governance_metadata.db`).
 5. Update affected tests.
+
+---
+
+## End-of-Feature Checklist
+
+Every feature implementation — regardless of size — must end with these two steps **in order**:
+
+1. **Run the full regression suite** via `/test-and-fix` — all ~510 backend tests and ~92 frontend tests must pass with zero failures before proceeding.
+2. **Generate feature documentation** via `/documentation` — spawns parallel sub-agents to analyse each changed layer and produces `CHANGES_<branch>.md` at the repo root summarising every change made on the branch.
+
+Neither step is optional. Do not mark a task complete until both skills have been run and their output reviewed.
 
 ---
 
