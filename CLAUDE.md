@@ -28,6 +28,7 @@ Data-governace-using-PoC/               ← repo root
 ├── CONTRIBUTING.md                     ← contribution guidelines
 ├── MEDIUM_ARTICLE.md                   ← publication article
 ├── TEST_RESULTS.md                     ← latest test run results
+├── CHANGES_<branch>.md                 ← auto-generated feature change docs (see /documentation skill)
 ├── .claude/
 │   └── skills/
 │       ├── test-and-fix.md             ← Claude skill: run tests & suggest fixes
@@ -139,7 +140,7 @@ backend/
 │   ├── data_quality_policies.yaml     (5 quality policies — DQ001–DQ005)
 │   ├── schema_governance_policies.yaml(7 schema policies — SG001–SG007)
 │   └── semantic_policies.yaml         (8 LLM policies — SEM001–SEM008)
-├── tests/               ← pytest test suite (510 tests, 23 files)
+├── tests/               ← pytest test suite (628 tests, 26 files)
 ├── requirements.txt
 └── pytest.ini
 ```
@@ -193,6 +194,10 @@ frontend/src/
 │   ├── Layout.css
 │   ├── TopNavLayout.jsx         ← Top navigation layout
 │   ├── TopNavLayout.css
+│   ├── ErrorBoundary.jsx        ← Error boundary for crash handling
+│   ├── SkeletonLoader.jsx       ← Loading skeleton UI
+│   ├── EmptyState.jsx           ← Empty state placeholder
+│   ├── CopyButton.jsx           ← Copy to clipboard utility
 │   └── PolicyAuthoring/         ← policy editor components
 │       ├── PolicyForm.jsx
 │       ├── PolicyList.jsx
@@ -349,7 +354,7 @@ python -m pytest tests/test_policy_engine.py -v    # Single file
 - `service` — Service layer business logic tests
 - `slow` — Tests that take a long time to run
 
-**Test file map (23 files, ~510 tests):**
+**Test file map (26 files, ~628 tests):**
 | File | What it covers |
 |------|---------------|
 | `test_policy_engine.py` | Rule-based policy validation logic |
@@ -375,6 +380,9 @@ python -m pytest tests/test_policy_engine.py -v    # Single file
 | `test_policy_lifecycle.py` | Full policy lifecycle |
 | `test_policy_reports.py` | Reporting endpoints |
 | `test_domain_governance.py` | Domain-level governance |
+| `test_policy_engine_advanced.py` | Advanced policy validation: multi-violation, boundaries, unimplemented policies |
+| `test_orchestration_combine.py` | Orchestration result combining: deduplication, prioritization, exception handling |
+| `test_seed_data_validation.py` | Seed data compliance validation |
 
 ### Frontend Tests (Vitest)
 ```bash
@@ -404,7 +412,7 @@ npm run test:coverage     # Coverage report
 
 **Hard requirement: run the complete regression suite after every code change, without exception.**
 
-"Complete regression" means all 23 backend test files (~510 tests) and all 4 frontend test files (~92 tests) pass with zero failures and zero errors. A partial test run does not satisfy this requirement.
+"Complete regression" means all 26 backend test files (~628 tests) and all 4 frontend test files (~92 tests) pass with zero failures and zero errors. A partial test run does not satisfy this requirement.
 
 ---
 
@@ -412,7 +420,7 @@ npm run test:coverage     # Coverage report
 
 Both suites must pass before a task is considered complete.
 
-**Backend (all 23 files, ~510 tests):**
+**Backend (all 26 files, ~628 tests):**
 ```bash
 cd data-governance-platform/backend
 source venv/bin/activate
@@ -431,7 +439,7 @@ npm test -- --run
 
 | Suite | Files | Tests | Markers included |
 |-------|-------|-------|-----------------|
-| Backend pytest | All 23 `test_*.py` files in `backend/tests/` | ~510 | `unit`, `integration`, `api`, `service`, `slow` |
+| Backend pytest | All 26 `test_*.py` files in `backend/tests/` | ~628 | `unit`, `integration`, `api`, `service`, `slow` |
 | Frontend Vitest | All 4 files in `frontend/src/test/` | ~92 | All suites |
 
 Do **not** limit the run to a single marker (e.g., `-m unit` only). All markers — including `slow` — must be included unless the environment cannot support them (document the reason if any are skipped).
@@ -445,7 +453,7 @@ The regression suite passes when **all** of the following are true:
 1. `pytest` exits with code `0` — zero failures, zero errors.
 2. `npm test -- --run` exits with code `0` — zero failed suites, zero failed test cases.
 3. No new `SKIPPED` or `xfail` markers were added as a workaround to hide failures.
-4. Test count has not decreased — if fewer tests are collected than ~510 backend / ~92 frontend, investigate before proceeding.
+4. Test count has not decreased — if fewer tests are collected than ~628 backend / ~92 frontend, investigate before proceeding.
 
 ---
 
@@ -808,7 +816,7 @@ The platform uses Git to version data contracts. Contracts are committed to `bac
 
 Every feature implementation — regardless of size — must end with these two steps **in order**:
 
-1. **Run the full regression suite** via `/test-and-fix` — all ~510 backend tests and ~92 frontend tests must pass with zero failures before proceeding.
+1. **Run the full regression suite** via `/test-and-fix` — all ~628 backend tests and ~92 frontend tests must pass with zero failures before proceeding.
 2. **Generate feature documentation** via `/documentation` — spawns parallel sub-agents to analyse each changed layer and produces `CHANGES_<branch>.md` at the repo root summarising every change made on the branch.
 
 Neither step is optional. Do not mark a task complete until both skills have been run and their output reviewed.
@@ -839,4 +847,4 @@ Neither step is optional. Do not mark a task complete until both skills have bee
 
 ---
 
-*Last updated: 2026-03-04. Generated by Claude Code for the Data Governance Platform PoC.*
+*Last updated: 2026-03-11. Generated by Claude Code for the Data Governance Platform PoC.*
