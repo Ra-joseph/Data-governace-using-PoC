@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="2000" viewBox="0 0 1400 2000" style="background:#FAF9F6; font-family:'Inter',-apple-system,'Segoe UI',sans-serif;">
+
+  <defs>
+    <!-- Arrowhead marker -->
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#1A1A1A"/>
+    </marker>
+    <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#16a34a"/>
+    </marker>
+    <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/>
+    </marker>
+    <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0070AD"/>
+    </marker>
+
+    <!-- Drop shadow filter -->
+    <filter id="dropshadow" x="-5%" y="-5%" width="115%" height="125%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#00000020"/>
+    </filter>
+
+    <!-- Swimlane background gradient fills -->
+    <linearGradient id="laneA-bg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0070AD" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#0070AD" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="laneB-bg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#12ABDB" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#12ABDB" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="laneC-bg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#005a8e" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#005a8e" stop-opacity="0.02"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- TITLE BAR -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="0" y="0" width="1400" height="56" fill="#0070AD"/>
+  <text x="700" y="24" text-anchor="middle" font-size="17" font-weight="700" fill="white" letter-spacing="0.3">Data Governance Platform — Process Flow Diagram</text>
+  <text x="700" y="44" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.85)" letter-spacing="0.2">Dataset Registration · Subscription Approval · Policy Validation</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SWIMLANE BACKGROUNDS -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="0" y="56" width="466" height="1944" fill="url(#laneA-bg)"/>
+  <rect x="468" y="56" width="466" height="1944" fill="url(#laneB-bg)"/>
+  <rect x="936" y="56" width="464" height="1944" fill="url(#laneC-bg)"/>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SWIMLANE HEADERS -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- Lane A header -->
+  <rect x="0" y="56" width="466" height="50" fill="#0070AD" filter="url(#dropshadow)"/>
+  <text x="233" y="75" text-anchor="middle" font-size="13" font-weight="700" fill="white">A · Dataset Registration</text>
+  <text x="233" y="96" text-anchor="middle" font-size="10.5" fill="rgba(255,255,255,0.85)">Data Owner → API → ContractService → PolicyOrchestrator</text>
+
+  <!-- Lane B header -->
+  <rect x="468" y="56" width="466" height="50" fill="#12ABDB" filter="url(#dropshadow)"/>
+  <text x="701" y="75" text-anchor="middle" font-size="13" font-weight="700" fill="white">B · Subscription Approval</text>
+  <text x="701" y="96" text-anchor="middle" font-size="10.5" fill="rgba(255,255,255,0.85)">Consumer → Data Steward → ContractService → GitService</text>
+
+  <!-- Lane C header -->
+  <rect x="936" y="56" width="464" height="50" fill="#005a8e" filter="url(#dropshadow)"/>
+  <text x="1168" y="75" text-anchor="middle" font-size="13" font-weight="700" fill="white">C · Policy Validation Detail</text>
+  <text x="1168" y="96" text-anchor="middle" font-size="10.5" fill="rgba(255,255,255,0.85)">PolicyOrchestrator → PolicyEngine → SemanticEngine</text>
+
+  <!-- Swimlane separator dashed lines -->
+  <line x1="466" y1="56" x2="466" y2="2000" stroke="#0070AD" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.35"/>
+  <line x1="934" y1="56" x2="934" y2="2000" stroke="#005a8e" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.35"/>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- HELPER MACROS (implemented inline) -->
+  <!-- Process box: rx=6, centered in lane -->
+  <!-- Role badge: small pill tag above box -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+
+  <!-- ╔══════════════════════════════════════════════════╗ -->
+  <!-- ║  SWIMLANE A — DATASET REGISTRATION              ║ -->
+  <!-- ╚══════════════════════════════════════════════════╝ -->
+
+  <!-- A1: Start oval y=145 -->
+  <rect x="133" y="127" width="200" height="36" rx="18" fill="#1A1A1A" filter="url(#dropshadow)"/>
+  <text x="233" y="148" text-anchor="middle" font-size="10.5" font-weight="600" fill="white">Data Owner opens</text>
+  <text x="233" y="161" text-anchor="middle" font-size="10.5" font-weight="600" fill="white">Dataset Registration</text>
+  <rect x="133" y="127" width="200" height="36" rx="18" fill="none" stroke="#1A1A1A" stroke-width="0"/>
+  <!-- extend oval height -->
+  <rect x="133" y="127" width="200" height="44" rx="22" fill="#1A1A1A" filter="url(#dropshadow)"/>
+  <text x="233" y="145" text-anchor="middle" font-size="10" font-weight="600" fill="white">Data Owner opens</text>
+  <text x="233" y="160" text-anchor="middle" font-size="10" font-weight="600" fill="white">Dataset Registration</text>
+
+  <!-- Arrow A1→A2 -->
+  <line x1="233" y1="171" x2="233" y2="196" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- A2: Process y=210 | role: Data Owner -->
+  <rect x="50" y="197" width="366" height="44" rx="6" fill="rgba(0,112,173,0.08)" stroke="#0070AD" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="92" y="189" width="100" height="14" rx="7" fill="#0070AD"/>
+  <text x="142" y="199" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">Data Owner</text>
+  <text x="233" y="213" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Fills 4-step Wizard</text>
+  <text x="233" y="228" text-anchor="middle" font-size="9.5" fill="#1A1A1A">(name / schema / governance / quality)</text>
+
+  <!-- Arrow A2→A3 -->
+  <line x1="233" y1="241" x2="233" y2="264" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- A3: Process y=277 | role: React Frontend -->
+  <rect x="50" y="265" width="366" height="44" rx="6" fill="rgba(0,112,173,0.08)" stroke="#0070AD" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="82" y="257" width="120" height="14" rx="7" fill="#12ABDB"/>
+  <text x="142" y="267" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">React Frontend</text>
+  <text x="233" y="282" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Frontend validates DatasetCreate</text>
+  <text x="233" y="296" text-anchor="middle" font-size="9.5" fill="#1A1A1A">(Pydantic schema, required fields)</text>
+
+  <!-- Arrow A3→A4 -->
+  <line x1="233" y1="309" x2="233" y2="332" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- A4: Process y=345 | role: API -->
+  <rect x="50" y="333" width="366" height="44" rx="6" fill="rgba(0,112,173,0.08)" stroke="#0070AD" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="103" y="325" width="50" height="14" rx="7" fill="#005a8e"/>
+  <text x="128" y="335" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">API Router</text>
+  <text x="233" y="350" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">POST /api/v1/datasets/ → API Router</text>
+  <text x="233" y="365" text-anchor="middle" font-size="9.5" fill="#1A1A1A">Request body deserialized, auth checked</text>
+
+  <!-- Arrow A4→A5 -->
+  <line x1="233" y1="377" x2="233" y2="400" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- A5: Process y=413 | role: API + SQLite -->
+  <rect x="50" y="401" width="366" height="44" rx="6" fill="rgba(0,112,173,0.08)" stroke="#0070AD" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="76" y="393" width="130" height="14" rx="7" fill="#005a8e"/>
+  <text x="141" y="403" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">API + SQLite</text>
+  <text x="233" y="418" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Router creates Dataset record</text>
+  <text x="233" y="432" text-anchor="middle" font-size="9.5" fill="#1A1A1A">status = DRAFT, id assigned</text>
+
+  <!-- Arrow A5→A6 -->
+  <line x1="233" y1="445" x2="233" y2="468" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- A6: Process y=481 | role: ContractService -->
+  <rect x="50" y="469" width="366" height="44" rx="6" fill="rgba(0,112,173,0.08)" stroke="#0070AD" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="72" y="461" width="130" height="14" rx="7" fill="#0070AD"/>
+  <text x="137" y="471" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">ContractService</text>
+  <text x="233" y="486" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">ContractService builds contract_data dict</text>
+  <text x="233" y="500" text-anchor="middle" font-size="9.5" fill="#1A1A1A">Assembles schema, metadata, governance fields</text>
+
+  <!-- Arrow A6→A7 -->
+  <line x1="233" y1="513" x2="233" y2="538" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- A7: Process y=551 (taller box) | role: PolicyOrchestrator -->
+  <rect x="50" y="538" width="366" height="52" rx="6" fill="rgba(0,112,173,0.08)" stroke="#0070AD" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="66" y="530" width="140" height="14" rx="7" fill="#0070AD"/>
+  <text x="136" y="540" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">PolicyOrchestrator</text>
+  <text x="233" y="555" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">PolicyOrchestrator calculates ContractAnalysis</text>
+  <text x="233" y="569" text-anchor="middle" font-size="9.5" fill="#1A1A1A">(risk_level, complexity_score, data_classification)</text>
+  <text x="233" y="582" text-anchor="middle" font-size="9" fill="#555">→ Routes to Swimlane C for validation</text>
+
+  <!-- Arrow A7→A8 diamond -->
+  <line x1="233" y1="590" x2="233" y2="618" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- A8: Decision diamond y=655 (center) -->
+  <!-- Diamond: center (233, 648), w=240, h=70 -->
+  <polygon points="233,618 353,648 233,678 113,648" fill="#d97706" stroke="#b45309" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <text x="233" y="643" text-anchor="middle" font-size="10" font-weight="700" fill="white">Risk = HIGH</text>
+  <text x="233" y="658" text-anchor="middle" font-size="10" font-weight="700" fill="white">or CRITICAL?</text>
+
+  <!-- YES right branch → THOROUGH box -->
+  <line x1="353" y1="648" x2="400" y2="648" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrowhead-green)"/>
+  <text x="358" y="642" font-size="9" fill="#16a34a" font-weight="700">YES</text>
+  <rect x="400" y="629" width="48" height="38" rx="5" fill="rgba(22,163,74,0.12)" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="424" y="645" text-anchor="middle" font-size="8.5" fill="#14532d" font-weight="700">THOROUGH</text>
+  <text x="424" y="658" text-anchor="middle" font-size="8" fill="#14532d">strategy</text>
+
+  <!-- NO down arrow -->
+  <line x1="233" y1="678" x2="233" y2="706" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrowhead-red)"/>
+  <text x="241" y="695" font-size="9" fill="#dc2626" font-weight="700">NO</text>
+
+  <!-- A9: Decision diamond y=740 -->
+  <polygon points="233,706 353,736 233,766 113,736" fill="#d97706" stroke="#b45309" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <text x="233" y="731" text-anchor="middle" font-size="10" font-weight="700" fill="white">Risk =</text>
+  <text x="233" y="746" text-anchor="middle" font-size="10" font-weight="700" fill="white">MEDIUM?</text>
+
+  <!-- YES right → BALANCED -->
+  <line x1="353" y1="736" x2="400" y2="736" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrowhead-green)"/>
+  <text x="358" y="730" font-size="9" fill="#16a34a" font-weight="700">YES</text>
+  <rect x="400" y="717" width="48" height="38" rx="5" fill="rgba(22,163,74,0.12)" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="424" y="733" text-anchor="middle" font-size="8.5" fill="#14532d" font-weight="700">BALANCED</text>
+  <text x="424" y="746" text-anchor="middle" font-size="8" fill="#14532d">strategy</text>
+
+  <!-- NO down → FAST label -->
+  <line x1="233" y1="766" x2="233" y2="790" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrowhead-red)"/>
+  <text x="241" y="781" font-size="9" fill="#dc2626" font-weight="700">NO → FAST</text>
+
+  <!-- A10: Process y=810 | role: PolicyEngine -->
+  <rect x="50" y="797" width="366" height="44" rx="6" fill="rgba(0,112,173,0.08)" stroke="#0070AD" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="78" y="789" width="120" height="14" rx="7" fill="#0070AD"/>
+  <text x="138" y="799" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">PolicyEngine</text>
+  <text x="233" y="814" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">PolicyEngine: SD001–005, DQ001–005, SG001–007</text>
+  <text x="233" y="828" text-anchor="middle" font-size="9.5" fill="#1A1A1A">17 deterministic rule-based checks applied</text>
+
+  <!-- Arrow A10→A11 -->
+  <line x1="233" y1="841" x2="233" y2="868" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- A11: Decision diamond y=900 -->
+  <polygon points="233,868 353,900 233,932 113,900" fill="#d97706" stroke="#b45309" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <text x="233" y="895" text-anchor="middle" font-size="9" font-weight="700" fill="white">LLM enabled AND</text>
+  <text x="233" y="910" text-anchor="middle" font-size="9" font-weight="700" fill="white">semantic needed?</text>
+
+  <!-- YES right → Semantic box -->
+  <line x1="353" y1="900" x2="388" y2="900" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrowhead-green)"/>
+  <text x="358" y="894" font-size="9" fill="#16a34a" font-weight="700">YES</text>
+  <rect x="388" y="878" width="72" height="44" rx="5" fill="rgba(18,171,219,0.12)" stroke="#12ABDB" stroke-width="1.5"/>
+  <text x="424" y="896" text-anchor="middle" font-size="8" fill="#005a8e" font-weight="600">Semantic</text>
+  <text x="424" y="908" text-anchor="middle" font-size="8" fill="#005a8e">PolicyEngine</text>
+  <text x="424" y="919" text-anchor="middle" font-size="7.5" fill="#005a8e">→ Ollama</text>
+
+  <!-- NO down arrow -->
+  <line x1="233" y1="932" x2="233" y2="958" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrowhead-red)"/>
+  <text x="241" y="948" font-size="9" fill="#dc2626" font-weight="700">NO</text>
+
+  <!-- A12: Process y=975 | role: Orchestrator -->
+  <rect x="50" y="962" width="366" height="44" rx="6" fill="rgba(0,112,173,0.08)" stroke="#0070AD" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="66" y="954" width="140" height="14" rx="7" fill="#0070AD"/>
+  <text x="136" y="964" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">PolicyOrchestrator</text>
+  <text x="233" y="979" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Orchestrator combines + deduplicates</text>
+  <text x="233" y="993" text-anchor="middle" font-size="9.5" fill="#1A1A1A">Merges ValidationResult from all engines</text>
+
+  <!-- Arrow A12→A13 -->
+  <line x1="233" y1="1006" x2="233" y2="1030" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- A13: Decision diamond y=1065 -->
+  <polygon points="233,1030 353,1062 233,1094 113,1062" fill="#d97706" stroke="#b45309" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <text x="233" y="1057" text-anchor="middle" font-size="10" font-weight="700" fill="white">Critical</text>
+  <text x="233" y="1072" text-anchor="middle" font-size="10" font-weight="700" fill="white">violations?</text>
+
+  <!-- YES right → FAILED box → End -->
+  <line x1="353" y1="1062" x2="385" y2="1062" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrowhead-red)"/>
+  <text x="356" y="1056" font-size="9" fill="#dc2626" font-weight="700">YES</text>
+  <rect x="385" y="1047" width="70" height="30" rx="5" fill="rgba(220,38,38,0.1)" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="420" y="1062" text-anchor="middle" font-size="8.5" fill="#dc2626" font-weight="700">status=FAILED</text>
+  <text x="420" y="1073" text-anchor="middle" font-size="8" fill="#dc2626">stays DRAFT</text>
+  <!-- End oval after FAILED -->
+  <rect x="385" y="1085" width="70" height="28" rx="14" fill="#1A1A1A"/>
+  <text x="420" y="1103" text-anchor="middle" font-size="8.5" font-weight="600" fill="white">END</text>
+  <line x1="420" y1="1077" x2="420" y2="1085" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrowhead-red)"/>
+
+  <!-- NO down arrow -->
+  <line x1="233" y1="1094" x2="233" y2="1118" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrowhead-green)"/>
+  <text x="241" y="1110" font-size="9" fill="#16a34a" font-weight="700">NO</text>
+
+  <!-- A14: Process y=1135 | role: ContractService + GitService -->
+  <rect x="50" y="1122" width="366" height="52" rx="6" fill="rgba(0,112,173,0.08)" stroke="#0070AD" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="50" y="1114" width="176" height="14" rx="7" fill="#0070AD"/>
+  <text x="138" y="1124" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">ContractService + GitService</text>
+  <text x="233" y="1140" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">ContractService generates YAML contract</text>
+  <text x="233" y="1154" text-anchor="middle" font-size="9.5" fill="#1A1A1A">Commits to Git — initial version v1.0.0</text>
+  <text x="233" y="1167" text-anchor="middle" font-size="9" fill="#555">Tag: dataset/{id}/v1.0.0</text>
+
+  <!-- Arrow A14→A15 -->
+  <line x1="233" y1="1174" x2="233" y2="1197" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- A15: Data Store Cylinder y=1220 -->
+  <!-- Cylinder body -->
+  <rect x="103" y="1197" width="260" height="44" rx="0" fill="rgba(220,38,38,0.08)" stroke="#dc2626" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <!-- Top ellipse -->
+  <ellipse cx="233" cy="1197" rx="130" ry="10" fill="rgba(220,38,38,0.15)" stroke="#dc2626" stroke-width="1.5"/>
+  <!-- Bottom ellipse -->
+  <ellipse cx="233" cy="1241" rx="130" ry="10" fill="rgba(220,38,38,0.15)" stroke="#dc2626" stroke-width="1.5"/>
+  <rect x="103" y="1197" width="260" height="44" fill="rgba(220,38,38,0.08)"/>
+  <text x="233" y="1219" text-anchor="middle" font-size="9.5" fill="#991b1b" font-weight="600">SQLite: Contract record created</text>
+  <text x="233" y="1233" text-anchor="middle" font-size="9" fill="#991b1b">(id, dataset_id, version=1.0.0, yaml_content)</text>
+
+  <!-- Arrow A15→A16 -->
+  <line x1="233" y1="1251" x2="233" y2="1274" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- A16: Process y=1287 | role: API Router -->
+  <rect x="50" y="1275" width="366" height="44" rx="6" fill="rgba(0,112,173,0.08)" stroke="#0070AD" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="103" y="1267" width="80" height="14" rx="7" fill="#005a8e"/>
+  <text x="143" y="1277" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">API Router</text>
+  <text x="233" y="1292" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Dataset status → PUBLISHED</text>
+  <text x="233" y="1306" text-anchor="middle" font-size="9.5" fill="#1A1A1A">Governance check cleared, available in catalog</text>
+
+  <!-- Arrow A16→A17 -->
+  <line x1="233" y1="1319" x2="233" y2="1345" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- A17: End oval -->
+  <rect x="113" y="1345" width="240" height="44" rx="22" fill="#1A1A1A" filter="url(#dropshadow)"/>
+  <text x="233" y="1363" text-anchor="middle" font-size="10" font-weight="600" fill="white">DatasetResponse returned</text>
+  <text x="233" y="1378" text-anchor="middle" font-size="10" font-weight="600" fill="white">to Frontend</text>
+
+
+  <!-- ╔══════════════════════════════════════════════════╗ -->
+  <!-- ║  SWIMLANE B — SUBSCRIPTION APPROVAL             ║ -->
+  <!-- ╚══════════════════════════════════════════════════╝ -->
+
+  <!-- B1: Start oval y=145 -->
+  <rect x="601" y="127" width="200" height="44" rx="22" fill="#1A1A1A" filter="url(#dropshadow)"/>
+  <text x="701" y="145" text-anchor="middle" font-size="10" font-weight="600" fill="white">Consumer browses</text>
+  <text x="701" y="160" text-anchor="middle" font-size="10" font-weight="600" fill="white">DataCatalogBrowser</text>
+
+  <!-- Arrow B1→B2 -->
+  <line x1="701" y1="171" x2="701" y2="196" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- B2: Process y=210 | role: Data Consumer -->
+  <rect x="518" y="197" width="366" height="44" rx="6" fill="rgba(18,171,219,0.08)" stroke="#12ABDB" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="560" y="189" width="110" height="14" rx="7" fill="#12ABDB"/>
+  <text x="615" y="199" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">Data Consumer</text>
+  <text x="701" y="213" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Selects dataset, fills subscription form</text>
+  <text x="701" y="228" text-anchor="middle" font-size="9.5" fill="#1A1A1A">(purpose, SLA tier, data filters)</text>
+
+  <!-- Arrow B2→B3 -->
+  <line x1="701" y1="241" x2="701" y2="264" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- B3: Process y=277 | role: API -->
+  <rect x="518" y="265" width="366" height="44" rx="6" fill="rgba(18,171,219,0.08)" stroke="#12ABDB" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="571" y="257" width="60" height="14" rx="7" fill="#005a8e"/>
+  <text x="601" y="267" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">API</text>
+  <text x="701" y="282" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">POST /api/v1/subscriptions/</text>
+  <text x="701" y="296" text-anchor="middle" font-size="9.5" fill="#1A1A1A">Subscription created — status = pending</text>
+
+  <!-- Arrow B3→B4 -->
+  <line x1="701" y1="309" x2="701" y2="332" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- B4: Process y=345 | role: Data Steward -->
+  <rect x="518" y="333" width="366" height="44" rx="6" fill="rgba(18,171,219,0.08)" stroke="#12ABDB" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="556" y="325" width="100" height="14" rx="7" fill="#12ABDB"/>
+  <text x="606" y="335" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">Data Steward</text>
+  <text x="701" y="350" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Steward sees request in Approval Queue</text>
+  <text x="701" y="365" text-anchor="middle" font-size="9.5" fill="#1A1A1A">Reviews purpose, SLA, consumer identity</text>
+
+  <!-- Arrow B4→B5 diamond -->
+  <line x1="701" y1="377" x2="701" y2="405" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- B5: Decision diamond y=440 -->
+  <polygon points="701,405 821,437 701,469 581,437" fill="#d97706" stroke="#b45309" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <text x="701" y="432" text-anchor="middle" font-size="10" font-weight="700" fill="white">Steward</text>
+  <text x="701" y="447" text-anchor="middle" font-size="10" font-weight="700" fill="white">decision?</text>
+
+  <!-- LEFT branch REJECT -->
+  <line x1="581" y1="437" x2="530" y2="437" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrowhead-red)"/>
+  <text x="555" y="431" font-size="9" fill="#dc2626" font-weight="700">REJECT</text>
+  <rect x="479" y="422" width="50" height="30" rx="5" fill="rgba(220,38,38,0.1)" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="504" y="436" text-anchor="middle" font-size="8" fill="#dc2626" font-weight="700">rejected</text>
+  <text x="504" y="447" text-anchor="middle" font-size="7.5" fill="#dc2626">reason noted</text>
+  <!-- End after reject -->
+  <rect x="479" y="461" width="50" height="24" rx="12" fill="#1A1A1A"/>
+  <text x="504" y="477" text-anchor="middle" font-size="8" font-weight="600" fill="white">END</text>
+  <line x1="504" y1="452" x2="504" y2="461" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrowhead-red)"/>
+
+  <!-- APPROVE down -->
+  <line x1="701" y1="469" x2="701" y2="493" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrowhead-green)"/>
+  <text x="709" y="484" font-size="9" fill="#16a34a" font-weight="700">APPROVE</text>
+
+  <!-- B6: Process y=506 | role: API -->
+  <rect x="518" y="494" width="366" height="44" rx="6" fill="rgba(18,171,219,0.08)" stroke="#12ABDB" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="571" y="486" width="60" height="14" rx="7" fill="#005a8e"/>
+  <text x="601" y="496" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">API</text>
+  <text x="701" y="511" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Subscription updated: status = approved</text>
+  <text x="701" y="525" text-anchor="middle" font-size="9.5" fill="#1A1A1A">access_granted = true, approved_at timestamp</text>
+
+  <!-- Arrow B6→B7 -->
+  <line x1="701" y1="538" x2="701" y2="561" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- B7: Process y=574 | role: ContractService -->
+  <rect x="518" y="562" width="366" height="44" rx="6" fill="rgba(18,171,219,0.08)" stroke="#12ABDB" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="540" y="554" width="130" height="14" rx="7" fill="#0070AD"/>
+  <text x="605" y="564" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">ContractService</text>
+  <text x="701" y="579" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">ContractService fetches latest contract version</text>
+  <text x="701" y="593" text-anchor="middle" font-size="9.5" fill="#1A1A1A">Reads v1.0.0 from Git repo</text>
+
+  <!-- Arrow B7→B8 -->
+  <line x1="701" y1="606" x2="701" y2="629" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- B8: Process y=642 | role: ContractService -->
+  <rect x="518" y="630" width="366" height="44" rx="6" fill="rgba(18,171,219,0.08)" stroke="#12ABDB" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="540" y="622" width="130" height="14" rx="7" fill="#0070AD"/>
+  <text x="605" y="632" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">ContractService</text>
+  <text x="701" y="647" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Appends subscription to contract YAML</text>
+  <text x="701" y="661" text-anchor="middle" font-size="9.5" fill="#1A1A1A">Version bump: v1.0.0 → v1.1.0</text>
+
+  <!-- Arrow B8→B9 -->
+  <line x1="701" y1="674" x2="701" y2="697" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- B9: Process y=710 | role: PolicyOrchestrator -->
+  <rect x="518" y="698" width="366" height="44" rx="6" fill="rgba(18,171,219,0.08)" stroke="#12ABDB" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="540" y="690" width="140" height="14" rx="7" fill="#0070AD"/>
+  <text x="610" y="700" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">PolicyOrchestrator</text>
+  <text x="701" y="715" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Validates updated contract via Orchestrator</text>
+  <text x="701" y="729" text-anchor="middle" font-size="9.5" fill="#1A1A1A">Checks subscription-level policy compliance</text>
+
+  <!-- Cross-swimlane dashed arrow B9 → C1 -->
+  <line x1="884" y1="720" x2="1060" y2="165" stroke="#0070AD" stroke-width="1.5" stroke-dasharray="7,4" marker-end="url(#arrowhead-dashed)" opacity="0.7"/>
+  <text x="1000" y="400" text-anchor="middle" font-size="9" fill="#0070AD" font-weight="600" transform="rotate(-25,1000,400)">calls policy validation</text>
+
+  <!-- Arrow B9→B10 -->
+  <line x1="701" y1="742" x2="701" y2="765" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- B10: Data Store Cylinder y=785 | role: GitService -->
+  <rect x="571" y="765" width="260" height="44" fill="rgba(220,38,38,0.08)" stroke="#dc2626" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <ellipse cx="701" cy="765" rx="130" ry="10" fill="rgba(220,38,38,0.15)" stroke="#dc2626" stroke-width="1.5"/>
+  <ellipse cx="701" cy="809" rx="130" ry="10" fill="rgba(220,38,38,0.15)" stroke="#dc2626" stroke-width="1.5"/>
+  <rect x="571" y="765" width="260" height="44" fill="rgba(220,38,38,0.08)"/>
+  <!-- Role badge -->
+  <rect x="626" y="757" width="80" height="14" rx="7" fill="#dc2626"/>
+  <text x="666" y="767" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">GitService</text>
+  <text x="701" y="787" text-anchor="middle" font-size="9.5" fill="#991b1b" font-weight="600">Commits updated YAML to Git</text>
+  <text x="701" y="801" text-anchor="middle" font-size="9" fill="#991b1b">Tag: v1.1.0 on dataset branch</text>
+
+  <!-- Arrow B10→B11 -->
+  <line x1="701" y1="819" x2="701" y2="842" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- B11: Data Store Cylinder y=860 | role: SQLite -->
+  <rect x="571" y="842" width="260" height="44" fill="rgba(220,38,38,0.08)" stroke="#dc2626" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <ellipse cx="701" cy="842" rx="130" ry="10" fill="rgba(220,38,38,0.15)" stroke="#dc2626" stroke-width="1.5"/>
+  <ellipse cx="701" cy="886" rx="130" ry="10" fill="rgba(220,38,38,0.15)" stroke="#dc2626" stroke-width="1.5"/>
+  <rect x="571" y="842" width="260" height="44" fill="rgba(220,38,38,0.08)"/>
+  <rect x="626" y="834" width="80" height="14" rx="7" fill="#dc2626"/>
+  <text x="666" y="844" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">SQLite</text>
+  <text x="701" y="864" text-anchor="middle" font-size="9.5" fill="#991b1b" font-weight="600">New Contract record v1.1.0</text>
+  <text x="701" y="878" text-anchor="middle" font-size="9" fill="#991b1b">subscription.contract_id linked</text>
+
+  <!-- Arrow B11→B12 -->
+  <line x1="701" y1="896" x2="701" y2="919" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- B12: End oval -->
+  <rect x="561" y="919" width="280" height="50" rx="25" fill="#1A1A1A" filter="url(#dropshadow)"/>
+  <text x="701" y="939" text-anchor="middle" font-size="10" font-weight="600" fill="white">SubscriptionResponse returned</text>
+  <text x="701" y="954" text-anchor="middle" font-size="9.5" font-weight="600" fill="rgba(255,255,255,0.85)">(status=approved, expires_at, credentials)</text>
+
+
+  <!-- ╔══════════════════════════════════════════════════╗ -->
+  <!-- ║  SWIMLANE C — POLICY VALIDATION DETAIL          ║ -->
+  <!-- ╚══════════════════════════════════════════════════╝ -->
+
+  <!-- C1: Start oval y=145 -->
+  <rect x="1068" y="127" width="200" height="44" rx="22" fill="#1A1A1A" filter="url(#dropshadow)"/>
+  <text x="1168" y="145" text-anchor="middle" font-size="10" font-weight="600" fill="white">Receives contract_data</text>
+  <text x="1168" y="160" text-anchor="middle" font-size="10" font-weight="600" fill="white">+ strategy</text>
+
+  <!-- Cross-swimlane dashed arrow A10 → C1 (triggers) -->
+  <line x1="416" y1="820" x2="1068" y2="155" stroke="#0070AD" stroke-width="1.5" stroke-dasharray="7,4" marker-end="url(#arrowhead-dashed)" opacity="0.65"/>
+  <text x="720" y="460" text-anchor="middle" font-size="9" fill="#0070AD" font-weight="600" transform="rotate(-15,720,460)">triggers</text>
+
+  <!-- Arrow C1→C2 -->
+  <line x1="1168" y1="171" x2="1168" y2="196" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- C2: Process y=210 | role: PolicyOrchestrator -->
+  <rect x="986" y="197" width="364" height="52" rx="6" fill="rgba(0,90,142,0.08)" stroke="#005a8e" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="996" y="189" width="140" height="14" rx="7" fill="#005a8e"/>
+  <text x="1066" y="199" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">PolicyOrchestrator</text>
+  <text x="1168" y="213" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Calculate complexity_score</text>
+  <text x="1168" y="226" text-anchor="middle" font-size="9" fill="#1A1A1A">fields×1.5 + PII×5 + tags×10 + classification(0-15)</text>
+  <text x="1168" y="239" text-anchor="middle" font-size="9" fill="#555">Numeric signal for routing decision</text>
+
+  <!-- Arrow C2→C3 -->
+  <line x1="1168" y1="249" x2="1168" y2="272" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- C3: Process y=285 | role: PolicyOrchestrator -->
+  <rect x="986" y="273" width="364" height="44" rx="6" fill="rgba(0,90,142,0.08)" stroke="#005a8e" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="996" y="265" width="140" height="14" rx="7" fill="#005a8e"/>
+  <text x="1066" y="275" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">PolicyOrchestrator</text>
+  <text x="1168" y="290" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Assess risk_level</text>
+  <text x="1168" y="304" text-anchor="middle" font-size="9.5" fill="#1A1A1A">CRITICAL / HIGH / MEDIUM / LOW</text>
+
+  <!-- Arrow C3→C4 -->
+  <line x1="1168" y1="317" x2="1168" y2="340" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- C4: Process y=353 | role: PolicyOrchestrator -->
+  <rect x="986" y="341" width="364" height="52" rx="6" fill="rgba(0,90,142,0.08)" stroke="#005a8e" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="996" y="333" width="140" height="14" rx="7" fill="#005a8e"/>
+  <text x="1066" y="343" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">PolicyOrchestrator</text>
+  <text x="1168" y="358" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Make OrchestrationDecision</text>
+  <text x="1168" y="372" text-anchor="middle" font-size="9" fill="#1A1A1A">(strategy, use_rule_based, use_semantic,</text>
+  <text x="1168" y="384" text-anchor="middle" font-size="9" fill="#1A1A1A">semantic_policies[], timeout_budget)</text>
+
+  <!-- Arrow C4→C5 -->
+  <line x1="1168" y1="393" x2="1168" y2="416" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- C5: Process y=429 | role: PolicyEngine -->
+  <rect x="986" y="417" width="364" height="44" rx="6" fill="rgba(0,90,142,0.08)" stroke="#005a8e" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="1006" y="409" width="120" height="14" rx="7" fill="#0070AD"/>
+  <text x="1066" y="419" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">PolicyEngine</text>
+  <text x="1168" y="434" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">PolicyEngine: SD001–005</text>
+  <text x="1168" y="448" text-anchor="middle" font-size="9.5" fill="#1A1A1A">PII, encryption, retention, use cases, masking</text>
+
+  <!-- Arrow C5→C6 -->
+  <line x1="1168" y1="461" x2="1168" y2="484" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- C6: Process y=497 | role: PolicyEngine -->
+  <rect x="986" y="485" width="364" height="44" rx="6" fill="rgba(0,90,142,0.08)" stroke="#005a8e" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="1006" y="477" width="120" height="14" rx="7" fill="#0070AD"/>
+  <text x="1066" y="487" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">PolicyEngine</text>
+  <text x="1168" y="502" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">PolicyEngine: DQ001–003</text>
+  <text x="1168" y="516" text-anchor="middle" font-size="9.5" fill="#1A1A1A">completeness≥95%, freshness SLA, uniqueness</text>
+
+  <!-- Arrow C6→C7 -->
+  <line x1="1168" y1="529" x2="1168" y2="552" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- C7: Process y=565 | role: PolicyEngine -->
+  <rect x="986" y="553" width="364" height="44" rx="6" fill="rgba(0,90,142,0.08)" stroke="#005a8e" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="1006" y="545" width="120" height="14" rx="7" fill="#0070AD"/>
+  <text x="1066" y="555" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">PolicyEngine</text>
+  <text x="1168" y="570" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">PolicyEngine: SG001–004</text>
+  <text x="1168" y="584" text-anchor="middle" font-size="9.5" fill="#1A1A1A">field docs, required≠nullable, ownership, constraints</text>
+
+  <!-- Arrow C7→C8 diamond -->
+  <line x1="1168" y1="597" x2="1168" y2="622" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- C8: Decision diamond y=655 -->
+  <polygon points="1168,622 1288,654 1168,686 1048,654" fill="#d97706" stroke="#b45309" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <text x="1168" y="649" text-anchor="middle" font-size="9" font-weight="700" fill="white">Semantic validation</text>
+  <text x="1168" y="664" text-anchor="middle" font-size="9" font-weight="700" fill="white">enabled?</text>
+
+  <!-- YES right → Semantic Engine box (shifted right) -->
+  <line x1="1288" y1="654" x2="1320" y2="654" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrowhead-green)"/>
+  <text x="1294" y="648" font-size="9" fill="#16a34a" font-weight="700">YES</text>
+  <!-- Semantic engine side box -->
+  <rect x="1318" y="634" width="68" height="55" rx="5" fill="rgba(18,171,219,0.12)" stroke="#12ABDB" stroke-width="1.5"/>
+  <text x="1352" y="652" text-anchor="middle" font-size="8" fill="#005a8e" font-weight="700">Semantic</text>
+  <text x="1352" y="663" text-anchor="middle" font-size="8" fill="#005a8e">PolicyEngine</text>
+  <text x="1352" y="674" text-anchor="middle" font-size="7.5" fill="#005a8e">→ Ollama</text>
+  <text x="1352" y="684" text-anchor="middle" font-size="7" fill="#005a8e">SEM001–SEM008</text>
+  <!-- arrow back down to C9 -->
+  <line x1="1352" y1="689" x2="1352" y2="755" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <line x1="1352" y1="755" x2="1200" y2="820" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrowhead-green)"/>
+
+  <!-- NO down arrow -->
+  <line x1="1168" y1="686" x2="1168" y2="710" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrowhead-red)"/>
+  <text x="1176" y="702" font-size="9" fill="#dc2626" font-weight="700">NO</text>
+
+  <!-- C9: Process y=723 | role: Orchestrator -->
+  <rect x="986" y="711" width="364" height="44" rx="6" fill="rgba(0,90,142,0.08)" stroke="#005a8e" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="996" y="703" width="140" height="14" rx="7" fill="#005a8e"/>
+  <text x="1066" y="713" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">Orchestrator</text>
+  <text x="1168" y="728" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Deduplicate violations</text>
+  <text x="1168" y="742" text-anchor="middle" font-size="9.5" fill="#1A1A1A">(same field + similar policy ID merge)</text>
+
+  <!-- Arrow C9→C10 -->
+  <line x1="1168" y1="755" x2="1168" y2="778" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- C10: Process y=791 | role: Orchestrator -->
+  <rect x="986" y="779" width="364" height="44" rx="6" fill="rgba(0,90,142,0.08)" stroke="#005a8e" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <rect x="996" y="771" width="140" height="14" rx="7" fill="#005a8e"/>
+  <text x="1066" y="781" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">Orchestrator</text>
+  <text x="1168" y="796" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Prioritize by severity</text>
+  <text x="1168" y="810" text-anchor="middle" font-size="9.5" fill="#1A1A1A">CRITICAL → WARNING → INFO</text>
+
+  <!-- Arrow C10→C11 diamond -->
+  <line x1="1168" y1="823" x2="1168" y2="848" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- C11a: Decision diamond y=882 (critical_count > 0?) -->
+  <polygon points="1168,848 1288,880 1168,912 1048,880" fill="#d97706" stroke="#b45309" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <text x="1168" y="875" text-anchor="middle" font-size="9" font-weight="700" fill="white">critical_count</text>
+  <text x="1168" y="890" text-anchor="middle" font-size="9" font-weight="700" fill="white">&gt; 0?</text>
+
+  <!-- YES right → FAILED -->
+  <line x1="1288" y1="880" x2="1320" y2="880" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrowhead-red)"/>
+  <text x="1296" y="874" font-size="9" fill="#dc2626" font-weight="700">YES</text>
+  <rect x="1320" y="865" width="68" height="30" rx="5" fill="rgba(220,38,38,0.1)" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="1354" y="877" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">status =</text>
+  <text x="1354" y="889" text-anchor="middle" font-size="9" fill="#dc2626">FAILED</text>
+  <!-- line from FAILED down to C12 -->
+  <line x1="1354" y1="895" x2="1354" y2="1145" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <line x1="1354" y1="1145" x2="1200" y2="1145" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrowhead-red)"/>
+
+  <!-- NO down -->
+  <line x1="1168" y1="912" x2="1168" y2="938" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrowhead-green)"/>
+  <text x="1176" y="928" font-size="9" fill="#16a34a" font-weight="700">NO</text>
+
+  <!-- C11b: Decision diamond y=970 (warnings > 0?) -->
+  <polygon points="1168,938 1288,970 1168,1002 1048,970" fill="#d97706" stroke="#b45309" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <text x="1168" y="965" text-anchor="middle" font-size="9" font-weight="700" fill="white">warnings</text>
+  <text x="1168" y="980" text-anchor="middle" font-size="9" font-weight="700" fill="white">&gt; 0?</text>
+
+  <!-- YES right → WARNING -->
+  <line x1="1288" y1="970" x2="1320" y2="970" stroke="#d97706" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+  <text x="1296" y="964" font-size="9" fill="#d97706" font-weight="700">YES</text>
+  <rect x="1320" y="955" width="68" height="30" rx="5" fill="rgba(217,119,6,0.1)" stroke="#d97706" stroke-width="1.5"/>
+  <text x="1354" y="967" text-anchor="middle" font-size="9" fill="#92400e" font-weight="700">status =</text>
+  <text x="1354" y="979" text-anchor="middle" font-size="9" fill="#92400e">WARNING</text>
+  <!-- merge down to C12 -->
+  <line x1="1354" y1="985" x2="1354" y2="1145" stroke="#d97706" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <line x1="1354" y1="1145" x2="1200" y2="1145" stroke="#d97706" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrowhead)"/>
+
+  <!-- NO down → PASSED -->
+  <line x1="1168" y1="1002" x2="1168" y2="1026" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrowhead-green)"/>
+  <text x="1176" y="1016" font-size="9" fill="#16a34a" font-weight="700">NO</text>
+  <rect x="1110" y="1026" width="116" height="28" rx="5" fill="rgba(22,163,74,0.1)" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="1168" y="1038" text-anchor="middle" font-size="9" fill="#14532d" font-weight="700">status =</text>
+  <text x="1168" y="1050" text-anchor="middle" font-size="9" fill="#14532d">PASSED</text>
+  <!-- merge line -->
+  <line x1="1168" y1="1054" x2="1168" y2="1120" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrowhead-green)"/>
+
+  <!-- C12: Process y=1155 | Merge statuses -->
+  <rect x="986" y="1132" width="364" height="44" rx="6" fill="rgba(0,90,142,0.08)" stroke="#005a8e" stroke-width="1.5" filter="url(#dropshadow)"/>
+  <text x="1168" y="1149" text-anchor="middle" font-size="10" fill="#1A1A1A" font-weight="600">Merge statuses into final result</text>
+  <text x="1168" y="1163" text-anchor="middle" font-size="9.5" fill="#1A1A1A">Combines rule-based + semantic outcomes</text>
+
+  <!-- Arrow C12→C13 -->
+  <line x1="1168" y1="1176" x2="1168" y2="1199" stroke="#1A1A1A" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+  <!-- C13: End oval -->
+  <rect x="998" y="1199" width="340" height="58" rx="29" fill="#1A1A1A" filter="url(#dropshadow)"/>
+  <text x="1168" y="1219" text-anchor="middle" font-size="10" font-weight="600" fill="white">Return ValidationResult</text>
+  <text x="1168" y="1234" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.85)">{status, passed, warnings, failures,</text>
+  <text x="1168" y="1248" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.85)">violations[], metadata, strategy_used}</text>
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- LEGEND -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="0" y="1920" width="1400" height="80" fill="#f0f4f8" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="700" y="1937" text-anchor="middle" font-size="11" font-weight="700" fill="#1A1A1A">Flowchart Legend</text>
+
+  <!-- Oval = Start/End -->
+  <rect x="40" y="1948" width="90" height="26" rx="13" fill="#1A1A1A"/>
+  <text x="85" y="1965" text-anchor="middle" font-size="9" fill="white" font-weight="600">Start / End</text>
+  <text x="85" y="1985" text-anchor="middle" font-size="9" fill="#374151">Oval</text>
+
+  <!-- Process box -->
+  <rect x="160" y="1948" width="100" height="26" rx="6" fill="rgba(0,112,173,0.08)" stroke="#0070AD" stroke-width="1.5"/>
+  <text x="210" y="1965" text-anchor="middle" font-size="9" fill="#1A1A1A" font-weight="600">Process Step</text>
+  <text x="210" y="1985" text-anchor="middle" font-size="9" fill="#374151">Rounded Rect</text>
+
+  <!-- Diamond -->
+  <polygon points="340,1961 365,1973 340,1985 315,1973" fill="#d97706" stroke="#b45309" stroke-width="1.5"/>
+  <text x="340" y="1997" text-anchor="middle" font-size="9" fill="#374151">Diamond = Decision</text>
+
+  <!-- Cylinder -->
+  <rect x="460" y="1955" width="100" height="22" fill="rgba(220,38,38,0.08)" stroke="#dc2626" stroke-width="1.5"/>
+  <ellipse cx="510" cy="1955" rx="50" ry="6" fill="rgba(220,38,38,0.15)" stroke="#dc2626" stroke-width="1.5"/>
+  <ellipse cx="510" cy="1977" rx="50" ry="6" fill="rgba(220,38,38,0.15)" stroke="#dc2626" stroke-width="1.5"/>
+  <rect x="460" y="1955" width="100" height="22" fill="rgba(220,38,38,0.08)"/>
+  <text x="510" y="1997" text-anchor="middle" font-size="9" fill="#374151">Cylinder = Data Store</text>
+
+  <!-- YES / NO arrows -->
+  <line x1="650" y1="1968" x2="690" y2="1968" stroke="#16a34a" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+  <text x="670" y="1963" text-anchor="middle" font-size="8.5" fill="#16a34a" font-weight="700">YES</text>
+  <text x="670" y="1985" text-anchor="middle" font-size="9" fill="#374151">Approved path</text>
+
+  <line x1="740" y1="1968" x2="780" y2="1968" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+  <text x="760" y="1963" text-anchor="middle" font-size="8.5" fill="#dc2626" font-weight="700">NO</text>
+  <text x="760" y="1985" text-anchor="middle" font-size="9" fill="#374151">Rejected path</text>
+
+  <!-- Dashed arrow -->
+  <line x1="830" y1="1968" x2="880" y2="1968" stroke="#0070AD" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrowhead-dashed)"/>
+  <text x="855" y="1985" text-anchor="middle" font-size="9" fill="#374151">Cross-lane call</text>
+
+  <!-- Role badge example -->
+  <rect x="930" y="1955" width="90" height="14" rx="7" fill="#0070AD"/>
+  <text x="975" y="1965" text-anchor="middle" font-size="8.5" fill="white" font-weight="600">Role Badge</text>
+  <text x="975" y="1985" text-anchor="middle" font-size="9" fill="#374151">Component label</text>
+
+  <!-- Colors reference -->
+  <rect x="1070" y="1955" width="14" height="14" rx="3" fill="#0070AD"/>
+  <text x="1090" y="1966" font-size="9" fill="#374151">Lane A: Registration</text>
+  <rect x="1070" y="1975" width="14" height="14" rx="3" fill="#12ABDB"/>
+  <text x="1090" y="1986" font-size="9" fill="#374151">Lane B: Approval</text>
+  <rect x="1220" y="1955" width="14" height="14" rx="3" fill="#005a8e"/>
+  <text x="1240" y="1966" font-size="9" fill="#374151">Lane C: Validation</text>
+  <rect x="1220" y="1975" width="14" height="14" rx="3" fill="#d97706"/>
+  <text x="1240" y="1986" font-size="9" fill="#374151">Decision point</text>
+
+</svg>
