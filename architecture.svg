@@ -1,0 +1,552 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1080" viewBox="0 0 1400 1080" font-family="'Segoe UI', Arial, sans-serif">
+
+  <!-- ============================================================ -->
+  <!-- DEFINITIONS: arrowhead markers, drop shadows                  -->
+  <!-- ============================================================ -->
+  <defs>
+    <!-- Standard solid arrowhead -->
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#374151"/>
+    </marker>
+    <!-- Dashed cross-cutting arrowhead (gray) -->
+    <marker id="arrow-gray" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#6B7280"/>
+    </marker>
+    <!-- White arrowhead for dark backgrounds -->
+    <marker id="arrow-white" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#FFFFFF"/>
+    </marker>
+    <!-- Drop shadow filter for layer background cards -->
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#00000022"/>
+    </filter>
+    <!-- Subtle inner shadow for boxes -->
+    <filter id="box-shadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#00000033"/>
+    </filter>
+  </defs>
+
+  <!-- ============================================================ -->
+  <!-- BACKGROUND                                                     -->
+  <!-- ============================================================ -->
+  <rect width="1400" height="1080" fill="#F8FAFC"/>
+
+  <!-- ============================================================ -->
+  <!-- TITLE HEADER                                                   -->
+  <!-- ============================================================ -->
+  <rect x="0" y="0" width="1400" height="42" fill="#1E293B"/>
+  <text x="700" y="27" text-anchor="middle" fill="#FFFFFF" font-size="17" font-weight="700" letter-spacing="0.5">
+    Data Governance Platform &#x2014; Architecture Diagram (Policy-as-Code PoC)
+  </text>
+  <text x="700" y="39" text-anchor="middle" fill="#94A3B8" font-size="10">
+    FastAPI &#xB7; React/Vite &#xB7; SQLite &#xB7; PostgreSQL &#xB7; Git Contracts &#xB7; Ollama LLM &#xB7; 4 Validation Strategies
+  </text>
+
+  <!-- ============================================================ -->
+  <!-- LAYER 1: USERS  (y: 52 - 140)                                 -->
+  <!-- ============================================================ -->
+  <rect x="10" y="52" width="1380" height="94" rx="8" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="22" y="67" fill="#4F46E5" font-size="11" font-weight="700" letter-spacing="1">USERS &amp; ROLES</text>
+
+  <!-- Data Owner -->
+  <rect x="40" y="74" width="240" height="62" rx="6" fill="#4F46E5" filter="url(#box-shadow)"/>
+  <text x="160" y="95" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="700">Data Owner</text>
+  <text x="160" y="111" text-anchor="middle" fill="#C7D2FE" font-size="9.5">Registers datasets</text>
+  <text x="160" y="123" text-anchor="middle" fill="#C7D2FE" font-size="9.5">Monitors violations &amp; compliance</text>
+
+  <!-- Data Consumer -->
+  <rect x="320" y="74" width="240" height="62" rx="6" fill="#4F46E5" filter="url(#box-shadow)"/>
+  <text x="440" y="95" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="700">Data Consumer</text>
+  <text x="440" y="111" text-anchor="middle" fill="#C7D2FE" font-size="9.5">Browses dataset catalog</text>
+  <text x="440" y="123" text-anchor="middle" fill="#C7D2FE" font-size="9.5">Requests dataset subscriptions</text>
+
+  <!-- Data Steward -->
+  <rect x="600" y="74" width="240" height="62" rx="6" fill="#4F46E5" filter="url(#box-shadow)"/>
+  <text x="720" y="95" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="700">Data Steward</text>
+  <text x="720" y="111" text-anchor="middle" fill="#C7D2FE" font-size="9.5">Reviews subscriptions</text>
+  <text x="720" y="123" text-anchor="middle" fill="#C7D2FE" font-size="9.5">Approves or rejects requests</text>
+
+  <!-- Platform Admin -->
+  <rect x="880" y="74" width="240" height="62" rx="6" fill="#4F46E5" filter="url(#box-shadow)"/>
+  <text x="1000" y="95" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="700">Platform Admin</text>
+  <text x="1000" y="111" text-anchor="middle" fill="#C7D2FE" font-size="9.5">Views compliance analytics</text>
+  <text x="1000" y="123" text-anchor="middle" fill="#C7D2FE" font-size="9.5">Manages global policy settings</text>
+
+  <!-- Auth Context -->
+  <rect x="1155" y="74" width="220" height="62" rx="6" fill="#3730A3" stroke="#818CF8" stroke-width="1" filter="url(#box-shadow)"/>
+  <text x="1265" y="92" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="700">AuthContext.jsx</text>
+  <text x="1265" y="107" text-anchor="middle" fill="#A5B4FC" font-size="9">Role-based auth context</text>
+  <text x="1265" y="119" text-anchor="middle" fill="#A5B4FC" font-size="9">DataOwner &#xB7; Consumer &#xB7; Steward &#xB7; Admin</text>
+  <text x="1265" y="131" text-anchor="middle" fill="#A5B4FC" font-size="9">useContext hook &#xB7; session management</text>
+
+  <!-- ============================================================ -->
+  <!-- LAYER 2: FRONTEND  (y: 155 - 295)                            -->
+  <!-- ============================================================ -->
+  <rect x="10" y="155" width="1380" height="146" rx="8" fill="#E0F2FE" stroke="#BAE6FD" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="22" y="171" fill="#0369A1" font-size="11" font-weight="700" letter-spacing="1">FRONTEND  &#x2014;  React 18 + Vite 5  |  Port 3000  |  Axios &#x2192; /api  |  Zustand State</text>
+
+  <!-- Role-specific pages group -->
+  <rect x="25" y="177" width="510" height="115" rx="5" fill="#0891B2" opacity="0.15" stroke="#0891B2" stroke-width="1"/>
+  <text x="280" y="190" text-anchor="middle" fill="#0369A1" font-size="9.5" font-weight="700">ROLE-SPECIFIC PAGES</text>
+
+  <!-- DataOwner -->
+  <rect x="32" y="196" width="145" height="88" rx="5" fill="#0891B2" filter="url(#box-shadow)"/>
+  <text x="104" y="212" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">DataOwner</text>
+  <text x="104" y="225" text-anchor="middle" fill="#BAE6FD" font-size="8.5">OwnerDashboard.jsx</text>
+  <text x="104" y="237" text-anchor="middle" fill="#BAE6FD" font-size="8.5">DatasetRegistration</text>
+  <text x="104" y="249" text-anchor="middle" fill="#BAE6FD" font-size="8.5">Wizard.jsx</text>
+  <text x="104" y="263" text-anchor="middle" fill="#BAE6FD" font-size="8">Violations &#xB7; metrics</text>
+  <text x="104" y="275" text-anchor="middle" fill="#BAE6FD" font-size="8">4-step dataset form</text>
+
+  <!-- DataConsumer -->
+  <rect x="185" y="196" width="145" height="88" rx="5" fill="#0891B2" filter="url(#box-shadow)"/>
+  <text x="257" y="212" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">DataConsumer</text>
+  <text x="257" y="225" text-anchor="middle" fill="#BAE6FD" font-size="8.5">DataCatalogBrowser</text>
+  <text x="257" y="237" text-anchor="middle" fill="#BAE6FD" font-size="8.5">.jsx</text>
+  <text x="257" y="253" text-anchor="middle" fill="#BAE6FD" font-size="8">DatasetCatalog.jsx</text>
+  <text x="257" y="265" text-anchor="middle" fill="#BAE6FD" font-size="8">DatasetDetail.jsx</text>
+  <text x="257" y="277" text-anchor="middle" fill="#BAE6FD" font-size="8">Subscription flow</text>
+
+  <!-- DataSteward / Admin -->
+  <rect x="338" y="196" width="192" height="88" rx="5" fill="#0891B2" filter="url(#box-shadow)"/>
+  <text x="434" y="212" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">Steward + Admin</text>
+  <text x="434" y="226" text-anchor="middle" fill="#BAE6FD" font-size="8.5">ApprovalQueue.jsx</text>
+  <text x="434" y="239" text-anchor="middle" fill="#BAE6FD" font-size="8.5">ComplianceDashboard.jsx</text>
+  <text x="434" y="253" text-anchor="middle" fill="#BAE6FD" font-size="8.5">ContractViewer.jsx</text>
+  <text x="434" y="266" text-anchor="middle" fill="#BAE6FD" font-size="8.5">GitHistory.jsx</text>
+  <text x="434" y="279" text-anchor="middle" fill="#BAE6FD" font-size="8">SubscriptionQueue.jsx</text>
+
+  <!-- Policy suite pages group -->
+  <rect x="547" y="177" width="490" height="115" rx="5" fill="#0891B2" opacity="0.15" stroke="#0891B2" stroke-width="1"/>
+  <text x="792" y="190" text-anchor="middle" fill="#0369A1" font-size="9.5" font-weight="700">POLICY MANAGEMENT PAGES  (PolicyAuthoring components)</text>
+
+  <rect x="554" y="196" width="118" height="88" rx="5" fill="#0E7490" filter="url(#box-shadow)"/>
+  <text x="613" y="212" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="700">Policy Lifecycle</text>
+  <text x="613" y="226" text-anchor="middle" fill="#A5F3FC" font-size="8">PolicyForm.jsx</text>
+  <text x="613" y="238" text-anchor="middle" fill="#A5F3FC" font-size="8">PolicyList.jsx</text>
+  <text x="613" y="250" text-anchor="middle" fill="#A5F3FC" font-size="8">PolicyDetail.jsx</text>
+  <text x="613" y="262" text-anchor="middle" fill="#A5F3FC" font-size="8">PolicyReview.jsx</text>
+  <text x="613" y="274" text-anchor="middle" fill="#A5F3FC" font-size="8">PolicyTimeline.jsx</text>
+
+  <rect x="680" y="196" width="118" height="88" rx="5" fill="#0E7490" filter="url(#box-shadow)"/>
+  <text x="739" y="212" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="700">Policy Ops</text>
+  <text x="739" y="226" text-anchor="middle" fill="#A5F3FC" font-size="8">PolicyDashboard.jsx</text>
+  <text x="739" y="238" text-anchor="middle" fill="#A5F3FC" font-size="8">PolicyConflicts.jsx</text>
+  <text x="739" y="250" text-anchor="middle" fill="#A5F3FC" font-size="8">PolicyExchange.jsx</text>
+  <text x="739" y="262" text-anchor="middle" fill="#A5F3FC" font-size="8">DomainGovernance</text>
+  <text x="739" y="274" text-anchor="middle" fill="#A5F3FC" font-size="8">ComplianceReport</text>
+
+  <rect x="806" y="196" width="225" height="88" rx="5" fill="#0E7490" filter="url(#box-shadow)"/>
+  <text x="918" y="212" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="700">Shared Infrastructure</text>
+  <text x="918" y="227" text-anchor="middle" fill="#A5F3FC" font-size="8">Layout.jsx (sidebar nav)</text>
+  <text x="918" y="239" text-anchor="middle" fill="#A5F3FC" font-size="8">TopNavLayout.jsx (top nav)</text>
+  <text x="918" y="251" text-anchor="middle" fill="#A5F3FC" font-size="8">ErrorBoundary &#xB7; SkeletonLoader</text>
+  <text x="918" y="263" text-anchor="middle" fill="#A5F3FC" font-size="8">EmptyState &#xB7; CopyButton</text>
+  <text x="918" y="275" text-anchor="middle" fill="#A5F3FC" font-size="8">PolicyManager.jsx &#xB7; SchemaImport.jsx</text>
+
+  <!-- Zustand + API client group -->
+  <rect x="1050" y="177" width="330" height="115" rx="5" fill="#0891B2" opacity="0.15" stroke="#0891B2" stroke-width="1"/>
+  <text x="1215" y="190" text-anchor="middle" fill="#0369A1" font-size="9.5" font-weight="700">STATE + API CLIENT</text>
+
+  <rect x="1057" y="196" width="148" height="88" rx="5" fill="#0E7490" filter="url(#box-shadow)"/>
+  <text x="1131" y="211" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="700">Zustand Stores</text>
+  <text x="1131" y="225" text-anchor="middle" fill="#A5F3FC" font-size="8">useDatasetStore</text>
+  <text x="1131" y="237" text-anchor="middle" fill="#A5F3FC" font-size="8">useContractStore</text>
+  <text x="1131" y="249" text-anchor="middle" fill="#A5F3FC" font-size="8">useSubscriptionStore</text>
+  <text x="1131" y="261" text-anchor="middle" fill="#A5F3FC" font-size="8">usePolicyStore</text>
+  <text x="1131" y="273" text-anchor="middle" fill="#A5F3FC" font-size="8">useGitStore</text>
+
+  <rect x="1213" y="196" width="160" height="88" rx="5" fill="#0E7490" filter="url(#box-shadow)"/>
+  <text x="1293" y="211" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="700">services/api.js</text>
+  <text x="1293" y="225" text-anchor="middle" fill="#A5F3FC" font-size="8">Axios instance</text>
+  <text x="1293" y="237" text-anchor="middle" fill="#A5F3FC" font-size="8">baseURL &#x2192; localhost:8000</text>
+  <text x="1293" y="249" text-anchor="middle" fill="#A5F3FC" font-size="8">Request interceptors</text>
+  <text x="1293" y="261" text-anchor="middle" fill="#A5F3FC" font-size="8">Vite proxy: /api</text>
+  <text x="1293" y="273" text-anchor="middle" fill="#A5F3FC" font-size="8">All API calls centralised</text>
+
+  <!-- ============================================================ -->
+  <!-- LAYER 3: API GATEWAY / FASTAPI ROUTERS  (y: 312 - 408)       -->
+  <!-- ============================================================ -->
+  <rect x="10" y="312" width="1380" height="102" rx="8" fill="#DCFCE7" stroke="#86EFAC" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="22" y="328" fill="#166534" font-size="11" font-weight="700" letter-spacing="1">API GATEWAY  &#x2014;  FastAPI 0.109  |  /api/v1  |  Pydantic v2 validation  |  uvicorn  |  Port 8000</text>
+
+  <!-- datasets -->
+  <rect x="20" y="334" width="106" height="72" rx="5" fill="#059669" filter="url(#box-shadow)"/>
+  <text x="73" y="350" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">datasets</text>
+  <text x="73" y="363" text-anchor="middle" fill="#BBF7D0" font-size="7.5">GET/POST /datasets/</text>
+  <text x="73" y="374" text-anchor="middle" fill="#BBF7D0" font-size="7.5">GET /datasets/{id}</text>
+  <text x="73" y="385" text-anchor="middle" fill="#BBF7D0" font-size="7.5">POST /import-schema</text>
+  <text x="73" y="397" text-anchor="middle" fill="#BBF7D0" font-size="7.5">CRUD + PG schema</text>
+
+  <!-- subscriptions -->
+  <rect x="132" y="334" width="106" height="72" rx="5" fill="#059669" filter="url(#box-shadow)"/>
+  <text x="185" y="350" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">subscriptions</text>
+  <text x="185" y="363" text-anchor="middle" fill="#BBF7D0" font-size="7.5">GET/POST /sub..</text>
+  <text x="185" y="374" text-anchor="middle" fill="#BBF7D0" font-size="7.5">PUT /{id}/approve</text>
+  <text x="185" y="385" text-anchor="middle" fill="#BBF7D0" font-size="7.5">PUT /{id}/reject</text>
+  <text x="185" y="397" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Lifecycle mgmt</text>
+
+  <!-- git -->
+  <rect x="244" y="334" width="106" height="72" rx="5" fill="#059669" filter="url(#box-shadow)"/>
+  <text x="297" y="350" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">git</text>
+  <text x="297" y="363" text-anchor="middle" fill="#BBF7D0" font-size="7.5">GET /contracts</text>
+  <text x="297" y="374" text-anchor="middle" fill="#BBF7D0" font-size="7.5">GET /{name}/history</text>
+  <text x="297" y="385" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Contract versions</text>
+  <text x="297" y="397" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Git diff/log</text>
+
+  <!-- semantic -->
+  <rect x="356" y="334" width="106" height="72" rx="5" fill="#059669" filter="url(#box-shadow)"/>
+  <text x="409" y="350" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">semantic</text>
+  <text x="409" y="363" text-anchor="middle" fill="#BBF7D0" font-size="7.5">POST /semantic/scan</text>
+  <text x="409" y="374" text-anchor="middle" fill="#BBF7D0" font-size="7.5">LLM validation</text>
+  <text x="409" y="385" text-anchor="middle" fill="#BBF7D0" font-size="7.5">SEM001-SEM008</text>
+  <text x="409" y="397" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Ollama bridged</text>
+
+  <!-- orchestration -->
+  <rect x="468" y="334" width="106" height="72" rx="5" fill="#059669" filter="url(#box-shadow)"/>
+  <text x="521" y="350" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">orchestration</text>
+  <text x="521" y="363" text-anchor="middle" fill="#BBF7D0" font-size="7.5">POST /validate</text>
+  <text x="521" y="374" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Strategy routing</text>
+  <text x="521" y="385" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Risk scoring</text>
+  <text x="521" y="397" text-anchor="middle" fill="#BBF7D0" font-size="7.5">FAST/BAL/THO/ADP</text>
+
+  <!-- policy_authoring -->
+  <rect x="580" y="334" width="112" height="72" rx="5" fill="#059669" filter="url(#box-shadow)"/>
+  <text x="636" y="350" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">policy_authoring</text>
+  <text x="636" y="363" text-anchor="middle" fill="#BBF7D0" font-size="7.5">POST /policy-auth..</text>
+  <text x="636" y="374" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Draft/review/approve</text>
+  <text x="636" y="385" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Policy versioning</text>
+  <text x="636" y="397" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Authored policies</text>
+
+  <!-- policy_dashboard -->
+  <rect x="698" y="334" width="112" height="72" rx="5" fill="#059669" filter="url(#box-shadow)"/>
+  <text x="754" y="350" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">policy_dashboard</text>
+  <text x="754" y="363" text-anchor="middle" fill="#BBF7D0" font-size="7.5">GET /policy-dash..</text>
+  <text x="754" y="374" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Compliance metrics</text>
+  <text x="754" y="385" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Violation counts</text>
+  <text x="754" y="397" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Summary stats</text>
+
+  <!-- policy_reports -->
+  <rect x="816" y="334" width="112" height="72" rx="5" fill="#059669" filter="url(#box-shadow)"/>
+  <text x="872" y="350" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">policy_reports</text>
+  <text x="872" y="363" text-anchor="middle" fill="#BBF7D0" font-size="7.5">GET /policy-reports</text>
+  <text x="872" y="374" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Compliance reports</text>
+  <text x="872" y="385" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Historical trends</text>
+  <text x="872" y="397" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Export-ready data</text>
+
+  <!-- policy_exchange -->
+  <rect x="934" y="334" width="112" height="72" rx="5" fill="#059669" filter="url(#box-shadow)"/>
+  <text x="990" y="350" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">policy_exchange</text>
+  <text x="990" y="363" text-anchor="middle" fill="#BBF7D0" font-size="7.5">POST /export</text>
+  <text x="990" y="374" text-anchor="middle" fill="#BBF7D0" font-size="7.5">POST /import</text>
+  <text x="990" y="385" text-anchor="middle" fill="#BBF7D0" font-size="7.5">YAML &#x2194; JSON</text>
+  <text x="990" y="397" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Cross-env sharing</text>
+
+  <!-- domain_governance -->
+  <rect x="1052" y="334" width="112" height="72" rx="5" fill="#059669" filter="url(#box-shadow)"/>
+  <text x="1108" y="350" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">domain_governance</text>
+  <text x="1108" y="363" text-anchor="middle" fill="#BBF7D0" font-size="7.5">GET /domain-gov..</text>
+  <text x="1108" y="374" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Domain-level rules</text>
+  <text x="1108" y="385" text-anchor="middle" fill="#BBF7D0" font-size="7.5">Federated policy</text>
+  <text x="1108" y="397" text-anchor="middle" fill="#BBF7D0" font-size="7.5">UN model governance</text>
+
+  <!-- policy_conflicts + misc -->
+  <rect x="1170" y="334" width="210" height="72" rx="5" fill="#059669" filter="url(#box-shadow)"/>
+  <text x="1275" y="350" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">policy_conflicts  |  /health  |  /docs</text>
+  <text x="1275" y="363" text-anchor="middle" fill="#BBF7D0" font-size="7.5">GET /policy-conflicts  (exceptions)</text>
+  <text x="1275" y="374" text-anchor="middle" fill="#BBF7D0" font-size="7.5">GET /health  (status check)</text>
+  <text x="1275" y="385" text-anchor="middle" fill="#BBF7D0" font-size="7.5">GET /api/docs  (OpenAPI/Swagger)</text>
+  <text x="1275" y="397" text-anchor="middle" fill="#BBF7D0" font-size="7.5">CORS middleware  &#xB7;  Pydantic schemas/</text>
+
+  <!-- ============================================================ -->
+  <!-- LAYER 4: SERVICE LAYER  (y: 425 - 545)                       -->
+  <!-- ============================================================ -->
+  <rect x="10" y="425" width="1380" height="126" rx="8" fill="#FEF3C7" stroke="#FCD34D" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="22" y="441" fill="#92400E" font-size="11" font-weight="700" letter-spacing="1">SERVICE LAYER  &#x2014;  Business Logic  |  SQLAlchemy ORM  |  No direct HTTP handling</text>
+
+  <!-- ContractService -->
+  <rect x="20" y="450" width="158" height="92" rx="5" fill="#D97706" filter="url(#box-shadow)"/>
+  <text x="99" y="466" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="700">ContractService</text>
+  <text x="99" y="479" text-anchor="middle" fill="#FEF3C7" font-size="8">Contract generation</text>
+  <text x="99" y="491" text-anchor="middle" fill="#FEF3C7" font-size="8">Git versioning (auto-commit)</text>
+  <text x="99" y="503" text-anchor="middle" fill="#FEF3C7" font-size="8">YAML contract files</text>
+  <text x="99" y="515" text-anchor="middle" fill="#FEF3C7" font-size="8">481 LoC</text>
+  <text x="99" y="530" text-anchor="middle" fill="#FDE68A" font-size="7.5">&#x2192; calls GitService</text>
+
+  <!-- GitService -->
+  <rect x="185" y="450" width="158" height="92" rx="5" fill="#D97706" filter="url(#box-shadow)"/>
+  <text x="264" y="466" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="700">GitService</text>
+  <text x="264" y="479" text-anchor="middle" fill="#FEF3C7" font-size="8">Git commit / tag / diff</text>
+  <text x="264" y="491" text-anchor="middle" fill="#FEF3C7" font-size="8">Contract history retrieval</text>
+  <text x="264" y="503" text-anchor="middle" fill="#FEF3C7" font-size="8">GitPython 3.1.41</text>
+  <text x="264" y="515" text-anchor="middle" fill="#FEF3C7" font-size="8">317 LoC</text>
+  <text x="264" y="530" text-anchor="middle" fill="#FDE68A" font-size="7.5">&#x2192; backend/contracts/ repo</text>
+
+  <!-- PostgresConnector -->
+  <rect x="350" y="450" width="158" height="92" rx="5" fill="#D97706" filter="url(#box-shadow)"/>
+  <text x="429" y="466" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="700">PostgresConnector</text>
+  <text x="429" y="479" text-anchor="middle" fill="#FEF3C7" font-size="8">Schema introspection</text>
+  <text x="429" y="491" text-anchor="middle" fill="#FEF3C7" font-size="8">Table/column discovery</text>
+  <text x="429" y="503" text-anchor="middle" fill="#FEF3C7" font-size="8">financial_demo DB</text>
+  <text x="429" y="515" text-anchor="middle" fill="#FEF3C7" font-size="8">557 LoC</text>
+  <text x="429" y="530" text-anchor="middle" fill="#FDE68A" font-size="7.5">&#x2192; PostgreSQL :5432</text>
+
+  <!-- AuthoredPolicyLoader -->
+  <rect x="515" y="450" width="158" height="92" rx="5" fill="#D97706" filter="url(#box-shadow)"/>
+  <text x="594" y="466" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="700">AuthoredPolicyLoader</text>
+  <text x="594" y="479" text-anchor="middle" fill="#FEF3C7" font-size="8">Load authored policies</text>
+  <text x="594" y="491" text-anchor="middle" fill="#FEF3C7" font-size="8">DB-backed policy drafts</text>
+  <text x="594" y="503" text-anchor="middle" fill="#FEF3C7" font-size="8">Version management</text>
+  <text x="594" y="515" text-anchor="middle" fill="#FEF3C7" font-size="8">258 LoC</text>
+  <text x="594" y="530" text-anchor="middle" fill="#FDE68A" font-size="7.5">&#x2192; PolicyDraft &#xB7; PolicyVersion</text>
+
+  <!-- PolicyConverter -->
+  <rect x="680" y="450" width="158" height="92" rx="5" fill="#D97706" filter="url(#box-shadow)"/>
+  <text x="759" y="466" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="700">PolicyConverter</text>
+  <text x="759" y="479" text-anchor="middle" fill="#FEF3C7" font-size="8">YAML &#x2194; JSON conversion</text>
+  <text x="759" y="491" text-anchor="middle" fill="#FEF3C7" font-size="8">Format normalization</text>
+  <text x="759" y="503" text-anchor="middle" fill="#FEF3C7" font-size="8">Import/export support</text>
+  <text x="759" y="515" text-anchor="middle" fill="#FEF3C7" font-size="8">204 LoC</text>
+  <text x="759" y="530" text-anchor="middle" fill="#FDE68A" font-size="7.5">PyYAML 6.0.1</text>
+
+  <!-- OllamaClient -->
+  <rect x="845" y="450" width="158" height="92" rx="5" fill="#D97706" filter="url(#box-shadow)"/>
+  <text x="924" y="466" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="700">OllamaClient</text>
+  <text x="924" y="479" text-anchor="middle" fill="#FEF3C7" font-size="8">HTTP client for LLM</text>
+  <text x="924" y="491" text-anchor="middle" fill="#FEF3C7" font-size="8">Prompt construction</text>
+  <text x="924" y="503" text-anchor="middle" fill="#FEF3C7" font-size="8">Response parsing</text>
+  <text x="924" y="515" text-anchor="middle" fill="#FEF3C7" font-size="8">237 LoC  |  httpx</text>
+  <text x="924" y="530" text-anchor="middle" fill="#FDE68A" font-size="7.5">&#x2192; Ollama :11434</text>
+
+  <!-- ORM Models group -->
+  <rect x="1015" y="450" width="365" height="92" rx="5" fill="#B45309" filter="url(#box-shadow)"/>
+  <text x="1197" y="466" text-anchor="middle" fill="#FFFFFF" font-size="9.5" font-weight="700">SQLAlchemy ORM Models  (app/models/)</text>
+  <text x="1197" y="481" text-anchor="middle" fill="#FEF3C7" font-size="8">Dataset  &#xB7;  Contract  &#xB7;  Subscription  &#xB7;  User</text>
+  <text x="1197" y="494" text-anchor="middle" fill="#FEF3C7" font-size="8">PolicyDraft  &#xB7;  PolicyVersion  &#xB7;  PolicyArtifact  &#xB7;  PolicyApprovalLog</text>
+  <text x="1197" y="507" text-anchor="middle" fill="#FEF3C7" font-size="8">All extend Base (declarative_base)</text>
+  <text x="1197" y="520" text-anchor="middle" fill="#FEF3C7" font-size="8">JSON type for schema fields  &#xB7;  created_at / updated_at audit timestamps</text>
+  <text x="1197" y="533" text-anchor="middle" fill="#FEF3C7" font-size="8">back_populates relationships  &#xB7;  No business logic in models</text>
+
+  <!-- ============================================================ -->
+  <!-- LAYER 5: POLICY ENGINES  (y: 562 - 660)                      -->
+  <!-- ============================================================ -->
+  <rect x="10" y="562" width="1380" height="104" rx="8" fill="#F3E8FF" stroke="#D8B4FE" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="22" y="578" fill="#6B21A8" font-size="11" font-weight="700" letter-spacing="1">POLICY ENGINES + ORCHESTRATION  &#x2014;  Prevention at Borders  |  Validates before publication</text>
+
+  <!-- PolicyEngine (rule-based) -->
+  <rect x="20" y="585" width="300" height="72" rx="5" fill="#7C3AED" filter="url(#box-shadow)"/>
+  <text x="170" y="601" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">PolicyEngine  (rule-based)</text>
+  <text x="170" y="615" text-anchor="middle" fill="#EDE9FE" font-size="8.5">17 deterministic policies  &#xB7;  342 LoC</text>
+  <text x="170" y="627" text-anchor="middle" fill="#EDE9FE" font-size="8">SD001-005 (PII/encrypt)  &#xB7;  DQ001-005 (quality)</text>
+  <text x="170" y="639" text-anchor="middle" fill="#EDE9FE" font-size="8">SG001-007 (schema governance)</text>
+  <text x="170" y="650" text-anchor="middle" fill="#DDD6FE" font-size="8">YAML-loaded  &#xB7;  PyYAML  &#xB7;  Instant evaluation</text>
+
+  <!-- SemanticPolicyEngine (LLM) -->
+  <rect x="330" y="585" width="300" height="72" rx="5" fill="#7C3AED" filter="url(#box-shadow)"/>
+  <text x="480" y="601" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">SemanticPolicyEngine  (LLM)</text>
+  <text x="480" y="615" text-anchor="middle" fill="#EDE9FE" font-size="8.5">8 LLM policies  &#xB7;  461 LoC</text>
+  <text x="480" y="627" text-anchor="middle" fill="#EDE9FE" font-size="8">SEM001-008  &#xB7;  Context-aware validation</text>
+  <text x="480" y="639" text-anchor="middle" fill="#EDE9FE" font-size="8">Nuanced cases beyond rule-based reach</text>
+  <text x="480" y="650" text-anchor="middle" fill="#DDD6FE" font-size="8">Disabled by default  (ENABLE_LLM_VALIDATION=true)</text>
+
+  <!-- PolicyOrchestrator -->
+  <rect x="640" y="585" width="460" height="72" rx="5" fill="#6D28D9" filter="url(#box-shadow)"/>
+  <text x="870" y="601" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">PolicyOrchestrator  &#x2014;  Intelligent Routing Engine  (538 LoC)</text>
+  <text x="870" y="615" text-anchor="middle" fill="#EDE9FE" font-size="8.5">ContractAnalysis: risk_level &#xB7; has_pii &#xB7; has_sensitive_data &#xB7; complexity_score &#xB7; compliance_frameworks</text>
+  <text x="870" y="628" text-anchor="middle" fill="#EDE9FE" font-size="8">FAST: rule-based only, low risk, no PII   |   BALANCED: rule + targeted semantic, moderate risk</text>
+  <text x="870" y="640" text-anchor="middle" fill="#EDE9FE" font-size="8">THOROUGH: full validation, high risk / PII   |   ADAPTIVE: risk-score auto-select (default)</text>
+  <text x="870" y="652" text-anchor="middle" fill="#DDD6FE" font-size="8">OrchestrationDecision &#xB7; estimated_time_seconds &#xB7; reasoning field &#xB7; deduplicates results</text>
+
+  <!-- Pydantic Schemas -->
+  <rect x="1110" y="585" width="270" height="72" rx="5" fill="#5B21B6" filter="url(#box-shadow)"/>
+  <text x="1245" y="601" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">Pydantic Schemas  (app/schemas/)</text>
+  <text x="1245" y="615" text-anchor="middle" fill="#EDE9FE" font-size="8.5">ValidationResult &#xB7; Violation &#xB7; ValidationStatus</text>
+  <text x="1245" y="627" text-anchor="middle" fill="#EDE9FE" font-size="8">ViolationType &#xB7; DatasetCreate &#xB7; DatasetResponse</text>
+  <text x="1245" y="639" text-anchor="middle" fill="#EDE9FE" font-size="8">ContractResponse &#xB7; SubscriptionCreate</text>
+  <text x="1245" y="651" text-anchor="middle" fill="#DDD6FE" font-size="8">Pydantic v2 2.5.3  &#xB7;  Request / Response separation</text>
+
+  <!-- ============================================================ -->
+  <!-- LAYER 6: DATA STORES  (y: 677 - 790)                         -->
+  <!-- ============================================================ -->
+  <rect x="10" y="677" width="1380" height="118" rx="8" fill="#FEE2E2" stroke="#FCA5A5" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="22" y="693" fill="#991B1B" font-size="11" font-weight="700" letter-spacing="1">DATA STORES  &#x2014;  Persistence layer</text>
+
+  <!-- SQLite -->
+  <rect x="20" y="700" width="490" height="88" rx="5" fill="#DC2626" filter="url(#box-shadow)"/>
+  <text x="265" y="717" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">SQLite  &#x2014;  governance_metadata.db  (SQLAlchemy 2.0.25)</text>
+  <text x="265" y="732" text-anchor="middle" fill="#FEE2E2" font-size="8.5">8 Tables:  Dataset  &#xB7;  Contract  &#xB7;  Subscription  &#xB7;  User</text>
+  <text x="265" y="745" text-anchor="middle" fill="#FEE2E2" font-size="8.5">PolicyDraft  &#xB7;  PolicyVersion  &#xB7;  PolicyArtifact  &#xB7;  PolicyApprovalLog</text>
+  <text x="265" y="758" text-anchor="middle" fill="#FEE2E2" font-size="8">Metadata storage &#xB7; JSON column type for flexible schema fields</text>
+  <text x="265" y="771" text-anchor="middle" fill="#FEE2E2" font-size="8">Auto-initialized on startup via init_db()  &#xB7;  Seeded with sample data</text>
+  <text x="265" y="781" text-anchor="middle" fill="#FECACA" font-size="7.5">connect_args: check_same_thread=False  &#xB7;  SessionLocal (autocommit=False)</text>
+
+  <!-- Git Contracts Repo -->
+  <rect x="520" y="700" width="380" height="88" rx="5" fill="#DC2626" filter="url(#box-shadow)"/>
+  <text x="710" y="717" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">Git Repo  &#x2014;  backend/contracts/  (GitPython 3.1.41)</text>
+  <text x="710" y="732" text-anchor="middle" fill="#FEE2E2" font-size="8.5">Versioned YAML contract files (auto-committed on approval)</text>
+  <text x="710" y="745" text-anchor="middle" fill="#FEE2E2" font-size="8.5">Each approval = one Git commit + optional tag</text>
+  <text x="710" y="758" text-anchor="middle" fill="#FEE2E2" font-size="8">Full diff / history / blame available via git router</text>
+  <text x="710" y="771" text-anchor="middle" fill="#FEE2E2" font-size="8">GIT_USER_NAME / GIT_USER_EMAIL configurable</text>
+  <text x="710" y="781" text-anchor="middle" fill="#FECACA" font-size="7.5">Auto-initialized if not a git repo  &#xB7;  DO NOT modify manually</text>
+
+  <!-- PostgreSQL -->
+  <rect x="910" y="700" width="470" height="88" rx="5" fill="#DC2626" filter="url(#box-shadow)"/>
+  <text x="1145" y="717" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">PostgreSQL 15  &#x2014;  financial_demo  (Docker, Port 5432)</text>
+  <text x="1145" y="732" text-anchor="middle" fill="#FEE2E2" font-size="8.5">Demo database with financial data  &#xB7;  governance_user / governance_pass</text>
+  <text x="1145" y="745" text-anchor="middle" fill="#FEE2E2" font-size="8.5">Source for schema introspection (PostgresConnector)</text>
+  <text x="1145" y="758" text-anchor="middle" fill="#FEE2E2" font-size="8">Tables/columns discovered and imported into governance metadata</text>
+  <text x="1145" y="771" text-anchor="middle" fill="#FEE2E2" font-size="8">Setup: docker-compose up -d  &#xB7;  data loaded from demo/setup_postgres.sql</text>
+  <text x="1145" y="781" text-anchor="middle" fill="#FECACA" font-size="7.5">demo/sample_data.sql  &#xB7;  Optional (platform works without it)</text>
+
+  <!-- ============================================================ -->
+  <!-- LAYER 7: EXTERNAL SYSTEMS  (y: 806 - 900)                    -->
+  <!-- ============================================================ -->
+  <rect x="10" y="806" width="1380" height="100" rx="8" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="22" y="822" fill="#374151" font-size="11" font-weight="700" letter-spacing="1">EXTERNAL SYSTEMS  &#x2014;  Optional / Infrastructure</text>
+
+  <!-- YAML Policies -->
+  <rect x="20" y="829" width="330" height="68" rx="5" fill="#6B7280" filter="url(#box-shadow)"/>
+  <text x="185" y="845" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">Policy YAML Files  &#x2014;  backend/policies/</text>
+  <text x="185" y="859" text-anchor="middle" fill="#F3F4F6" font-size="8.5">sensitive_data_policies.yaml  (SD001-SD005  &#xB7;  5 policies)</text>
+  <text x="185" y="871" text-anchor="middle" fill="#F3F4F6" font-size="8.5">data_quality_policies.yaml  (DQ001-DQ005  &#xB7;  5 policies)</text>
+  <text x="185" y="883" text-anchor="middle" fill="#F3F4F6" font-size="8.5">schema_governance_policies.yaml  (SG001-SG007  &#xB7;  7 policies)</text>
+  <text x="185" y="893" text-anchor="middle" fill="#D1D5DB" font-size="8">semantic_policies.yaml  (SEM001-SEM008  &#xB7;  8 LLM policies)</text>
+
+  <!-- Ollama -->
+  <rect x="360" y="829" width="340" height="68" rx="5" fill="#6B7280" filter="url(#box-shadow)"/>
+  <text x="530" y="845" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">Ollama LLM Server  &#x2014;  Port 11434</text>
+  <text x="530" y="860" text-anchor="middle" fill="#F3F4F6" font-size="8.5">Local LLM inference  &#xB7;  mistral:7b (default model)</text>
+  <text x="530" y="872" text-anchor="middle" fill="#F3F4F6" font-size="8.5">OLLAMA_BASE_URL  &#xB7;  OLLAMA_TIMEOUT=30s</text>
+  <text x="530" y="884" text-anchor="middle" fill="#F3F4F6" font-size="8.5">Only active when ENABLE_LLM_VALIDATION=true</text>
+  <text x="530" y="894" text-anchor="middle" fill="#D1D5DB" font-size="8">Disabled by default  &#xB7;  ollama serve + model pull required</text>
+
+  <!-- Docker -->
+  <rect x="710" y="829" width="340" height="68" rx="5" fill="#6B7280" filter="url(#box-shadow)"/>
+  <text x="880" y="845" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">Docker  &#x2014;  docker-compose.yml</text>
+  <text x="880" y="860" text-anchor="middle" fill="#F3F4F6" font-size="8.5">PostgreSQL 15-alpine container</text>
+  <text x="880" y="872" text-anchor="middle" fill="#F3F4F6" font-size="8.5">Volume: postgres_data (persisted)</text>
+  <text x="880" y="884" text-anchor="middle" fill="#F3F4F6" font-size="8.5">Health check on port 5432</text>
+  <text x="880" y="894" text-anchor="middle" fill="#D1D5DB" font-size="8">docker-compose up -d  &#xB7;  Optional component</text>
+
+  <!-- Environment Config -->
+  <rect x="1060" y="829" width="320" height="68" rx="5" fill="#4B5563" filter="url(#box-shadow)"/>
+  <text x="1220" y="845" text-anchor="middle" fill="#FFFFFF" font-size="10" font-weight="700">Config  &#x2014;  backend/app/config.py</text>
+  <text x="1220" y="860" text-anchor="middle" fill="#F3F4F6" font-size="8.5">Pydantic Settings class  &#xB7;  pydantic-settings 2.1.0</text>
+  <text x="1220" y="872" text-anchor="middle" fill="#F3F4F6" font-size="8.5">SQLALCHEMY_DATABASE_URL  &#xB7;  POLICIES_PATH</text>
+  <text x="1220" y="884" text-anchor="middle" fill="#F3F4F6" font-size="8.5">GIT_CONTRACTS_REPO_PATH  &#xB7;  CORS_ORIGINS</text>
+  <text x="1220" y="894" text-anchor="middle" fill="#D1D5DB" font-size="8">Override via backend/.env file</text>
+
+  <!-- ============================================================ -->
+  <!-- LEGEND  (y: 915 - 1010)                                       -->
+  <!-- ============================================================ -->
+  <rect x="10" y="915" width="1380" height="120" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+  <text x="700" y="933" text-anchor="middle" fill="#1E293B" font-size="12" font-weight="700">Legend &#x2014; Color Coding by Layer</text>
+
+  <!-- Legend row 1 -->
+  <rect x="30" y="944" width="18" height="18" rx="3" fill="#4F46E5"/>
+  <text x="55" y="957" fill="#1E293B" font-size="10" font-weight="600">Users / Roles</text>
+  <text x="55" y="969" fill="#64748B" font-size="9">DataOwner &#xB7; Consumer &#xB7; Steward &#xB7; Admin</text>
+
+  <rect x="230" y="944" width="18" height="18" rx="3" fill="#0891B2"/>
+  <text x="255" y="957" fill="#1E293B" font-size="10" font-weight="600">Frontend (React/Vite :3000)</text>
+  <text x="255" y="969" fill="#64748B" font-size="9">Role pages &#xB7; Policy pages &#xB7; Zustand &#xB7; Axios</text>
+
+  <rect x="500" y="944" width="18" height="18" rx="3" fill="#059669"/>
+  <text x="525" y="957" fill="#1E293B" font-size="10" font-weight="600">API Gateway (FastAPI :8000)</text>
+  <text x="525" y="969" fill="#64748B" font-size="9">11 routers &#xB7; /api/v1 prefix &#xB7; Pydantic v2</text>
+
+  <rect x="780" y="944" width="18" height="18" rx="3" fill="#D97706"/>
+  <text x="805" y="957" fill="#1E293B" font-size="10" font-weight="600">Service Layer</text>
+  <text x="805" y="969" fill="#64748B" font-size="9">Business logic &#xB7; ORM &#xB7; No HTTP handling</text>
+
+  <rect x="1020" y="944" width="18" height="18" rx="3" fill="#7C3AED"/>
+  <text x="1045" y="957" fill="#1E293B" font-size="10" font-weight="600">Policy Engines + Orchestration</text>
+  <text x="1045" y="969" fill="#64748B" font-size="9">Rule-based &#xB7; LLM &#xB7; 4 strategies</text>
+
+  <!-- Legend row 2 -->
+  <rect x="30" y="984" width="18" height="18" rx="3" fill="#DC2626"/>
+  <text x="55" y="997" fill="#1E293B" font-size="10" font-weight="600">Data Stores</text>
+  <text x="55" y="1009" fill="#64748B" font-size="9">SQLite &#xB7; Git contracts &#xB7; PostgreSQL</text>
+
+  <rect x="230" y="984" width="18" height="18" rx="3" fill="#6B7280"/>
+  <text x="255" y="997" fill="#1E293B" font-size="10" font-weight="600">External Systems / Config</text>
+  <text x="255" y="1009" fill="#64748B" font-size="9">Ollama LLM &#xB7; Docker &#xB7; YAML policies &#xB7; .env config</text>
+
+  <!-- Arrow legend -->
+  <line x1="500" y1="993" x2="545" y2="993" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="555" y="997" fill="#1E293B" font-size="10" font-weight="600">Synchronous call</text>
+
+  <line x1="700" y1="993" x2="745" y2="993" stroke="#6B7280" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arrow-gray)"/>
+  <text x="755" y="997" fill="#1E293B" font-size="10" font-weight="600">Optional / async call</text>
+
+  <!-- Port badges -->
+  <rect x="960" y="984" width="50" height="18" rx="9" fill="#4F46E5"/>
+  <text x="985" y="997" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">:3000</text>
+  <text x="1015" y="997" fill="#1E293B" font-size="9">React dev server</text>
+
+  <rect x="1100" y="984" width="50" height="18" rx="9" fill="#059669"/>
+  <text x="1125" y="997" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">:8000</text>
+  <text x="1155" y="997" fill="#1E293B" font-size="9">FastAPI uvicorn</text>
+
+  <rect x="1250" y="984" width="50" height="18" rx="9" fill="#DC2626"/>
+  <text x="1275" y="997" text-anchor="middle" fill="#FFFFFF" font-size="9" font-weight="700">:5432</text>
+  <text x="1305" y="997" fill="#1E293B" font-size="9">PostgreSQL</text>
+
+  <rect x="1355" y="984" width="26" height="18" rx="9" fill="#6B7280"/>
+  <text x="1368" y="997" text-anchor="middle" fill="#FFFFFF" font-size="8" font-weight="700">LLM</text>
+
+  <!-- ============================================================ -->
+  <!-- DATA FLOW ARROWS (between layers)                             -->
+  <!-- ============================================================ -->
+
+  <!-- Users to Frontend: 4 role arrows -->
+  <line x1="160" y1="136" x2="160" y2="153" stroke="#4F46E5" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="440" y1="136" x2="440" y2="153" stroke="#4F46E5" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="720" y1="136" x2="720" y2="153" stroke="#4F46E5" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="1000" y1="136" x2="1000" y2="153" stroke="#4F46E5" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Frontend to API Gateway -->
+  <line x1="700" y1="301" x2="700" y2="310" stroke="#0891B2" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="718" y="308" fill="#0369A1" font-size="8">HTTP/Axios</text>
+
+  <!-- API to Service Layer -->
+  <line x1="350" y1="414" x2="350" y2="423" stroke="#059669" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="700" y1="414" x2="700" y2="423" stroke="#059669" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="1000" y1="414" x2="1000" y2="423" stroke="#059669" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Service Layer to Policy Engines -->
+  <line x1="200" y1="551" x2="200" y2="560" stroke="#D97706" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="600" y1="551" x2="600" y2="560" stroke="#D97706" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="900" y1="551" x2="900" y2="560" stroke="#D97706" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Policy Engines to Data Stores -->
+  <line x1="200" y1="666" x2="200" y2="675" stroke="#7C3AED" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="700" y1="666" x2="700" y2="675" stroke="#7C3AED" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="1100" y1="666" x2="1100" y2="675" stroke="#7C3AED" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Data Stores to External (dashed) -->
+  <line x1="710" y1="788" x2="710" y2="804" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+  <line x1="1100" y1="788" x2="880" y2="804" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+
+  <!-- OllamaClient to Ollama (cross-cutting dashed) -->
+  <line x1="924" y1="542" x2="924" y2="558" stroke="#D97706" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+  <!-- Semantic engine to Ollama external (dashed) -->
+  <line x1="480" y1="657" x2="480" y2="804" stroke="#6B7280" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <text x="490" y="740" fill="#6B7280" font-size="8">LLM calls</text>
+
+  <!-- ContractService to Git Repo (cross-cutting, dashed) -->
+  <line x1="99" y1="542" x2="99" y2="675" stroke="#D97706" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <text x="107" y="615" fill="#92400E" font-size="8">Git ops</text>
+
+  <!-- PostgresConnector to PostgreSQL storage (diagonal dashed) -->
+  <line x1="429" y1="542" x2="1050" y2="700" stroke="#D97706" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+  <!-- ============================================================ -->
+  <!-- FOOTNOTE                                                       -->
+  <!-- ============================================================ -->
+  <text x="700" y="1068" text-anchor="middle" fill="#94A3B8" font-size="9">
+    Data Governance Platform &#x2014; Policy-as-Code PoC  &#xB7;  Federated governance (UN Peacekeeping model)  &#xB7;  Prevention at borders  &#xB7;  Generated 2026-03-12
+  </text>
+
+</svg>
