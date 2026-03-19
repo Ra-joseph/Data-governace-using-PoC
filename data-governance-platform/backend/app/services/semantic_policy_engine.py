@@ -11,7 +11,8 @@ from typing import Dict, List, Any, Optional
 from pathlib import Path
 
 from app.schemas.contract import Violation, ValidationResult, ViolationType, ValidationStatus
-from app.services.ollama_client import OllamaClient, OllamaError, get_ollama_client
+from app.services.llm_provider import LLMProvider, LLMProviderError
+from app.services.llm_factory import get_llm_provider
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ class SemanticPolicyEngine:
     def __init__(
         self,
         policies_path: str = None,
-        ollama_client: Optional[OllamaClient] = None,
+        ollama_client: Optional[LLMProvider] = None,
         enabled: bool = True
     ):
         """
@@ -46,13 +47,13 @@ class SemanticPolicyEngine:
         self.config = None
         self.policies = self._load_semantic_policies()
 
-        # Initialize Ollama client if enabled
+        # Initialize LLM client if enabled
         if self.enabled:
             if ollama_client:
                 self.llm_client = ollama_client
             else:
-                ollama_config = self.config.get('ollama', {}) if self.config else {}
-                self.llm_client = get_ollama_client(ollama_config)
+                provider_config = self.config.get('ollama', {}) if self.config else {}
+                self.llm_client = get_llm_provider(provider_config)
         else:
             self.llm_client = None
 
@@ -197,7 +198,7 @@ class SemanticPolicyEngine:
 
             violations.extend(policy_violations)
 
-        except OllamaError as e:
+        except LLMProviderError as e:
             logger.error(f"Failed to evaluate policy {policy_id}: {e}")
             # Add error violation
             violations.append(Violation(
@@ -205,8 +206,8 @@ class SemanticPolicyEngine:
                 policy=f"{policy_id}: {policy_name}",
                 field="semantic_analysis",
                 message=f"Failed to perform semantic analysis: {str(e)}",
-                remediation="Ensure Ollama is running and the model is available. "
-                           "Run: ollama pull mistral:7b"
+                remediation="Ensure the LLM provider is configured and available. "
+                           "Check LLM_PROVIDER and ENABLE_LLM_VALIDATION settings."
             ))
         except Exception as e:
             logger.error(f"Unexpected error evaluating policy {policy_id}: {e}", exc_info=True)

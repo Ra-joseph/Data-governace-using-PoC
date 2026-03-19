@@ -27,5 +27,8 @@ azure-storage-blob==12.19.0       # Azure Blob Storage connector (not yet active
 azure-identity==1.15.0            # Azure authentication (not yet active)
 pandas==2.1.4                     # data analysis — reserved for future schema profiling
 
+# ── LLM Providers (optional — install only the one you need) ────────────────
+anthropic>=0.39.0                     # Anthropic Claude API client (optional)
+
 # ── Testing ─────────────────────────────────────────────────────────────────────
 pytest==7.4.4

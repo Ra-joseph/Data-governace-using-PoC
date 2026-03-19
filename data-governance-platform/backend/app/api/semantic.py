@@ -16,7 +16,7 @@ from app.config import settings
 from app.database import get_db
 from app.models.contract import Contract
 from app.services.semantic_policy_engine import SemanticPolicyEngine
-from app.services.ollama_client import get_ollama_client
+from app.services.llm_factory import get_llm_provider
 from app.schemas.contract import ValidationResult
 
 router = APIRouter(prefix="/semantic", tags=["semantic-scanning"])
@@ -26,6 +26,8 @@ class SemanticHealthResponse(BaseModel):
     """Response model for semantic scanning health check."""
     available: bool
     ollama_running: bool
+    provider: str = "ollama"
+    provider_available: bool = False
     available_models: List[str]
     current_model: str
     policies_loaded: int
@@ -62,6 +64,8 @@ def check_semantic_health():
         return SemanticHealthResponse(
             available=False,
             ollama_running=False,
+            provider=settings.LLM_PROVIDER,
+            provider_available=False,
             available_models=[],
             current_model="disabled",
             policies_loaded=0,
@@ -72,17 +76,20 @@ def check_semantic_health():
         # Initialize semantic engine
         semantic_engine = SemanticPolicyEngine(enabled=True)
 
-        # Check Ollama availability
-        ollama_client = semantic_engine.llm_client
-        ollama_running = ollama_client.is_available() if ollama_client else False
+        # Check provider availability
+        llm_client = semantic_engine.llm_client
+        provider_available = llm_client.is_available() if llm_client else False
+
+        # For backward compatibility, also report ollama_running
+        ollama_running = provider_available if settings.LLM_PROVIDER == "ollama" else False
 
         # Get available models
         available_models = []
         current_model = "not configured"
 
-        if ollama_running:
-            available_models = ollama_client.list_models()
-            current_model = ollama_client.model
+        if provider_available:
+            available_models = llm_client.list_models()
+            current_model = llm_client.model
 
         # Count loaded policies
         policies_count = len(semantic_engine.policies.get('policies', []))
@@ -91,12 +98,11 @@ def check_semantic_health():
         is_available = semantic_engine.is_available()
 
         # Generate message
+        provider_name = settings.LLM_PROVIDER
         if is_available:
-            message = f"Semantic scanning is available with {policies_count} policies"
-        elif not ollama_running:
-            message = "Ollama is not running. Start it with: ollama serve"
-        elif not available_models:
-            message = f"Ollama is running but model '{current_model}' not found. Pull it with: ollama pull {current_model}"
+            message = f"Semantic scanning is available with {policies_count} policies (provider: {provider_name})"
+        elif not provider_available:
+            message = f"LLM provider '{provider_name}' is not available. Check your configuration."
         elif policies_count == 0:
             message = "No semantic policies loaded"
         else:
@@ -105,6 +111,8 @@ def check_semantic_health():
         return SemanticHealthResponse(
             available=is_available,
             ollama_running=ollama_running,
+            provider=provider_name,
+            provider_available=provider_available,
             available_models=available_models,
             current_model=current_model,
             policies_loaded=policies_count,
@@ -115,6 +123,8 @@ def check_semantic_health():
         return SemanticHealthResponse(
             available=False,
             ollama_running=False,
+            provider=settings.LLM_PROVIDER,
+            provider_available=False,
             available_models=[],
             current_model="error",
             policies_loaded=0,
@@ -259,26 +269,27 @@ def list_available_models():
         }
 
     try:
-        ollama_client = get_ollama_client()
+        llm_client = get_llm_provider()
 
-        if not ollama_client.is_available():
+        if not llm_client.is_available():
             raise HTTPException(
                 status_code=503,
-                detail="Ollama is not running. Start it with: ollama serve"
+                detail=f"LLM provider '{settings.LLM_PROVIDER}' is not available. Check your configuration."
             )
 
-        models = ollama_client.list_models()
+        models = llm_client.list_models()
 
         return {
             "total": len(models),
-            "current_model": ollama_client.model,
+            "current_model": llm_client.model,
+            "provider": settings.LLM_PROVIDER,
             "models": models,
             "recommended_models": [
                 "mistral:7b",
                 "codellama:7b",
                 "llama2:7b",
                 "phi:latest"
-            ]
+            ] if settings.LLM_PROVIDER == "ollama" else models[:4]
         }
 
     except HTTPException:
@@ -323,12 +334,19 @@ def pull_model(model_name: str):
             "note": "Set ENABLE_LLM_VALIDATION=true to enable LLM features."
         }
 
+    if settings.LLM_PROVIDER != "ollama":
+        return {
+            "message": f"Model pulling is only supported for the Ollama provider",
+            "model": model_name,
+            "note": f"Current provider is '{settings.LLM_PROVIDER}'. Model pulling is not applicable."
+        }
+
     import requests
 
     try:
-        ollama_client = get_ollama_client()
+        llm_client = get_llm_provider()
 
-        if not ollama_client.is_available():
+        if not llm_client.is_available():
             raise HTTPException(
                 status_code=503,
                 detail="Ollama is not running. Start it with: ollama serve"
@@ -336,7 +354,7 @@ def pull_model(model_name: str):
 
         # Trigger pull via Ollama API
         response = requests.post(
-            f"{ollama_client.base_url}/api/pull",
+            f"{llm_client.base_url}/api/pull",
             json={"name": model_name, "stream": False},
             timeout=120
         )

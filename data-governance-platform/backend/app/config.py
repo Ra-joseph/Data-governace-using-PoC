@@ -89,11 +89,19 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
 
+    # LLM Provider Selection
+    LLM_PROVIDER: str = "ollama"  # "ollama" | "anthropic"
+    LLM_TIMEOUT: int = 30
+
     # LLM / Ollama (Semantic Validation)
     ENABLE_LLM_VALIDATION: bool = False
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "mistral:7b"
     OLLAMA_TIMEOUT: int = 30
+
+    # Anthropic (Claude) — used when LLM_PROVIDER="anthropic"
+    ANTHROPIC_API_KEY: str = ""
+    ANTHROPIC_MODEL: str = "claude-sonnet-4-20250514"
 
     model_config = SettingsConfigDict(
         env_file=".env",

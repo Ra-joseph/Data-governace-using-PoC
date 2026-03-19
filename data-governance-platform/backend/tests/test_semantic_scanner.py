@@ -5,6 +5,7 @@ Tests for semantic policy scanning with LLM.
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from app.services.ollama_client import OllamaClient, OllamaError, get_ollama_client
+from app.services.llm_factory import get_llm_provider
 from app.services.semantic_policy_engine import SemanticPolicyEngine
 from app.schemas.contract import ValidationStatus, ViolationType
 
@@ -207,7 +208,7 @@ class TestSemanticPolicyEngine:
         assert result.status == ValidationStatus.PASSED
         assert len(result.violations) == 0
 
-    @patch('app.services.semantic_policy_engine.get_ollama_client')
+    @patch('app.services.semantic_policy_engine.get_llm_provider')
     def test_semantic_engine_unavailable_ollama(self, mock_get_client, sample_contract):
         """Test behavior when Ollama is not available."""
         mock_client = Mock()
@@ -221,7 +222,7 @@ class TestSemanticPolicyEngine:
         # Should return passed since semantic is not available
         assert result.status == ValidationStatus.PASSED
 
-    @patch('app.services.semantic_policy_engine.get_ollama_client')
+    @patch('app.services.semantic_policy_engine.get_llm_provider')
     def test_validate_contract_with_semantic(self, mock_get_client, sample_contract):
         """Test contract validation with semantic policies."""
         # Setup mock Ollama client
@@ -329,7 +330,7 @@ class TestSemanticIntegration:
         assert result is not None
         assert isinstance(result.status, ValidationStatus)
 
-    @patch('app.services.semantic_policy_engine.get_ollama_client')
+    @patch('app.services.semantic_policy_engine.get_llm_provider')
     def test_combined_validation_with_semantic_disabled_ollama(
         self, mock_get_client, sample_contract_with_pii
     ):

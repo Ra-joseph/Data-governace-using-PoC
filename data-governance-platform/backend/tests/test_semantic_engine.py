@@ -7,6 +7,7 @@ from pathlib import Path
 
 from app.services.semantic_policy_engine import SemanticPolicyEngine
 from app.services.ollama_client import OllamaClient, OllamaError
+from app.services.llm_provider import LLMProviderError
 from app.schemas.contract import ViolationType, ValidationStatus
 
 
@@ -15,7 +16,7 @@ from app.schemas.contract import ViolationType, ValidationStatus
 class TestSemanticEngineInit:
     """Test SemanticPolicyEngine initialization."""
 
-    @patch("app.services.semantic_policy_engine.get_ollama_client")
+    @patch("app.services.semantic_policy_engine.get_llm_provider")
     def test_init_enabled_with_client(self, mock_factory):
         """Test initialization with a provided OllamaClient."""
         mock_client = Mock(spec=OllamaClient)
@@ -51,7 +52,7 @@ class TestSemanticEngineAvailability:
         )
         assert engine.is_available() is False
 
-    @patch("app.services.semantic_policy_engine.get_ollama_client")
+    @patch("app.services.semantic_policy_engine.get_llm_provider")
     def test_is_available_no_policies(self, mock_factory):
         """Test is_available returns False when no policies loaded."""
         mock_client = Mock(spec=OllamaClient)
@@ -65,7 +66,7 @@ class TestSemanticEngineAvailability:
         engine.policies = {}
         assert engine.is_available() is False
 
-    @patch("app.services.semantic_policy_engine.get_ollama_client")
+    @patch("app.services.semantic_policy_engine.get_llm_provider")
     def test_is_available_ollama_down(self, mock_factory):
         """Test is_available returns False when Ollama is not running."""
         mock_client = Mock(spec=OllamaClient)
@@ -78,7 +79,7 @@ class TestSemanticEngineAvailability:
         )
         assert engine.is_available() is False
 
-    @patch("app.services.semantic_policy_engine.get_ollama_client")
+    @patch("app.services.semantic_policy_engine.get_llm_provider")
     def test_is_available_all_conditions_met(self, mock_factory):
         """Test is_available returns True when all conditions are met."""
         mock_client = Mock(spec=OllamaClient)
@@ -114,7 +115,7 @@ class TestSemanticEngineValidation:
         assert result.failures == 0
         assert result.violations == []
 
-    @patch("app.services.semantic_policy_engine.get_ollama_client")
+    @patch("app.services.semantic_policy_engine.get_llm_provider")
     def test_validate_contract_selected_policies(self, mock_factory):
         """Test validation with selected policies."""
         mock_client = Mock(spec=OllamaClient)
@@ -140,11 +141,11 @@ class TestSemanticEngineValidation:
             # Should only run SEM001
             assert result is not None
 
-    @patch("app.services.semantic_policy_engine.get_ollama_client")
+    @patch("app.services.semantic_policy_engine.get_llm_provider")
     def test_evaluate_policy_ollama_error(self, mock_factory):
-        """Test that OllamaError results in a WARNING violation."""
+        """Test that LLMProviderError results in a WARNING violation."""
         mock_client = Mock(spec=OllamaClient)
-        mock_client.analyze_with_retry.side_effect = OllamaError("Connection refused")
+        mock_client.analyze_with_retry.side_effect = LLMProviderError("Connection refused")
 
         engine = SemanticPolicyEngine(
             policies_path=str(Path(__file__).parent.parent / "policies"),
@@ -170,7 +171,7 @@ class TestSemanticEngineValidation:
         assert violations[0].type == ViolationType.WARNING
         assert "Failed to perform semantic analysis" in violations[0].message
 
-    @patch("app.services.semantic_policy_engine.get_ollama_client")
+    @patch("app.services.semantic_policy_engine.get_llm_provider")
     def test_evaluate_policy_unexpected_error(self, mock_factory):
         """Test that unexpected exceptions don't crash the engine."""
         mock_client = Mock(spec=OllamaClient)

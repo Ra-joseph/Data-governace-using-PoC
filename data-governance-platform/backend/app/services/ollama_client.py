@@ -12,11 +12,12 @@ from pathlib import Path
 import logging
 
 from app.config import settings
+from app.services.llm_provider import LLMProvider, LLMProviderError
 
 logger = logging.getLogger(__name__)
 
 
-class OllamaClient:
+class OllamaClient(LLMProvider):
     """Client for interacting with local Ollama instance."""
 
     def __init__(
@@ -213,7 +214,7 @@ class OllamaClient:
         return hashlib.sha256(content.encode()).hexdigest()
 
 
-class OllamaError(Exception):
+class OllamaError(LLMProviderError):
     """Exception raised for Ollama-related errors."""
     pass
 
