@@ -15,6 +15,7 @@ import {
   UserCircle,
   FilePlus,
   ListChecks,
+  GitPullRequest,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
@@ -35,6 +36,7 @@ const roleNavigation = {
   admin: [
     { name: 'Compliance Dashboard', path: '/admin/dashboard', icon: BarChart3 },
     { name: 'Compliance Report', path: '/admin/compliance', icon: FileCheck },
+    { name: 'PR Governance', path: '/admin/pr-governance', icon: GitPullRequest },
   ],
 };
 

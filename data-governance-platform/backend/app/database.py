@@ -60,7 +60,7 @@ def init_db():
         This function imports models to ensure they are registered with
         SQLAlchemy before creating tables.
     """
-    from app.models import dataset, contract, subscription, user
+    from app.models import dataset, contract, subscription, user, pr_scan
     from app.models import policy_draft, policy_version, policy_artifact, policy_approval_log
     Base.metadata.create_all(bind=engine)
 

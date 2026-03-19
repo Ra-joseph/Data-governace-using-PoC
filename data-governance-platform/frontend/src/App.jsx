@@ -17,6 +17,7 @@ import { ApprovalQueue } from './pages/DataSteward/ApprovalQueue';
 
 // Admin Pages
 import { ComplianceDashboard as AdminDashboard } from './pages/Admin/ComplianceDashboard';
+import { PRGovernanceDashboard } from './pages/Admin/PRGovernanceDashboard';
 
 // Legacy Pages (keep for backward compatibility)
 import { Dashboard } from './pages/Dashboard';
@@ -92,6 +93,7 @@ function App() {
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="compliance" element={<ComplianceDashboard />} />
+            <Route path="pr-governance" element={<PRGovernanceDashboard />} />
           </Route>
 
           {/* Legacy Routes (backward compatibility) */}

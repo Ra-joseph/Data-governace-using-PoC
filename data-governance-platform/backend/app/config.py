@@ -103,6 +103,13 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""
     ANTHROPIC_MODEL: str = "claude-sonnet-4-20250514"
 
+    # GitHub Integration (PR Governance Agent)
+    GITHUB_TOKEN: str = ""
+    GITHUB_WEBHOOK_SECRET: str = ""
+    PR_SCAN_STRATEGY: str = "BALANCED"
+    PR_SCAN_BLOCK_ON_CRITICAL: bool = True
+    PR_GOVERNANCE_PATTERNS: str = "contracts/**/*.yaml,contracts/**/*.yml,contracts/**/*.json,policies/**/*.yaml"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

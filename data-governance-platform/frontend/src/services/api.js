@@ -150,6 +150,16 @@ export const policyExceptionsAPI = {
   stats: () => api.get('/api/v1/policy-exceptions/stats'),
 };
 
+// PR Governance APIs
+export const prGovernanceAPI = {
+  listScans: (params) => api.get('/api/v1/pr-governance/scans', { params }),
+  getScan: (id) => api.get(`/api/v1/pr-governance/scans/${id}`),
+  rescan: (id) => api.post(`/api/v1/pr-governance/scans/${id}/rescan`),
+  getScansByPR: (repo, prNumber) => api.get(`/api/v1/pr-governance/scans/pr/${repo}/${prNumber}`),
+  stats: () => api.get('/api/v1/pr-governance/stats'),
+  manualScan: (data) => api.post('/api/v1/pr-governance/scan-manual', data),
+};
+
 // Health check
 export const healthCheck = () => api.get('/health');
 

@@ -1,0 +1,94 @@
+name: Governance Policy Scan
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'data-governance-platform/backend/contracts/**'
+      - 'data-governance-platform/backend/policies/**'
+      - '**/*schema*.yaml'
+      - '**/*schema*.yml'
+      - '**/*schema*.json'
+      - '**/*contract*.yaml'
+      - '**/*contract*.yml'
+      - '**/*contract*.json'
+
+jobs:
+  governance-scan:
+    name: Governance Policy Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd data-governance-platform/backend
+          pip install -r requirements.txt
+
+      - name: Run governance scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd data-governance-platform/backend
+          python -m app.cli.scan_pr \
+            --repo "${{ github.repository }}" \
+            --pr "${{ github.event.pull_request.number }}" \
+            --sha "${{ github.event.pull_request.head.sha }}" \
+            --strategy BALANCED \
+            --output json > scan_results.json || true
+
+          # Display results
+          cat scan_results.json
+
+          # Check for failures
+          STATUS=$(python -c "import json; r=json.load(open('scan_results.json')); print(r.get('status','error'))")
+          if [ "$STATUS" = "failed" ]; then
+            echo "::error::Governance scan failed with critical violations"
+            exit 1
+          fi
+
+      - name: Post scan summary
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let results;
+            try {
+              results = JSON.parse(fs.readFileSync('data-governance-platform/backend/scan_results.json', 'utf8'));
+            } catch (e) {
+              results = { status: 'error', violations_summary: {} };
+            }
+            const vs = results.violations_summary || {};
+            const total = (vs.critical || 0) + (vs.warning || 0) + (vs.info || 0);
+            const statusIcon = results.status === 'passed' ? ':white_check_mark:'
+              : results.status === 'warning' ? ':warning:'
+              : results.status === 'failed' ? ':x:'
+              : ':grey_question:';
+
+            const body = [
+              `## ${statusIcon} Governance Policy Scan`,
+              '',
+              `**Status**: ${(results.status || 'unknown').toUpperCase()}`,
+              `**Files Scanned**: ${results.files_scanned || 0}`,
+              `**Total Violations**: ${total}`,
+              `- Critical: ${vs.critical || 0}`,
+              `- Warning: ${vs.warning || 0}`,
+              `- Info: ${vs.info || 0}`,
+              `**Duration**: ${results.duration_ms || 0}ms`,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body,
+            });
