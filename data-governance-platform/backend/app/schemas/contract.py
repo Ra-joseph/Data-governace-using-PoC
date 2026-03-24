@@ -77,6 +77,7 @@ class Violation(BaseModel):
     message: str
     remediation: str
     line_number: Optional[int] = None
+    source: Optional[str] = None
 
 
 class ValidationResult(BaseModel):

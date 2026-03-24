@@ -1,0 +1,45 @@
+odpsVersion: "4.1"
+
+product:
+  id: transaction_ledger
+  name: Transaction Ledger
+  status: active
+  domain: finance
+  owner: bob.martinez@company.com
+  description: >-
+    Financial transaction records with amounts, parties, and settlement status.
+
+quality:
+  dimensions:
+    - name: completeness
+      threshold: 99
+      unit: percentage
+    - name: accuracy
+      threshold: 99
+      unit: percentage
+    - name: timeliness
+      threshold: 1
+      unit: ms
+
+sla:
+  updateFrequency: hourly
+  uptimePercentage: 99.9
+  responseTimeMs: 1000
+
+dataAccess:
+  personalData: false
+  accessType: private
+  outputPorts:
+    - id: sql-port
+      type: SQL
+      location: finance.public.transactions
+
+license:
+  scope: internal
+  governance:
+    - SOX
+    - PCI-DSS
+
+pricing:
+  model: free
+  plan: internal-use

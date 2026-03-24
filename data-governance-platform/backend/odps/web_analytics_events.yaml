@@ -1,0 +1,44 @@
+odpsVersion: "4.1"
+
+product:
+  id: web_analytics_events
+  name: Web Analytics Events
+  status: active
+  domain: analytics
+  owner: evan.torres@company.com
+  description: >-
+    Clickstream and event tracking data from the customer-facing web application.
+
+quality:
+  dimensions:
+    - name: completeness
+      threshold: 90
+      unit: percentage
+    - name: accuracy
+      threshold: 90
+      unit: percentage
+    - name: timeliness
+      threshold: 1
+      unit: ms
+
+sla:
+  updateFrequency: realtime
+  uptimePercentage: 99.0
+  responseTimeMs: 1000
+
+dataAccess:
+  personalData: false
+  accessType: restricted
+  outputPorts:
+    - id: sql-port
+      type: SQL
+      location: analytics.public.events
+
+license:
+  scope: internal
+  governance:
+    - GDPR
+
+pricing:
+  model: free
+  plan: internal-use

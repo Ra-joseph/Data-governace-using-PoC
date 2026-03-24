@@ -23,6 +23,7 @@ from app.services.policy_engine import PolicyEngine
 from app.services.semantic_policy_engine import SemanticPolicyEngine
 from app.services.policy_orchestrator import PolicyOrchestrator, ValidationStrategy
 from app.services.git_service import GitService
+from app.services.odps_service import OdpsService
 from app.schemas.contract import ValidationResult, Violation, ValidationStatus
 
 logger = logging.getLogger(__name__)
@@ -138,7 +139,26 @@ class ContractService:
         
         # Validate contract (rule-based + optional semantic)
         validation_result = self.validate_contract_combined(contract_data)
-        
+
+        # Append ODPS 4.1 compliance block (additive)
+        _odps_service = OdpsService()
+        dataset_name = dataset.name if hasattr(dataset, 'name') else str(dataset_id)
+        odps_compliance_status = (
+            "compliant" if validation_result.status.value in ("passed", "warning") else "non-compliant"
+        )
+        if _odps_service.descriptor_exists(dataset_name):
+            machine_readable["odps"] = _odps_service.build_odps_block(dataset_name, odps_compliance_status)
+        else:
+            machine_readable["odps"] = {
+                "specVersion": "4.1",
+                "standard": "https://opendataproducts.org",
+                "descriptorUrl": f"/api/odps/products/{dataset_name}",
+                "complianceStatus": odps_compliance_status,
+            }
+
+        # Regenerate human-readable YAML to include the odps block
+        human_readable = self._generate_yaml(contract_data, dataset.name, version)
+
         # Commit to Git
         git_info = self.git_service.commit_contract(
             human_readable,

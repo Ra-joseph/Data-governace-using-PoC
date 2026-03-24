@@ -1,0 +1,44 @@
+odpsVersion: "4.1"
+
+product:
+  id: employee_directory
+  name: Employee Directory
+  status: active
+  domain: hr
+  owner: diana.park@company.com
+  description: >-
+    Internal employee records with department, role, and contact information.
+
+quality:
+  dimensions:
+    - name: completeness
+      threshold: 95
+      unit: percentage
+    - name: accuracy
+      threshold: 95
+      unit: percentage
+    - name: timeliness
+      threshold: 168
+      unit: ms
+
+sla:
+  updateFrequency: weekly
+  uptimePercentage: 99.5
+  responseTimeMs: 5000
+
+dataAccess:
+  personalData: true
+  accessType: restricted
+  outputPorts:
+    - id: sql-port
+      type: SQL
+      location: hr.public.employees
+
+license:
+  scope: internal
+  governance:
+    - GDPR
+
+pricing:
+  model: free
+  plan: internal-use

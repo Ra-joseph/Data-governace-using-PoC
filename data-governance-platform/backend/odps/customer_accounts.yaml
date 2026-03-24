@@ -1,0 +1,46 @@
+odpsVersion: "4.1"
+
+product:
+  id: customer_accounts
+  name: Customer Accounts
+  status: active
+  domain: analytics
+  owner: alice.chen@company.com
+  description: >-
+    Core customer account data including profile, contact details,
+    and account status.
+
+quality:
+  dimensions:
+    - name: completeness
+      threshold: 95
+      unit: percentage
+    - name: accuracy
+      threshold: 95
+      unit: percentage
+    - name: timeliness
+      threshold: 24
+      unit: ms
+
+sla:
+  updateFrequency: daily
+  uptimePercentage: 99.5
+  responseTimeMs: 5000
+
+dataAccess:
+  personalData: true
+  accessType: restricted
+  outputPorts:
+    - id: sql-port
+      type: SQL
+      location: analytics.public.customer_accounts
+
+license:
+  scope: internal
+  governance:
+    - GDPR
+    - CCPA
+
+pricing:
+  model: free
+  plan: internal-use

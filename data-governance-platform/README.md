@@ -25,6 +25,42 @@ A comprehensive Policy-as-Code data governance platform implementing federated g
 - **Policy Orchestration**: 4 strategies (FAST, BALANCED, THOROUGH, ADAPTIVE) with risk-based routing
 - **25 Total Policies**: 17 rule-based + 8 semantic for comprehensive governance coverage
 
+## ODPS 4.1 Compliance
+
+This platform implements the [Open Data Product Specification (ODPS) 4.1](https://opendataproducts.org),
+maintained by the Linux Foundation LF AI & Data. Each data product exposes a
+machine-readable ODPS descriptor so that external catalogue tools (Alation,
+Collibra, AI agents) can auto-discover and consume data products in a
+standards-compliant way.
+
+### ODPS API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/odps/products` | List all ODPS-described data products |
+| `GET` | `/api/odps/products/{id}` | Retrieve full ODPS descriptor (`Content-Type: application/odps+yaml;version=1.0.0`) |
+| `GET` | `/api/odps/products/{id}/validate` | Validate dataset stats against declared ODPS quality thresholds |
+
+### What ODPS Descriptors Cover
+
+ODPS 4.1 descriptors are stored as YAML files in `backend/odps/` and include:
+
+- **product** — identity (id, name, status, domain, owner, description)
+- **quality** — declared thresholds for completeness, accuracy, and timeliness
+- **sla** — update frequency, uptime percentage, response time
+- **dataAccess** — personal data flag, access type (open/restricted/private), output ports
+- **license** — scope and applicable governance frameworks (GDPR, SOX, PCI-DSS, etc.)
+- **pricing** — pricing model and plan
+
+### New ODPS Files
+
+| File | Purpose |
+|------|---------|
+| `backend/odps/*.yaml` | ODPS 4.1 descriptors for each data product |
+| `backend/app/api/odps.py` | ODPS API router (3 endpoints) |
+| `backend/app/services/odps_service.py` | ODPS descriptor loading and quality validation |
+| `backend/app/schemas/odps.py` | Pydantic models: OdpsDescriptor, OdpsViolation, OdpsValidationResult |
+
 ## 📋 Table of Contents
 
 - [Architecture](#architecture)
