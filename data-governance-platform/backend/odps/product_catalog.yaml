@@ -1,0 +1,43 @@
+odpsVersion: "4.1"
+
+product:
+  id: product_catalog
+  name: Product Catalog
+  status: active
+  domain: commerce
+  owner: carol.oduya@company.com
+  description: >-
+    Product catalog with pricing, categories, and inventory levels.
+
+quality:
+  dimensions:
+    - name: completeness
+      threshold: 90
+      unit: percentage
+    - name: accuracy
+      threshold: 90
+      unit: percentage
+    - name: timeliness
+      threshold: 168
+      unit: ms
+
+sla:
+  updateFrequency: weekly
+  uptimePercentage: 99.0
+  responseTimeMs: 5000
+
+dataAccess:
+  personalData: false
+  accessType: restricted
+  outputPorts:
+    - id: sql-port
+      type: SQL
+      location: commerce.public.products
+
+license:
+  scope: internal
+  governance: []
+
+pricing:
+  model: free
+  plan: internal-use

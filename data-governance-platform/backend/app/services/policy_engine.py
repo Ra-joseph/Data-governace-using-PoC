@@ -12,6 +12,7 @@ from typing import Dict, List, Any
 from pathlib import Path
 from app.schemas.contract import Violation, ValidationResult, ViolationType, ValidationStatus
 from app.config import settings
+from app.services.odps_service import OdpsService
 
 
 class PolicyEngine:
@@ -85,24 +86,41 @@ class PolicyEngine:
         
         return policies
     
-    def validate_contract(self, contract_data: Dict[str, Any]) -> ValidationResult:
+    def validate_contract(self, contract_data: Dict[str, Any], dataset_stats: dict = None, product_id: str = None) -> ValidationResult:
         """
         Validate a contract against all policies.
-        
+
         Args:
             contract_data: Contract data in JSON/dict format
-            
+            dataset_stats: Optional dataset statistics for ODPS pre-validation.
+            product_id: Optional ODPS product identifier for pre-validation.
+
         Returns:
             ValidationResult with violations and status
         """
         violations = []
-        
+
+        # ODPS 4.1 pre-validation (additive — merged into violation list)
+        odps_service = OdpsService()
+        if product_id and dataset_stats and odps_service.descriptor_exists(product_id):
+            odps_violations = odps_service.validate_dataset_against_odps(product_id, dataset_stats)
+            for ov in odps_violations:
+                violations.append(Violation(
+                    type=ViolationType.WARNING,
+                    policy=f"ODPS-{ov.dimension.upper()}",
+                    field=ov.dimension,
+                    message=ov.message,
+                    remediation=f"Update the ODPS descriptor quality threshold for '{ov.dimension}' "
+                                f"or improve data quality. Declared: {ov.declared_threshold}{ov.unit}, "
+                                f"Actual: {ov.actual_value}{ov.unit}.",
+                ))
+
         # Extract contract components
         dataset = contract_data.get('dataset', {})
         schema = contract_data.get('schema', [])
         governance = contract_data.get('governance', {})
         quality_rules = contract_data.get('quality_rules', {})
-        
+
         # Validate Sensitive Data Policies
         violations.extend(self._validate_sensitive_data(schema, governance))
         
