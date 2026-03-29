@@ -1,38 +1,138 @@
-# Data Governance Platform - Policy-as-Code PoC
+# Automated Data Controls Platform (ADCP)
+### Policy-as-Code Enforcement Layer for Financial Data Governance
 
-Enabling proactive data governance using Policy-as-Code with a comprehensive multi-role frontend.
+> **Governance defines the rules. This platform makes them enforceable.**
 
-## 🎯 Overview
+---
 
-A production-ready proof-of-concept demonstrating federated data governance using the **UN Peacekeeping model** - shared policies with distributed enforcement. This platform prevents governance violations before they reach production through automated policy validation and actionable remediation.
+## Overview
 
-## ✨ Key Features
+The **Automated Data Controls Platform** is a proof-of-concept **enforcement and observability layer** that operationalises data governance policies into automated controls applied at data borders.
 
-### Backend
-- **25 Governance Policies**: 17 rule-based (sensitive data, data quality, schema governance) + 8 semantic (LLM-powered)
-- **Semantic Policy Scanning**: AI-powered context-aware validation via local Ollama LLMs
-- **Intelligent Policy Orchestration**: Auto-decides between rule-based & LLM validation based on risk level
-- **Automated Schema Import**: PostgreSQL with heuristic PII detection
-- **Dual Contracts**: Human-readable YAML + Machine-readable JSON
-- **Git Version Control**: Full audit trail for all contracts with semantic versioning
-- **Policy Validation**: Real-time validation with actionable remediation guidance
+It is not a governance framework. Governance — data ownership, stewardship accountability, policy authoring, and domain glossary alignment — belongs with your data councils and stewards. This platform is the technical layer that ensures those decisions are actually enforced, consistently, at scale, and with an auditable trail.
 
-### Frontend
-- **Data Owner UI**: Dataset registration wizard with multi-step form and violation dashboard
-- **Data Consumer UI**: Catalog browser with subscription requests and SLA negotiation
-- **Data Steward UI**: Approval queue with contract review and credential management
-- **Platform Admin UI**: Compliance dashboard with interactive analytics and trend charts
-- **End-to-End Workflows**: Complete subscription lifecycle with automatic contract versioning
+The design follows a **federated enforcement model** — shared policies with distributed validation — where prevention at borders is more effective than retrospective detection. It demonstrates how a regulated financial institution can automate the operationalisation of governance policy without displacing the human accountability structures that governance requires.
 
-## 🚀 Quick Start
+Built with regulated financial institutions in mind, targeting alignment with **BCBS 239**, **DORA**, **GDPR Article 25**, and **EU AI Act** obligations.
 
-### Prerequisites
-- Python 3.10+
-- Node.js 18+
-- Docker
-- Git
+---
 
-### Installation
+## What Problem This Solves
+
+In most organisations, data governance policies exist as documents. Controls are manually applied, inconsistently enforced, and difficult to audit. The gap between a policy statement and a running data pipeline is where regulatory risk accumulates.
+
+This platform closes that gap by:
+
+- Encoding approved governance decisions as executable, version-controlled policies
+- Evaluating those policies automatically at every data movement event — before data crosses a domain boundary
+- Generating an auditable trail of every enforcement decision, tied to the policy version that triggered it
+- Providing actionable remediation guidance when a violation is detected, rather than a bare rejection
+
+---
+
+## Key Capabilities
+
+### Enforcement Engine
+- **25 governance policies**: 17 rule-based (sensitive data, data quality, schema governance) + 8 semantic (LLM-assisted)
+- **Intelligent orchestration**: Automatically routes validation to rule-based or LLM engine based on assessed risk level — avoids expensive LLM calls when not warranted (100ms vs 24s)
+- **4 validation strategies**: FAST, BALANCED, THOROUGH, ADAPTIVE — matched to contract risk profile
+- **Prevention at borders**: Policies evaluated before data crosses domain boundaries, not discovered in retrospect
+
+### Contract Management
+- **Dual-format contracts**: Human-readable YAML for stewards and business owners; machine-readable JSON for system integration
+- **Git-backed versioning**: Every contract change committed with semantic versioning — full lineage of policy decisions
+- **Automated schema import**: PostgreSQL schema ingestion with heuristic PII detection
+
+### Semantic Policy Scanning (Experimental)
+- **8 semantic policies** using local Ollama LLM execution — no data leaves the infrastructure
+- Context-aware validation beyond pattern matching: business logic coherence, schema vulnerability patterns, sensitive data in context
+- **All LLM recommendations require human steward review before enforcement** — this layer is advisory, not autonomous
+
+### Multi-Role Operational Interface
+
+| Role | Capability |
+|---|---|
+| **Data Owner** | Dataset registration, schema import, violation dashboard with remediation guidance |
+| **Data Consumer** | Catalog browsing, access requests, SLA negotiation |
+| **Data Steward** | Approval queue, contract review, credential management |
+| **Platform Admin** | Compliance dashboard, violation trends, policy analytics |
+
+---
+
+## Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                  Governance Layer  (Human)                   │
+│     Data Council · Stewardship Model · Policy Authoring      │
+│     Business Glossary · Ownership & Accountability           │
+└───────────────────────────┬──────────────────────────────────┘
+                            │  Approved policies (YAML)
+                            ▼
+┌──────────────────────────────────────────────────────────────┐
+│              Policy Management API  (FastAPI)                │
+│      Policy Registry · Version Control · Approval Workflow   │
+│      12 API routers · 78 endpoints                           │
+└──────┬───────────────────────────────────────────┬───────────┘
+       │                                           │
+       ▼                                           ▼
+┌─────────────────┐                     ┌─────────────────────┐
+│  Policy Engine  │                     │  Audit & Contracts  │
+│                 │                     │                     │
+│  Rule-based     │                     │  Git-versioned      │
+│  17 policies    │                     │  contracts          │
+│                 │                     │                     │
+│  Semantic       │                     │  Immutable event    │
+│  8 policies     │                     │  trail              │
+│  (LLM-assisted, │                     │                     │
+│  human-reviewed)│                     │  PostgreSQL +       │
+└────────┬────────┘                     │  SQLite metadata    │
+         │                              └─────────────────────┘
+         ▼
+┌──────────────────────────────────────────────────────────────┐
+│                    Enforcement Points                        │
+│    Data Contract Validation · Schema Import Gates            │
+│    Subscription Approval · Classification Controls           │
+│    Violation Detection + Remediation Guidance                │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Regulatory Alignment
+
+| Regulation | How This Platform Supports Compliance |
+|---|---|
+| **BCBS 239** | Automated data quality controls at ingestion; policy-gated lineage at domain borders; contract versioning as accuracy evidence |
+| **DORA** | ICT risk controls embedded in data pipeline; policy validation in CI/CD; resilience through orchestration strategies |
+| **GDPR Art. 25** | Privacy-by-design enforced at registration — PII detection gates schema import; data minimisation in subscription SLA workflow |
+| **EU AI Act** | LLM scoped to advisory suggestions only; mandatory human-in-the-loop before any AI-assisted recommendation takes effect; local execution — no external data transfer |
+
+> **Note on the AI component:** The semantic scanning layer (Ollama/Mistral) is explicitly scoped as an advisory tool. It operates locally, produces no autonomous enforcement decisions, and all outputs require steward review before acting. This scoping is intentional — it keeps the component outside the EU AI Act's high-risk classification threshold for financial institutions.
+
+---
+
+## Technology Stack
+
+**Backend**
+- FastAPI 0.109 (Python 3.10+)
+- SQLAlchemy 2.0 / PostgreSQL 15 + SQLite
+- Pydantic v2 (contract validation)
+- GitPython (policy and contract versioning)
+- Ollama + Mistral (local LLM — semantic scanning only)
+- PyYAML (policy definitions)
+
+**Frontend**
+- React 18.2 + Vite 5.0
+- Zustand 4.4 (state management)
+- Recharts 2.10 (compliance analytics)
+- React Router 6 / Axios 1.6
+
+---
+
+## Quick Start
+
+**Prerequisites:** Python 3.10+, Node.js 18+, Docker, Git
 
 ```bash
 # 1. Clone repository
@@ -42,234 +142,135 @@ cd Data-governace-using-PoC/data-governance-platform
 # 2. Start PostgreSQL
 docker-compose up -d
 
-# 3. Setup backend
+# 3. Backend
 cd backend
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-# 4. Setup frontend (new terminal)
-cd frontend
-npm install
-npm run dev
+# 4. Frontend (new terminal)
+cd frontend && npm install && npm run dev
 ```
 
-### Access the Application
+| Interface   | URL                              |
+|-------------|----------------------------------|
+| Frontend    | http://localhost:3000            |
+| Backend API | http://localhost:8000            |
+| API Docs    | http://localhost:8000/api/docs   |
 
-- **Frontend**: http://localhost:3000 (auto-redirects to role selector)
-- **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/api/docs
+---
 
-## 🎨 User Roles
+## Demo Scenario
 
-### 1. Data Owner
-- Register datasets with governance metadata
-- Import schemas from PostgreSQL
-- View policy violations with remediation
-- Track subscribers and usage
+The platform ships with a financial services demo database containing three tables with intentional governance violations:
+- `customer_accounts` — PII violations (unmasked fields, missing classification)
+- `transactions` — Data quality failures (nullability, threshold breaches)
+- `fraud_alerts` — Missing governance metadata (thresholds, retention policy)
 
-### 2. Data Consumer
-- Browse data catalog
-- Request dataset access
-- Define SLA requirements
-- Select needed fields
+Use these to walk through the full enforcement workflow: registration → violation detection → remediation → steward approval → contract versioning.
 
-### 3. Data Steward
-- Review subscription requests
-- Approve/reject with credentials
-- Manage access controls
-- Track approval history
+---
 
-### 4. Platform Admin
-- Monitor compliance metrics
-- Analyze violation trends
-- View top violated policies
-- Generate compliance reports
+## Enforcement Workflows
 
-## 📊 Workflows
-
-### Dataset Registration
+**Dataset Registration (Owner → System)**
 ```
-Owner: Register → Import Schema → Set Governance → Submit
-System: Validate → Generate Contract → Commit to Git → Report Violations
+Register dataset → Import schema → PII detection gate →
+Policy evaluation → Contract generation → Git commit → Violation report + remediation
 ```
 
-### Data Subscription
+**Data Subscription (Consumer → Steward → System)**
 ```
-Consumer: Browse → Request Access → Specify SLA
-Steward: Review → Approve/Reject → Grant Credentials
-System: Update Contract → Version Bump → Commit to Git
-```
-
-### Violation Remediation
-```
-Owner: View Alert → Read Remediation → Fix Issue → Re-submit
-System: Re-validate → Update Contract → Clear Violation
+Browse catalog → Request access + SLA definition →
+Steward review → Approve/reject → Credential issuance →
+Contract version bump → Git commit
 ```
 
-## 📁 Project Structure
+**Violation Remediation (Owner → System)**
+```
+View violation alert → Read remediation guidance →
+Fix dataset → Re-submit → Re-validate → Contract cleared
+```
+
+---
+
+## Project Structure
 
 ```
 Data-governace-using-PoC/
 └── data-governance-platform/
-    ├── backend/              # FastAPI backend
+    ├── backend/
     │   ├── app/
-    │   │   ├── api/          # REST endpoints (10 routers, 30+ endpoints)
-    │   │   │   ├── datasets.py
-    │   │   │   ├── subscriptions.py
-    │   │   │   ├── git.py
-    │   │   │   ├── semantic.py
-    │   │   │   ├── orchestration.py
-    │   │   │   ├── policy_authoring.py
-    │   │   │   ├── policy_dashboard.py
-    │   │   │   ├── policy_reports.py
-    │   │   │   ├── policy_exchange.py
-    │   │   │   └── domain_governance.py
-    │   │   ├── models/       # SQLAlchemy models (8 models)
-    │   │   ├── schemas/      # Pydantic validation (24+ schemas)
-    │   │   ├── services/     # Business logic (9 services)
-    │   │   │   ├── policy_engine.py
-    │   │   │   ├── contract_service.py
-    │   │   │   ├── postgres_connector.py
-    │   │   │   ├── git_service.py
-    │   │   │   ├── semantic_policy_engine.py
-    │   │   │   ├── policy_orchestrator.py
-    │   │   │   ├── ollama_client.py
-    │   │   │   ├── policy_converter.py
-    │   │   │   └── authored_policy_loader.py
-    │   │   └── main.py       # FastAPI app
-    │   ├── policies/         # YAML policy definitions (4 files, 25 policies)
-    │   ├── contracts/        # Git repository for versioned contracts
-    │   └── tests/            # Comprehensive test suite (16 test files)
-    ├── frontend/             # React 18 + Vite frontend
-    │   ├── src/
-    │   │   ├── pages/        # Role-based UIs (Owner, Consumer, Steward, Admin)
-    │   │   ├── components/   # Shared components
-    │   │   ├── contexts/     # Auth context
-    │   │   ├── services/     # API client (Axios)
-    │   │   └── stores/       # State management (Zustand)
-    │   └── package.json
-    ├── demo/                 # Demo database (PostgreSQL)
-    └── README.md             # Detailed documentation
+    │   │   ├── api/          # 12 routers, 78 endpoints
+    │   │   ├── models/       # 8 SQLAlchemy models
+    │   │   ├── schemas/      # 41 Pydantic schemas
+    │   │   └── services/     # 10 services (policy engine, orchestrator, git, semantic, ODPS)
+    │   ├── policies/         # YAML policy definitions (25 policies, 4 files)
+    │   ├── contracts/        # Git-versioned contract repository
+    │   └── tests/            # 26 test files
+    └── frontend/
+        └── src/
+            ├── pages/        # Role-based UIs (Owner, Consumer, Steward, Admin)
+            ├── components/
+            ├── services/     # Axios API client
+            └── stores/       # Zustand state management
 ```
-
-## 📚 Documentation
-
-| Document | Description |
-|----------|-------------|
-| [Usage Guide](./data-governance-platform/USAGE_GUIDE.md) | **Start here** — MacBook setup, dependency layers, role demo flows |
-| [Platform README](./data-governance-platform/README.md) | Architecture, API docs, workflows, troubleshooting |
-| [Quick Start](./data-governance-platform/QUICKSTART.md) | 5-minute setup guide |
-| [Project Summary](./data-governance-platform/PROJECT_SUMMARY.md) | Technical deep-dive and design decisions |
-| [Deployment Guide](./data-governance-platform/DEPLOYMENT.md) | Production deployment instructions |
-| [Frontend Guide](./data-governance-platform/FRONTEND_GUIDE.md) | Frontend developer guide |
-| [Semantic Scanning](./data-governance-platform/SEMANTIC_SCANNING.md) | LLM-powered policy validation guide |
-| [Policy Orchestration](./data-governance-platform/POLICY_ORCHESTRATION.md) | Intelligent validation routing |
-| [Testing Guide](./data-governance-platform/TESTING.md) | Test suite documentation |
-| [Contributing](./CONTRIBUTING.md) | Contribution guidelines and standards |
-| [Manifest](./data-governance-platform/MANIFEST.md) | Complete file listing and statistics |
-
-## 🛠️ Technology Stack
-
-**Backend:**
-- FastAPI 0.109 (Python 3.10+)
-- SQLAlchemy 2.0 (ORM)
-- PostgreSQL 15 + SQLite (metadata)
-- Pydantic v2 (validation)
-- GitPython (contract versioning)
-- Ollama (local LLM for semantic scanning)
-- PyYAML (policy definitions)
-
-**Frontend:**
-- React 18.2
-- Vite 5.0 (build tool)
-- Zustand 4.4 (state management)
-- Recharts 2.10 (interactive analytics)
-- React Router 6 (client-side routing)
-- Axios 1.6 (HTTP client)
-- Framer Motion (animations)
-- Lucide React (icons)
-
-## 🎯 Demo Scenario
-
-The platform includes a financial services demo with three tables:
-1. **customer_accounts**: Contains PII with intentional violations
-2. **transactions**: Financial transactions with quality issues
-3. **fraud_alerts**: Fraud detection data with missing thresholds
-
-Use these tables to test the full workflow from registration to subscription approval.
-
-## ✅ Current Status
-
-All planned features are implemented and functional:
-
-- ✅ Backend API (FastAPI with 30+ endpoints)
-- ✅ Policy Engine (25 policies: 17 rule-based + 8 semantic)
-- ✅ Semantic Policy Scanning (LLM-powered via Ollama)
-- ✅ Intelligent Policy Orchestration (4 strategies: FAST, BALANCED, THOROUGH, ADAPTIVE)
-- ✅ Schema Import (PostgreSQL with PII detection)
-- ✅ Contract Management (dual-format YAML + JSON)
-- ✅ Git Integration (full audit trail with semantic versioning)
-- ✅ Multi-Role Frontend (Owner, Consumer, Steward, Admin)
-- ✅ Subscription Workflow (end-to-end with SLA negotiation)
-- ✅ Compliance Dashboard (interactive charts and trend analytics)
-- ✅ Violation Tracking (actionable remediation guidance)
-- ✅ Comprehensive Test Suite (backend + frontend)
-
-## 🧠 Semantic Policy Scanning
-
-AI-powered semantic policy validation using local LLMs via **Ollama**:
-
-- **8 Semantic Policies**: Context-aware validation beyond rule-based patterns
-- **Local LLM Execution**: Privacy-first with Ollama (no data leaves your infrastructure)
-- **Smart Detection**: Identifies sensitive data based on context, not just naming patterns
-- **Business Logic Validation**: Ensures governance rules make business sense
-- **Security Pattern Recognition**: Detects vulnerabilities in schema design
-
-📖 **See [SEMANTIC_SCANNING.md](./data-governance-platform/SEMANTIC_SCANNING.md) for complete guide**
-
-## 🎯 Policy Orchestration
-
-An **intelligent orchestration layer** that automatically decides when to use rule-based vs LLM-based validation:
-
-- **4 Validation Strategies**: FAST, BALANCED, THOROUGH, ADAPTIVE
-- **Risk Assessment**: Analyzes contracts to determine risk level (LOW → CRITICAL)
-- **Smart Routing**: Automatically chooses optimal validation based on data characteristics
-- **Performance Optimized**: Avoids expensive LLM calls when not needed (100ms vs 24s)
-- **Production Ready**: Used in all contract validation workflows
-
-**Example**: Low-risk internal data → FAST (rule-based only, 100ms). Critical PII with GDPR → THOROUGH (all policies, 24s).
-
-📖 **See [POLICY_ORCHESTRATION.md](./data-governance-platform/POLICY_ORCHESTRATION.md) for complete guide**
-
-## 🔜 Future Enhancements
-
-- Authentication & Authorization (OAuth2/JWT)
-- Additional connectors (Azure, Snowflake, S3)
-- Data lineage tracking
-- Real-time monitoring
-- Email/Slack notifications
-- Advanced analytics (ML-powered)
-- Mobile app
-- Expand semantic policies (custom domain-specific validations)
-
-## 📄 License
-
-This is a demonstration project for educational purposes.
-
-## 🤝 Contributing
-
-For production use, consider adding:
-- Proper authentication
-- Secret management
-- Comprehensive error handling
-- Audit logging
-- Rate limiting
-- Production database setup
 
 ---
 
-**Built with ❤️ for Data Governance**
+## Documentation Index
 
-For detailed setup instructions, API documentation, and troubleshooting, see the [full documentation](./data-governance-platform/README.md).
+| Document | Purpose |
+|---|---|
+| [Usage Guide](data-governance-platform/USAGE_GUIDE.md) | Start here — setup, dependency layers, role demo flows |
+| [Platform README](data-governance-platform/README.md) | Architecture, API docs, full workflow reference |
+| [Quick Start](data-governance-platform/QUICKSTART.md) | 5-minute setup |
+| [Project Summary](data-governance-platform/PROJECT_SUMMARY.md) | Design decisions and technical deep-dive |
+| [Semantic Scanning](data-governance-platform/SEMANTIC_SCANNING.md) | LLM-assisted policy validation guide |
+| [Policy Orchestration](data-governance-platform/POLICY_ORCHESTRATION.md) | Validation routing and strategy selection |
+| [Testing Guide](data-governance-platform/TESTING.md) | Test suite documentation |
+| [Deployment Guide](data-governance-platform/DEPLOYMENT.md) | Production deployment |
+
+---
+
+## Current Status
+
+| Component | Status |
+|---|---|
+| Backend API (FastAPI, 78 endpoints) | ✅ Complete |
+| Policy Engine (25 policies: 17 rule-based + 8 semantic) | ✅ Complete |
+| Semantic Scanning (Ollama, local LLM) | ✅ Complete |
+| Policy Orchestration (FAST / BALANCED / THOROUGH / ADAPTIVE) | ✅ Complete |
+| Schema Import with PII detection | ✅ Complete |
+| Contract Management (YAML + JSON dual-format) | ✅ Complete |
+| Git Integration (versioned audit trail) | ✅ Complete |
+| Multi-Role Frontend (Owner, Consumer, Steward, Admin) | ✅ Complete |
+| Subscription Workflow (end-to-end with SLA negotiation) | ✅ Complete |
+| Compliance Dashboard (interactive analytics) | ✅ Complete |
+| Test Suite (backend + frontend) | ✅ Complete |
+| ODPS (Open Data Product Standard) connector | ✅ Complete |
+
+---
+
+## Roadmap
+
+- Authentication & Authorisation (OAuth2/JWT)
+- Additional source connectors (Azure Data Lake, Snowflake, S3)
+- Data lineage tracking across enforcement points
+- Real-time monitoring and alerting (Slack/email)
+- OPA/Rego integration for external policy evaluation
+
+---
+
+## Production Caveats
+
+This is a proof-of-concept. For deployment in a regulated financial institution, the following are required:
+- Proper authentication and secret management
+- Tamper-evident audit logging (the Git trail here is demonstrative — production requires write-once logging)
+- Formal model card and bias audit for the LLM component before scope expansion
+- Integration with existing stewardship and DORA operational resilience frameworks
+- Rate limiting, error handling, and production database hardening
+
+---
+
+*Proof-of-concept for portfolio and demonstration purposes. Built to illustrate enforcement-layer architecture for regulated data environments.*
