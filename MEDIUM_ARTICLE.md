@@ -57,7 +57,7 @@ The platform is a full-stack application with a FastAPI backend, React frontend,
 │  • Remediate │  • Request   │  • Credential│  • Analytics     │
 └──────────────┴──────────────┴──────────────┴─────────────────┘
                                ▲
-                               │ REST API (30+ endpoints)
+                               │ REST API (78 endpoints)
                                ▼
 ┌──────────────────────────────────────────────────────────────┐
 │              FastAPI Backend + Policy Engine                   │
