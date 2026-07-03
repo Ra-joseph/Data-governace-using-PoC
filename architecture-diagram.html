@@ -1,0 +1,669 @@
+<title>Data Governance Platform — Architecture</title>
+<style>
+:root {
+  --bg: #0E1118;
+  --surface-1: #161B27;
+  --surface-2: #1C2234;
+  --border: #252D45;
+  --border-hi: #333D5C;
+
+  --blue: #4A9EFF;
+  --violet: #7C6DFA;
+  --amber: #F59E4A;
+  --mint: #3DD68C;
+  --red: #F06060;
+
+  --blue-dim: rgba(74,158,255,0.10);
+  --violet-dim: rgba(124,109,250,0.10);
+  --amber-dim: rgba(245,158,74,0.10);
+  --mint-dim: rgba(61,214,140,0.08);
+
+  --text-1: #E4E8F4;
+  --text-2: #808AA8;
+  --text-3: #4A5272;
+
+  --font-mono: ui-monospace,'Cascadia Code','Fira Code','SF Mono',monospace;
+  --font-sans: system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #EDF0F7;
+    --surface-1: #FFFFFF;
+    --surface-2: #F0F3FA;
+    --border: #D0D6EC;
+    --border-hi: #B0BAD8;
+    --blue-dim: rgba(74,158,255,0.08);
+    --violet-dim: rgba(124,109,250,0.08);
+    --amber-dim: rgba(245,158,74,0.08);
+    --mint-dim: rgba(61,214,140,0.07);
+    --text-1: #141828;
+    --text-2: #505878;
+    --text-3: #8890B0;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #EDF0F7;
+  --surface-1: #FFFFFF;
+  --surface-2: #F0F3FA;
+  --border: #D0D6EC;
+  --border-hi: #B0BAD8;
+  --blue-dim: rgba(74,158,255,0.08);
+  --violet-dim: rgba(124,109,250,0.08);
+  --amber-dim: rgba(245,158,74,0.08);
+  --mint-dim: rgba(61,214,140,0.07);
+  --text-1: #141828;
+  --text-2: #505878;
+  --text-3: #8890B0;
+}
+:root[data-theme="dark"] {
+  --bg: #0E1118;
+  --surface-1: #161B27;
+  --surface-2: #1C2234;
+  --border: #252D45;
+  --border-hi: #333D5C;
+  --blue-dim: rgba(74,158,255,0.10);
+  --violet-dim: rgba(124,109,250,0.10);
+  --amber-dim: rgba(245,158,74,0.10);
+  --mint-dim: rgba(61,214,140,0.08);
+  --text-1: #E4E8F4;
+  --text-2: #808AA8;
+  --text-3: #4A5272;
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ─── Header ─────────────────────────────────────────── */
+.hdr {
+  padding: 28px 36px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.hdr-left {}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 4px;
+}
+.hdr-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text-1);
+  text-wrap: balance;
+}
+.hdr-sub {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: center;
+  padding-top: 6px;
+}
+.leg {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-2);
+  letter-spacing: 0.02em;
+}
+.leg-line {
+  width: 22px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+/* ─── Stats bar ──────────────────────────────────────── */
+.statsbar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.stat {
+  flex: 1;
+  min-width: 100px;
+  padding: 12px 20px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.stat:last-child { border-right: none; }
+.stat-num {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-top: 3px;
+}
+
+/* ─── Diagram area ───────────────────────────────────── */
+.diagram-outer {
+  padding: 28px 36px 40px;
+  overflow-x: auto;
+}
+.diagram-wrapper {
+  position: relative;
+  min-width: 980px;
+}
+.connections-svg {
+  position: absolute;
+  top: 0; left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* ─── Layer bands ────────────────────────────────────── */
+.layer {
+  position: relative;
+  margin-bottom: 10px;
+}
+.band {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+.l-frontend .band { background: var(--blue-dim);   border-color: rgba(74,158,255,0.18); }
+.l-api       .band { background: var(--violet-dim); border-color: rgba(124,109,250,0.18); }
+.l-services  .band { background: var(--blue-dim);   border-color: rgba(74,158,255,0.12); }
+.l-engines   .band { background: var(--amber-dim);  border-color: rgba(245,158,74,0.18); }
+.l-storage   .band { background: var(--mint-dim);   border-color: rgba(61,214,140,0.18); }
+
+.layer-label {
+  position: absolute;
+  top: -10px;
+  left: 14px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 1px 8px 2px;
+  border-radius: 3px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.l-frontend .layer-label { color: var(--blue);   border-color: rgba(74,158,255,0.3); }
+.l-api      .layer-label { color: var(--violet); border-color: rgba(124,109,250,0.3); }
+.l-services .layer-label { color: var(--blue);   border-color: rgba(74,158,255,0.2); }
+.l-engines  .layer-label { color: var(--amber);  border-color: rgba(245,158,74,0.3); }
+.l-storage  .layer-label { color: var(--mint);   border-color: rgba(61,214,140,0.3); }
+
+.layer-content {
+  display: flex;
+  gap: 10px;
+  padding: 22px 14px 14px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+/* ─── Nodes ──────────────────────────────────────────── */
+.node {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 110px;
+  transition: border-color 0.12s, box-shadow 0.12s;
+  position: relative;
+}
+.node:hover {
+  border-color: var(--border-hi);
+  box-shadow: 0 0 0 1px var(--border-hi);
+}
+
+.node-ico {
+  font-size: 14px;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.node-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: 1.35;
+}
+.node-desc {
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.45;
+  margin-top: 1px;
+}
+.chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-top: 5px;
+  width: fit-content;
+  line-height: 1.4;
+}
+.ch-blue   { background: rgba(74,158,255,0.12);  color: var(--blue);   }
+.ch-violet { background: rgba(124,109,250,0.12); color: var(--violet); }
+.ch-amber  { background: rgba(245,158,74,0.12);  color: var(--amber);  }
+.ch-mint   { background: rgba(61,214,140,0.12);  color: var(--mint);   }
+
+/* role nodes */
+.node.role {
+  flex: 1;
+  align-items: center;
+  text-align: center;
+  min-width: 130px;
+}
+
+/* API groups */
+.api-group {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px 12px;
+  flex: 1;
+  min-width: 180px;
+}
+.api-glabel {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--violet);
+  margin-bottom: 8px;
+}
+.api-routes {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.route {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-2);
+  padding: 3px 7px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  line-height: 1.4;
+}
+.route .meth {
+  color: var(--violet);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  margin-right: 4px;
+}
+</style>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="eyebrow">Architecture Reference · 2026</div>
+    <h1 class="hdr-title">Data Governance Platform</h1>
+    <p class="hdr-sub">Policy-as-Code PoC · UN Peacekeeping federated model · Prevention at contract publication borders</p>
+  </div>
+  <div class="legend">
+    <div class="leg"><div class="leg-line" style="background:var(--blue)"></div>Data flow</div>
+    <div class="leg"><div class="leg-line" style="background:var(--violet)"></div>Policy flow</div>
+    <div class="leg"><div class="leg-line" style="background:var(--amber);opacity:.85"></div>Validation</div>
+    <div class="leg"><div class="leg-line" style="background:var(--mint)"></div>Storage / external</div>
+    <div class="leg"><div class="leg-line" style="background:var(--text-3);border-top:1px dashed var(--text-3);height:0"></div>Optional path</div>
+  </div>
+</div>
+
+<div class="statsbar">
+  <div class="stat"><div class="stat-num" style="color:var(--blue)">4</div><div class="stat-label">User Roles</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--violet)">12</div><div class="stat-label">API Route Groups</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--blue)">8</div><div class="stat-label">Backend Services</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--amber)">17</div><div class="stat-label">Rule Policies</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--amber)">8</div><div class="stat-label">Semantic Policies</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--mint)">6</div><div class="stat-label">Storage Systems</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--text-2)">628</div><div class="stat-label">Backend Tests</div></div>
+</div>
+
+<div class="diagram-outer">
+  <div class="diagram-wrapper" id="dg">
+    <svg class="connections-svg" id="svg-connections"></svg>
+
+    <!-- Layer 1: Presentation -->
+    <div class="layer l-frontend">
+      <div class="band"></div>
+      <div class="layer-label">Presentation · React 18 + Vite</div>
+      <div class="layer-content">
+        <div class="node role" id="n-owner">
+          <div class="node-ico">🏗</div>
+          <div class="node-name">Data Owner</div>
+          <div class="node-desc">Register datasets<br>Monitor violations</div>
+          <div class="chip ch-blue">DatasetRegistrationWizard</div>
+        </div>
+        <div class="node role" id="n-consumer">
+          <div class="node-ico">🔍</div>
+          <div class="node-name">Data Consumer</div>
+          <div class="node-desc">Browse catalog<br>Request subscriptions</div>
+          <div class="chip ch-blue">DataCatalogBrowser</div>
+        </div>
+        <div class="node role" id="n-steward">
+          <div class="node-ico">⚖</div>
+          <div class="node-name">Data Steward</div>
+          <div class="node-desc">Approve subscriptions<br>Author &amp; review policies</div>
+          <div class="chip ch-violet">ApprovalQueue · PolicyReview</div>
+        </div>
+        <div class="node role" id="n-admin">
+          <div class="node-ico">📊</div>
+          <div class="node-name">Platform Admin</div>
+          <div class="node-desc">Compliance metrics<br>Domain governance</div>
+          <div class="chip ch-amber">ComplianceDashboard</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 2: API -->
+    <div class="layer l-api">
+      <div class="band"></div>
+      <div class="layer-label">API Gateway · FastAPI /api/v1/ · Pydantic v2 validation</div>
+      <div class="layer-content">
+        <div class="api-group" id="n-api-data">
+          <div class="api-glabel">Datasets &amp; Subscriptions</div>
+          <div class="api-routes">
+            <div class="route"><span class="meth">POST</span>/datasets/</div>
+            <div class="route"><span class="meth">GET</span>/datasets/{id}</div>
+            <div class="route"><span class="meth">POST</span>/datasets/{id}/import-schema</div>
+            <div class="route"><span class="meth">POST</span>/subscriptions/</div>
+            <div class="route"><span class="meth">PUT</span>/subscriptions/{id}/approve</div>
+          </div>
+        </div>
+        <div class="api-group" id="n-api-policy">
+          <div class="api-glabel">Policy Management</div>
+          <div class="api-routes">
+            <div class="route"><span class="meth">CRUD</span>/policies/authored/</div>
+            <div class="route"><span class="meth">GET</span>/policy-dashboard/</div>
+            <div class="route"><span class="meth">GET</span>/policy-reports/</div>
+            <div class="route"><span class="meth">POST</span>/policy-exchange/export|import</div>
+            <div class="route"><span class="meth">GET</span>/policy-exceptions/</div>
+            <div class="route"><span class="meth">GET</span>/domain-governance/</div>
+          </div>
+        </div>
+        <div class="api-group" id="n-api-validate">
+          <div class="api-glabel">Validation &amp; Audit</div>
+          <div class="api-routes">
+            <div class="route"><span class="meth">POST</span>/orchestration/validate</div>
+            <div class="route"><span class="meth">POST</span>/semantic/scan</div>
+            <div class="route"><span class="meth">GET</span>/git/contracts</div>
+            <div class="route"><span class="meth">GET</span>/git/contracts/{name}/history</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 3: Services -->
+    <div class="layer l-services">
+      <div class="band"></div>
+      <div class="layer-label">Service Layer · Business Logic &amp; Coordination</div>
+      <div class="layer-content">
+        <div class="node" id="n-contract" style="flex:1.4;min-width:150px">
+          <div class="node-name">ContractService</div>
+          <div class="node-desc">Contract lifecycle, semantic versioning, coordinates validation &amp; Git commit on approval</div>
+          <div class="chip ch-blue">481 LoC</div>
+        </div>
+        <div class="node" id="n-orchestrator" style="flex:1.6;min-width:170px">
+          <div class="node-name">PolicyOrchestrator</div>
+          <div class="node-desc">Risk scoring → strategy selection<br>FAST · BALANCED · THOROUGH · ADAPTIVE</div>
+          <div class="chip ch-violet">538 LoC</div>
+        </div>
+        <div class="node" id="n-authored" style="flex:1;min-width:130px">
+          <div class="node-name">AuthoredPolicyLoader</div>
+          <div class="node-desc">Merges approved DB policies into runtime validation alongside YAML rules</div>
+          <div class="chip ch-violet">258 LoC</div>
+        </div>
+        <div class="node" id="n-converter" style="flex:0.9;min-width:120px">
+          <div class="node-name">PolicyConverter</div>
+          <div class="node-desc">Plain-English → YAML artifact via keyword heuristics</div>
+          <div class="chip ch-violet">204 LoC</div>
+        </div>
+        <div class="node" id="n-git-svc" style="flex:0.9;min-width:120px">
+          <div class="node-name">GitService</div>
+          <div class="node-desc">Commit, tag &amp; diff contract YAML versions via GitPython</div>
+          <div class="chip ch-mint">317 LoC</div>
+        </div>
+        <div class="node" id="n-pg-conn" style="flex:0.9;min-width:130px">
+          <div class="node-name">PostgresConnector</div>
+          <div class="node-desc">Schema discovery, PII field auto-detection via keyword match</div>
+          <div class="chip ch-mint">557 LoC</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 4: Engines -->
+    <div class="layer l-engines">
+      <div class="band"></div>
+      <div class="layer-label">Policy Engines · Dual Validation</div>
+      <div class="layer-content">
+        <div class="node" id="n-rule-engine" style="flex:1.2;min-width:150px">
+          <div class="node-name">PolicyEngine</div>
+          <div class="node-desc">Rule-based YAML evaluation<br>SD001–005 · DQ001–005 · SG001–007<br>Always active · deterministic</div>
+          <div class="chip ch-amber">342 LoC</div>
+        </div>
+        <div class="node" id="n-odps-svc" style="flex:0.8;min-width:110px">
+          <div class="node-name">OdpsService</div>
+          <div class="node-desc">ODPS 4.1 data product spec · quality thresholds (completeness %, accuracy %)</div>
+          <div class="chip ch-amber">Quality gates</div>
+        </div>
+        <div class="node" id="n-sem-engine" style="flex:1.2;min-width:160px">
+          <div class="node-name">SemanticPolicyEngine</div>
+          <div class="node-desc">LLM contextual validation<br>SEM001–008 · naming, doc quality, business logic<br>Optional — ENABLE_LLM_VALIDATION</div>
+          <div class="chip ch-amber">461 LoC</div>
+        </div>
+        <div class="node" id="n-ollama-client" style="flex:0.8;min-width:110px">
+          <div class="node-name">OllamaClient</div>
+          <div class="node-desc">HTTP client for local Ollama · response caching · configurable model</div>
+          <div class="chip ch-amber">237 LoC · mistral:7b</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 5: Storage & External -->
+    <div class="layer l-storage">
+      <div class="band"></div>
+      <div class="layer-label">Storage &amp; External Systems</div>
+      <div class="layer-content">
+        <div class="node" id="n-sqlite" style="flex:1;min-width:120px">
+          <div class="node-ico">🗄</div>
+          <div class="node-name">SQLite</div>
+          <div class="node-desc">governance_metadata.db<br>Datasets, Contracts, Policies, Users, Subscriptions</div>
+          <div class="chip ch-mint">Metadata store</div>
+        </div>
+        <div class="node" id="n-git-repo" style="flex:1;min-width:130px">
+          <div class="node-ico">📁</div>
+          <div class="node-name">Git Contracts Repo</div>
+          <div class="node-desc">backend/contracts/<br>Immutable YAML version history — one commit per approval</div>
+          <div class="chip ch-mint">Audit trail</div>
+        </div>
+        <div class="node" id="n-yaml-policies" style="flex:1;min-width:130px">
+          <div class="node-ico">📋</div>
+          <div class="node-name">YAML Policy Files</div>
+          <div class="node-desc">backend/policies/<br>4 files · 17 deterministic rules loaded at startup</div>
+          <div class="chip ch-violet">Policy-as-Code</div>
+        </div>
+        <div class="node" id="n-postgresql" style="flex:1;min-width:120px">
+          <div class="node-ico">🐘</div>
+          <div class="node-name">PostgreSQL</div>
+          <div class="node-desc">financial_demo · localhost:5432<br>Schema discovery source via Docker</div>
+          <div class="chip ch-mint">External</div>
+        </div>
+        <div class="node" id="n-ollama" style="flex:1;min-width:120px">
+          <div class="node-ico">🤖</div>
+          <div class="node-name">Ollama</div>
+          <div class="node-desc">localhost:11434<br>Local LLM inference — optional dependency</div>
+          <div class="chip ch-amber">Optional</div>
+        </div>
+        <div class="node" id="n-odps-files" style="flex:1;min-width:120px">
+          <div class="node-ico">📐</div>
+          <div class="node-name">ODPS Descriptors</div>
+          <div class="node-desc">backend/odps/<br>Data product spec YAML — Linux Foundation ODPS 4.1</div>
+          <div class="chip ch-violet">ODPS 4.1</div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /diagram-wrapper -->
+</div><!-- /diagram-outer -->
+
+<script>
+// Edge definitions: [srcId, dstId, colorVar, dashed]
+const EDGES = [
+  // Frontend → API
+  ['n-owner',    'n-api-data',     'blue',   false],
+  ['n-consumer', 'n-api-data',     'blue',   false],
+  ['n-steward',  'n-api-policy',   'violet', false],
+  ['n-steward',  'n-api-data',     'violet', true],
+  ['n-admin',    'n-api-policy',   'violet', false],
+  // API → Services
+  ['n-api-data',     'n-contract',    'blue',   false],
+  ['n-api-data',     'n-pg-conn',     'blue',   false],
+  ['n-api-policy',   'n-authored',    'violet', false],
+  ['n-api-policy',   'n-converter',   'violet', false],
+  ['n-api-validate', 'n-orchestrator','amber',  false],
+  ['n-api-validate', 'n-git-svc',     'mint',   false],
+  // Service → Service
+  ['n-contract',   'n-orchestrator', 'blue',   false],
+  ['n-contract',   'n-git-svc',      'mint',   false],
+  ['n-authored',   'n-converter',    'violet', true],
+  // Services → Engines
+  ['n-orchestrator', 'n-rule-engine',  'amber', false],
+  ['n-orchestrator', 'n-sem-engine',   'amber', true],
+  ['n-rule-engine',  'n-odps-svc',     'amber', false],
+  ['n-sem-engine',   'n-ollama-client','amber', false],
+  // Engines → Storage
+  ['n-rule-engine',   'n-yaml-policies','violet', false],
+  ['n-ollama-client', 'n-ollama',       'amber',  false],
+  ['n-odps-svc',      'n-odps-files',   'violet', false],
+  // Services → Storage
+  ['n-contract', 'n-sqlite',   'mint', false],
+  ['n-authored', 'n-sqlite',   'mint', false],
+  ['n-git-svc',  'n-git-repo', 'mint', false],
+  ['n-pg-conn',  'n-postgresql','mint', false],
+];
+
+const COLORS = {
+  blue:   '#4A9EFF',
+  violet: '#7C6DFA',
+  amber:  '#F59E4A',
+  mint:   '#3DD68C',
+};
+
+function rect(id) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const wr = document.getElementById('dg').getBoundingClientRect();
+  const er = el.getBoundingClientRect();
+  return {
+    x: er.left - wr.left, y: er.top - wr.top,
+    w: er.width, h: er.height,
+    cx: er.left - wr.left + er.width / 2,
+    cy: er.top  - wr.top  + er.height / 2,
+    top:    er.top    - wr.top,
+    bottom: er.bottom - wr.top,
+    left:   er.left   - wr.left,
+    right:  er.right  - wr.left,
+  };
+}
+
+function draw() {
+  const svg = document.getElementById('svg-connections');
+  const dg  = document.getElementById('dg');
+  svg.innerHTML = '';
+  svg.setAttribute('width',  dg.offsetWidth);
+  svg.setAttribute('height', dg.offsetHeight);
+
+  // Build arrow markers
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  Object.entries(COLORS).forEach(([key, hex]) => {
+    const m = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+    m.setAttribute('id', `arr-${key}`);
+    m.setAttribute('viewBox', '0 0 8 8');
+    m.setAttribute('refX', '7'); m.setAttribute('refY', '4');
+    m.setAttribute('markerWidth', '5'); m.setAttribute('markerHeight', '5');
+    m.setAttribute('orient', 'auto');
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', 'M0,1 L7,4 L0,7 Z');
+    p.setAttribute('fill', hex); p.setAttribute('opacity', '0.75');
+    m.appendChild(p); defs.appendChild(m);
+  });
+  svg.appendChild(defs);
+
+  EDGES.forEach(([srcId, dstId, col, dashed]) => {
+    const s = rect(srcId), d = rect(dstId);
+    if (!s || !d) return;
+
+    const color = COLORS[col] || '#4A9EFF';
+    const dy = d.cy - s.cy, dx = d.cx - s.cx;
+
+    let x1, y1, x2, y2;
+    if (Math.abs(dy) >= Math.abs(dx) * 0.4) {
+      // vertical connection
+      x1 = s.cx; y1 = s.bottom;
+      x2 = d.cx; y2 = d.top - 2;
+    } else {
+      // horizontal
+      if (dx > 0) { x1 = s.right; y1 = s.cy; x2 = d.left;  y2 = d.cy; }
+      else         { x1 = s.left;  y1 = s.cy; x2 = d.right; y2 = d.cy; }
+    }
+
+    const midY = (y1 + y2) / 2;
+    const pathD = `M${x1},${y1} C${x1},${midY} ${x2},${midY} ${x2},${y2}`;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathD);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', '1.5');
+    path.setAttribute('opacity', dashed ? '0.3' : '0.45');
+    path.setAttribute('marker-end', `url(#arr-${col})`);
+    if (dashed) path.setAttribute('stroke-dasharray', '5 4');
+    svg.appendChild(path);
+  });
+}
+
+let raf;
+function scheduleDraw() {
+  clearTimeout(raf);
+  raf = setTimeout(draw, 80);
+}
+
+window.addEventListener('resize', scheduleDraw);
+requestAnimationFrame(() => setTimeout(draw, 120));
+</script>
